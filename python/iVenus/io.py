@@ -77,7 +77,32 @@ class FitsImageIO:
         f = fits.open(path)
         d = f[0].data
         f.close()
-        return d
+        dtype = cls._getDataType(path)
+        return np.array(d, dtype=dtype)
+    
+    
+    @classmethod
+    def _getDataType(cls, path):
+        bitpix = cls._readBITPIX(path)
+        if bitpix > 0: dtype = 'uint%s' % bitpix
+        else: dtype = 'int%s' % bitpix
+        return dtype
+        
+
+    @classmethod
+    def _readBITPIX(cls, path):
+        # astropy fits reader has a problem
+        # have to read BITPIX from the fits file directly
+        stream = open(path, 'rt')
+        while True:
+            line = stream.read(80)
+            if line.startswith('BITPIX'):
+                value = line.split('/')[0].split('=')[1].strip()
+                value = int(value)
+                break
+            continue
+        stream.close()
+        return value
 
 
 class NpyImageIO:
