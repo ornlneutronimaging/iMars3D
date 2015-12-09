@@ -1,3 +1,18 @@
+
+
+def filter(img, **kwds):
+    """does gamma filtering on the given image
+    - img: image npy array. must be of integer data type
+    - kwds: additional kwd args to pass to remove_outliers_bymedian
+    """
+    max = np.iinfo(img.dtype).max
+    threshold = max/2
+    img = np.array(img, np.float)
+    remove_outliers_bymedian(img, img>threshold, **kwds)
+    return img
+    
+
+
 import numpy as np
 def remove_outliers_bymedian(img, outlier_indexes, boxsize=5):
     """remove outliers from the given image by using median filtering
