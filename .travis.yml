@@ -35,7 +35,7 @@ install:
 #  - pip install codecov
 
 script:
-   - python tests/iVenus/filters/remove_outliers.py
+   - python tests/iVenus/signon.py
 
 notifications:
   email:
