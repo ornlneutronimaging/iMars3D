@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 # define distribution
 setup(
     name = "iVenus",
-    version = "0.8",
+    version = "0.1",
     packages = find_packages("python", exclude=['tests', 'notebooks']),
     package_dir = {'': "python"},
     test_suite = 'tests',
@@ -22,7 +22,7 @@ setup(
     license = 'BSD',
     keywords = "neutron imaging",
     url = "https://github.com/ornlneutronimaging/iVenus",
-    # download_url = 'http://dev.danse.us/packages/',
+    # download_url = '',
 )
 
 # End of file
