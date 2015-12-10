@@ -27,12 +27,15 @@ install:
   - export GIT_FULL_HASH=`git rev-parse HEAD`
   - conda config --set always_yes true
   - conda update conda
-  - conda create -n testenv pip nose python=$TRAVIS_PYTHON_VERSION numpy
-#  - conda install -n testenv -c scikit-xray xraylib lmfit=0.8.3 netcdf4
+  - conda create -n testenv pip nose python=$TRAVIS_PYTHON_VERSION numpy astropy
+#  - conda install -n testenv -c scikit-xray xraylib lmfit=0.8.3 netcdf4 # install from scikit-xray channel
   - source activate testenv
   - python setup.py install
 #  - pip install coveralls
 #  - pip install codecov
+
+script:
+   - python tests/iVenus/filters/remove_outliers.py
 
 notifications:
   email:
