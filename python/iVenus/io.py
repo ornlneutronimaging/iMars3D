@@ -25,8 +25,8 @@ class ImageSeries:
         
         paths = glob.glob(path_pattern)
         if len(paths)!=1:
-            raise RuntimeError, "template %r no good: \npath_pattern=%r" % (
-                self.filename_template, path_pattern)
+            raise RuntimeError("template %r no good: \npath_pattern=%r" % (
+                self.filename_template, path_pattern))
     
         path = paths[0]
         return path
@@ -69,7 +69,7 @@ class AbstractImageFileIO:
     def dump(cls, data, path): raise NotImplementedError
 
 
-class FitsImageIO:
+class FitsImageIO(AbstractImageFileIO):
     
     @classmethod
     def load(cls, path):
@@ -85,7 +85,7 @@ class FitsImageIO:
     def _getDataType(cls, path):
         bitpix = cls._readBITPIX(path)
         if bitpix > 0: dtype = 'uint%s' % bitpix
-        else: dtype = 'int%s' % bitpix
+        else: dtype = 'int%s' % -bitpix
         return dtype
         
 
@@ -93,9 +93,9 @@ class FitsImageIO:
     def _readBITPIX(cls, path):
         # astropy fits reader has a problem
         # have to read BITPIX from the fits file directly
-        stream = open(path, 'rt')
+        stream = open(path, 'rb')
         while True:
-            line = stream.read(80)
+            line = stream.read(80).decode("utf-8")
             if line.startswith('BITPIX'):
                 value = line.split('/')[0].split('=')[1].strip()
                 value = int(value)
@@ -105,7 +105,7 @@ class FitsImageIO:
         return value
 
 
-class NpyImageIO:
+class NpyImageIO(AbstractImageFileIO):
 
     @classmethod
     def dump(cls, data, path):
