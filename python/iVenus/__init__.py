@@ -1,2 +1,0 @@
-# iVenus python package
-

@@ -1,0 +1,35 @@
+package:
+  name: ivenus
+  version: '0.1.0'
+
+source:
+  git_url: https://github.com/dgursoy/iVenus.git
+  
+build:
+  number: 0
+
+requirements:
+  build:
+    - python
+    - setuptools
+
+  run:
+    - python
+    - numpy
+    - astropy
+    - tomopy
+
+test:
+  # Python imports
+  imports:
+    - ivenus
+
+about:
+  home: http://ivenus.readthedocs.org
+  license: BSD-3
+  summary: 'Neutron imaging data analysis at ORNL.'
+
+# See
+# http://docs.continuum.io/conda/build.html for
+# more information about meta.yaml
+
