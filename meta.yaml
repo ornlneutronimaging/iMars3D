@@ -23,6 +23,11 @@ test:
   # Python imports
   imports:
     - ivenus
+    - ivenus.config
+    - ivenus.io
+    - ivenus.det
+    - ivenus.filter
+    - ivenus.sim
 
 about:
   home: http://ivenus.readthedocs.org
