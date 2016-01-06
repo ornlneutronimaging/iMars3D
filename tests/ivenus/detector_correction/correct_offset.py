@@ -2,8 +2,8 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
-from iVenus import config, io
-from iVenus import detector_correction
+from ivenus import config, io
+from ivenus import detector_correction
 
 
 file = '/Users/j35/Dropbox (ORNL)/iVenus_data_set/Low_res_Gdmask_r0000.fits'

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import numpy as np, pylab
-from iVenus import filters, io
+from ivenus import filters, io
 
 # test data
 import os

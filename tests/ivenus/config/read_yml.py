@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from iVenus import config 
+from ivenus import config 
 
 # the goal of this function is to play with the yaml reader
 # and learn how to retrieve values from the config file

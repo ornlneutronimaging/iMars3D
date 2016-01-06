@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 # define distribution
 setup(
-    name = "iVenus",
+    name = "ivenus",
     version = "0.1",
     packages = find_packages("python", exclude=['tests', 'notebooks']),
     package_dir = {'': "python"},

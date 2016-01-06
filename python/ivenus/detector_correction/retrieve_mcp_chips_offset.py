@@ -1,4 +1,4 @@
-from iVenus import config
+from ivenus import config
 
 
 
