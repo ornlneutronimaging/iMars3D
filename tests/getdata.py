@@ -8,4 +8,4 @@ import os
 if not os.path.exists(path):
     cmd = "builders/download-testdata.py %s" % path
     if os.system(cmd):
-        raise "%s failed" % cmd
+        raise RuntimeError("%s failed" % cmd)
