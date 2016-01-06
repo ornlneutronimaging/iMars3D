@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 import sys, os, tempfile, subprocess as sp, shutil
 
 help = """
@@ -9,7 +10,7 @@ download test data from dropbox and expand them into the given output directory
 """ % sys.argv[0]
 
 if len(sys.argv) < 2:
-    print help
+    print(help)
     sys.exit(1)
 
 OUT=os.path.abspath(sys.argv[1])
