@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import numpy as np, pylab
+import numpy as np
 from ivenus import filters
 
 def test():
@@ -19,6 +19,7 @@ def test():
 if __name__ == '__main__':
     img = test()
     # display
+    import pylab
     pylab.imshow(img)
     pylab.colorbar()
     pylab.show()
