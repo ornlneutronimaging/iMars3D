@@ -12,6 +12,7 @@ def test():
     # filter
     threshold = 450
     filters.gamma_filtering.remove_outliers_bymedian(img, img>threshold)
+    # validate
     assert(img[img>threshold].sum() == 0)
     # return img for plotting when run interactively
     return img
