@@ -1,4 +1,4 @@
-from iVenus import config
+from ivenus import config
 
 
 
@@ -112,5 +112,32 @@ class RetrieveMCPChipsOffset(object):
                 else:
                     return max([abs(chip4_y_offset), abs(chip2_y_offset)])    
 
-   
+
+    def get_height_offset(self):
+        pass
+        
+    def get_max_offset(self):
+        '''
+        return a tuple of the max x and y offset
+        '''
+        max_x_offset = max(self.list_x_offset())
+        max_y_offset = max(self.list_y_offset())
+        return [max_x_offset, max_y_offset]
+        
+    def list_x_offset(self):
+        list_x_offset  = []
+        for name in self.chips.__dict__:
+            if name.startswith("_"): continue
+            value = getattr(self.chips, name)[0]
+            list_x_offset.append(value)
+        return list_x_offset
+        
+    def list_y_offset(self):
+        list_y_offset  = []
+        for name in self.chips.__dict__:
+            if name.startswith("_"): continue
+            value = getattr(self.chips, name)[1]
+            list_y_offset.append(value)
+        return list_y_offset
+    
     

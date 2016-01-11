@@ -1,4 +1,5 @@
 *.pyc
 *~
 .ipynb*
+/tests/iVenus_data_set
 

@@ -35,7 +35,9 @@ install:
 #  - pip install codecov
 
 script:
-   - python tests/iVenus/signon.py
+   - python tests/getdata.py
+   - python tests/ivenus/signon.py
+   - nosetests --exe
 
 notifications:
   email:

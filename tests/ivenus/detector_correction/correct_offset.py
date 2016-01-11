@@ -2,8 +2,8 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
-from iVenus import config, io
-from iVenus import detector_correction
+from ivenus import config, io
+from ivenus import detector_correction
 
 
 file = '/Users/j35/Dropbox (ORNL)/iVenus_data_set/Low_res_Gdmask_r0000.fits'
@@ -49,3 +49,6 @@ install_chips_in_new_detector = detector_correction.install_chips_in_new_detecto
 #install_chips_in_new_detector.put_chip_in_place(chip1, )                                                                                                           
 
 
+#new_detector_width = detector_width + xmax
+#new_detector_height = detector_height + ymax
+#new_image_data = np.zeros(())
