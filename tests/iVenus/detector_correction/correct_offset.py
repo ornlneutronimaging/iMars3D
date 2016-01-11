@@ -35,15 +35,17 @@ chips_offset = detector_correction.retrieve_mcp_chips_offset.RetrieveMCPChipsOff
 
 ## calculate max x and y offset (to determine size of new image)
 new_detector_width_offset = chips_offset.get_detector_new_width_offset()
-print('new_detector_width_offset: %d' %new_detector_width_offset)
+#print('new_detector_width_offset: %d' %new_detector_width_offset)
 new_detector_height_offset = chips_offset.get_detector_new_height_offset()
-print('new_detector_width_offset: %d' %new_detector_height_offset)
+#print('new_detector_height_offset: %d' %new_detector_height_offset)
+
+new_detector_width = detector_width + new_detector_width_offset
+new_detector_height = detector_height + new_detector_height_offset
+
+install_chips_in_new_detector = detector_correction.install_chips_in_new_detector.InstallChipsInNewDetector()
 
 
-#[xmax, ymax] = chips_offset.get_max_offset()
-#print("xmax = %d" %xmax)
-#print("ymax = %d" %ymax)
 
-#new_detector_width = detector_width + xmax
-#new_detector_height = detector_height + ymax
-#new_image_data = np.zeros(())
+#install_chips_in_new_detector.put_chip_in_place(chip1, )                                                                                                           
+
+
