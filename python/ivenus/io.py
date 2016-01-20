@@ -1,4 +1,4 @@
-import os, sys, numpy as np, pylab, glob
+import os, sys, numpy as np, glob
 
 
 class ImageSeries:
