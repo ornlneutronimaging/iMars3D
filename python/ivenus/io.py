@@ -4,9 +4,15 @@ import os, sys, numpy as np, glob
 class ImageSeries:
     
     
-    def __init__(self, filename_template, angles):
+    def __init__(self, filename_template, angles, decimal_mark_replacement="_"):
+        """
+        filename_template: examples 2014*_CT*_%07.3f_*.fits
+        angles: a list of angles
+        decimal_mark_replacement: in filenames, the "." decimal mark usually is replaced by a different symbol, often the underscore.
+        """
         self.filename_template = filename_template
         self.angles = angles
+        self.decimal_mark_replacement = decimal_mark_replacement
         return
 
     
@@ -21,7 +27,8 @@ class ImageSeries:
         basename = os.path.basename(path_pattern)
         base, ext = os.path.splitext(basename)
         # bad code
-        path_pattern = os.path.join(dir, base.replace(".", "_") + ext)
+        path_pattern = os.path.join(
+            dir, base.replace(".", self.decimal_mark_replacement) + ext)
         
         paths = glob.glob(path_pattern)
         if len(paths)!=1:
