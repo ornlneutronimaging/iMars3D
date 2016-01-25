@@ -16,6 +16,15 @@ data180 = f180.getData()
 data180 = np.fliplr(data180)
 
 
+def find_edges(data):
+    dataint = np.array(1.*data/np.max(data)*255, dtype="uint8")
+    import cv2
+    edges = cv2.Canny(dataint, 25, 50)
+    # pylab.imshow(dataint)
+    # pylab.imshow(edges, cmap="gray")
+    return edges
+
+
 def fft_angles_and_intensities(image):
     """read image and create the angles and intensities
     in the frequency domain for the image.
@@ -35,8 +44,6 @@ def fft_angles_and_intensities(image):
     angles = np.arctan2(yy, xx)
     return angles, np.abs(F)
 
-
-import numpy
 
 def smooth(x,window_len=11,window='hanning'):
     """smooth the data using a window with requested size.
@@ -85,14 +92,14 @@ def smooth(x,window_len=11,window='hanning'):
         raise ValueError, "Window is on of 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'"
 
 
-    s=numpy.r_[x[window_len-1:0:-1],x,x[-1:-window_len:-1]]
+    s=np.r_[x[window_len-1:0:-1],x,x[-1:-window_len:-1]]
     #print(len(s))
     if window == 'flat': #moving average
-        w=numpy.ones(window_len,'d')
+        w=np.ones(window_len,'d')
     else:
-        w=eval('numpy.'+window+'(window_len)')
+        w=eval('np.'+window+'(window_len)')
 
-    y=numpy.convolve(w/w.sum(),s,mode='valid')
+    y=np.convolve(w/w.sum(),s,mode='valid')
     return y
 
 
@@ -106,31 +113,26 @@ for row in range(10, 1000, 100):
 
 bins = 360
 
-angles0,F0 = fft_angles_and_intensities(data0)
+angles0,F0 = fft_angles_and_intensities(find_edges(data0))
 hist0, edges0 = np.histogram(angles0, weights=F0, bins=bins)
 
-angles180,F180 = fft_angles_and_intensities(data180)
+angles180,F180 = fft_angles_and_intensities(find_edges(data180))
 hist180, edges180 = np.histogram(angles180, weights=F180, bins=bins)
 
 # pylab.imshow(data0)
-data0int = np.array(1.*data0/np.max(data0)*255, dtype="uint8")
-import cv2
-edges = cv2.Canny(data0int, 25, 50)
-# pylab.imshow(data0int)
-pylab.imshow(edges, cmap="gray")
 
 # pylab.plot(data0[row])
 # pylab.plot(data180[row][::-1])
 # pylab.plot(data0[:, 0], data180[:, 0])
 # pylab.plot(data0[row], data180[row])
 
-# pylab.plot(smooth(hist0))
-# pylab.plot(smooth(hist180))
+pylab.plot(smooth(hist0))
+pylab.plot(smooth(hist180))
 
 # pylab.imshow(angles)
 
 # pylab.imshow(np.log(np.abs(F0)+1))
 # pylab.imshow(np.log(np.abs(F180))+1)
-pylab.colorbar()
+# pylab.colorbar()
 # pylab.clim(0, 20)
 pylab.show()
