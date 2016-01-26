@@ -34,7 +34,7 @@ from scipy import ndimage
 import pylab
 from smooth import smooth
 
-from tilt_imagefiles import f0, f180
+from tilt_inputimages import f0, f180
 
 border = 5
 rotation = 30. # 45.
@@ -69,7 +69,7 @@ def fft_angles_and_intensities(image):
     F = np.fft.fft2(image)
     # clean up borders
     F[0:border,:] = 0; F[:, 0:border] = 0
-    F[-border-1:-1,:] = 0; F[:, -border-1:-1] = 0
+    F[-border:] = 0; F[:, -border:] = 0
     # shift origin to the center of the freq-domain image
     F = np.fft.fftshift(F)
     # calculate angles
@@ -103,6 +103,7 @@ hist0, edges0 = np.histogram(angles0, weights=F0, bins=bins)
 angles180,F180 = fft_angles_and_intensities(data180)
 hist180, edges180 = np.histogram(angles180, weights=F180, bins=bins)
 
+# import pdb; pdb.set_trace()
 # 
 np.save("anglespectrum0.npy", hist0)
 np.save("anglespectrum180.npy", hist180)

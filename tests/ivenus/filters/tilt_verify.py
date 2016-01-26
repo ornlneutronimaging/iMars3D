@@ -4,7 +4,7 @@ from tilt_inputimages import f0, f180
 from scipy import ndimage
 import numpy as np
 
-rotation = 1.6
+rotation = 3.2
 
 data0 = f0.getData()
 data0 = ndimage.rotate(data0, rotation)

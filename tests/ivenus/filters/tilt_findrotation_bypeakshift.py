@@ -7,8 +7,13 @@ import pylab
 # 
 hist0 = np.load("anglespectrum0.npy")
 hist180 = np.load("anglespectrum180.npy")
+
 hist0 = smooth(hist0)
 hist180 = smooth(hist180)
+
+pylab.plot(hist0)
+pylab.plot(hist180)
+pylab.show()
 
 # find the maximum between 0 and 180
 i0 = np.argmax(hist0[:180])
@@ -52,6 +57,3 @@ print i180+coeff180[-1] - (i0+coeff0[-1])
 # pylab.plot(x, pk180)
 # pylab.plot(x, hist180_fit)
 
-pylab.plot(hist0)
-pylab.plot(hist180)
-pylab.show()

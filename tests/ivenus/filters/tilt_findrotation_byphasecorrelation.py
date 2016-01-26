@@ -3,41 +3,50 @@
 import numpy as np
 from smooth import smooth
 import pylab
+from scipy.optimize import curve_fit
 
 # 
 hist0 = np.load("anglespectrum0.npy")
 hist180 = np.load("anglespectrum180.npy")
-hist0 = smooth(hist0)
-hist180 = smooth(hist180)
+hist0 = smooth(hist0)[:hist0.size]
+hist180 = smooth(hist180)[:hist180.size]
 
 # fft 
 iq0 = np.fft.fft(hist0)
 iq180 = np.fft.fft(hist180)
-corr = iq0 * np.conjugate(iq180)
+# corr = iq0 * np.conjugate(iq180)
+corr = iq180 * np.conjugate(iq0)
 corr /= np.abs(corr)
 r = np.fft.ifft(corr)
+#
+r = np.real(r)
 
-# pylab.imshow(data0)
+# the argmax of r should be what we want.
+index = np.argmax(r[1:]) + 1
+width = 2
+peak = r[index-width : index+width+1]
+def poly2(x, *p):
+    a0, a1, a2 = p
+    return a0-a1*(x-a2)**2
 
-# pylab.plot(data0[row])
-# pylab.plot(data180[row][::-1])
-# pylab.plot(data0[:, 0], data180[:, 0])
-# pylab.plot(data0[row], data180[row])
+p0 = [r[index], 1., width]
+x = np.arange(peak.size)
+# import pdb; pdb.set_trace()
+coeff0, var_matrix = curve_fit(poly2, x, peak, p0=p0)
+print coeff0
+peak_fit = poly2(x, *coeff0)
+pylab.plot(x, peak)
+pylab.plot(x, peak_fit)
+print coeff0[-1] - width + index
 
-# pylab.imshow(angles)
-
-pylab.plot(hist0)
-pylab.plot(hist180)
+# pylab.plot(hist0)
+# pylab.plot(hist180)
 # pylab.plot(smooth(hist0))
 # pylab.plot(smooth(hist180))
 # pylab.plot(iq0.real)
 # pylab.plot(iq180.real)
 # pylab.plot(phase)
 # pylab.plot(freq)
-pylab.plot(r)
+# pylab.plot(r)
 
-# pylab.imshow(np.log(np.abs(F0)+1))
-# pylab.imshow(np.log(np.abs(F180))+1)
-# pylab.colorbar()
-# pylab.clim(0, 20)
 pylab.show()
