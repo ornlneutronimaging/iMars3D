@@ -1,19 +1,60 @@
 #!/usr/bin/env python
 
+"""
+In this script we are trying compute the tilt angle of the
+rotation axis.
+
+We use a pair of images that are 180 degrees away from each
+other. 
+They are supposed to be exact mirror images, but not
+because of the tilt.
+The rotation angle from the master image and the
+mirrored slave image divided by 2 is the tilt angle.
+So the main thing here we need to find that rotation angle.
+
+The rotation angle can be estimated from looking at the image
+and derive from rotation of a line (or any shape).
+This can be achieved by selecting a point with distinctive
+feature.
+This can be done by hand:
+* selected two points on the edge of the base
+* their coordinates in 0 and 180.200 degrees are
+  - 278,590;  1862,524
+  - 298,548;  1874,570
+* computed the rotation angle (using np.arctan2)
+  to be 3.2 degrees
+
+So this will be the ground truth when we test our algorithm.
+
+"""
+
+
 import os, numpy as np
 from ivenus.io import ImageFile
+from scipy import ndimage
+import pylab
 
 datadir = "../../iVenus_large_dataset"
 f0 = ImageFile(os.path.join(datadir, "reconstruction", "turbine", "20120618_TURBINECT_0180_0_000_0000.fits"))
+# f0 = ImageFile(os.path.join(datadir, "reconstruction", "turbine", "20120618_TURBINECT_0180_0_850_0001.fits"))
 f180 = ImageFile(os.path.join(datadir, "reconstruction", "turbine", "20120619_TURBINECT_0180_180_200_0212.fits"))
+# f180 = ImageFile(os.path.join(datadir, "reconstruction", "turbine", "20120619_TURBINECT_0180_181_050_0213.fits"))
 
-
+border = 5
+rotation = 30. # 45.
 data0 = f0.getData()
+data0 = ndimage.rotate(data0, rotation)
+sizeY, sizeX = data0.shape
+data0 = data0[sizeY//4:sizeY*3//4, sizeX//4:sizeX*3//4]
 print data0.shape
+# pylab.imshow(data0)
 
 data180 = f180.getData()
 # flip horizontally
 data180 = np.fliplr(data180)
+data180 = ndimage.rotate(data180, rotation)
+sizeY, sizeX = data180.shape
+data180 = data180[sizeY//4:sizeY*3//4, sizeX//4:sizeX*3//4]
 
 
 def find_edges(data):
@@ -31,8 +72,8 @@ def fft_angles_and_intensities(image):
     """
     F = np.fft.fft2(image)
     # clean up borders
-    F[0,:] = 0; F[:, 0] = 0
-    F[-1,:] = 0; F[:, -1] = 0
+    F[0:border,:] = 0; F[:, 0:border] = 0
+    F[-border-1:-1,:] = 0; F[:, -border-1:-1] = 0
     # shift origin to the center of the freq-domain image
     F = np.fft.fftshift(F)
     # calculate angles
@@ -46,6 +87,7 @@ def fft_angles_and_intensities(image):
     
     R = min(image.shape) // 2
     bracket = (rho>0.1*R)*(rho<R)
+    # return angles, np.abs(F)
     return angles[bracket], np.abs(F[bracket])
 
 
@@ -108,14 +150,13 @@ def smooth(x,window_len=11,window='hanning'):
 
 
     
-import pylab
 row = 100
 for row in range(10, 1000, 100):
     # pylab.plot(data0[:, row])
     # pylab.show()
     continue
 
-bins = 360*3
+bins = 360
 
 # angles0,F0 = fft_angles_and_intensities(find_edges(data0))
 angles0,F0 = fft_angles_and_intensities(data0)
