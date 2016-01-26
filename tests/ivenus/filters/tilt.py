@@ -41,8 +41,12 @@ def fft_angles_and_intensities(image):
     xx = np.tile(x, sizey).reshape(F.shape)
     y = np.arange(0, sizey, 1.) - sizey//2
     yy = np.repeat(y, sizex).reshape(F.shape)
+    rho = (xx*xx + yy*yy)**.5
     angles = np.arctan2(yy, xx)
-    return angles, np.abs(F)
+    
+    R = min(image.shape) // 2
+    bracket = (rho>0.1*R)*(rho<R)
+    return angles[bracket], np.abs(F[bracket])
 
 
 def smooth(x,window_len=11,window='hanning'):
@@ -111,12 +115,14 @@ for row in range(10, 1000, 100):
     # pylab.show()
     continue
 
-bins = 360
+bins = 360*3
 
-angles0,F0 = fft_angles_and_intensities(find_edges(data0))
+# angles0,F0 = fft_angles_and_intensities(find_edges(data0))
+angles0,F0 = fft_angles_and_intensities(data0)
 hist0, edges0 = np.histogram(angles0, weights=F0, bins=bins)
 
-angles180,F180 = fft_angles_and_intensities(find_edges(data180))
+# angles180,F180 = fft_angles_and_intensities(find_edges(data180))
+angles180,F180 = fft_angles_and_intensities(data180)
 hist180, edges180 = np.histogram(angles180, weights=F180, bins=bins)
 
 # pylab.imshow(data0)
@@ -126,8 +132,10 @@ hist180, edges180 = np.histogram(angles180, weights=F180, bins=bins)
 # pylab.plot(data0[:, 0], data180[:, 0])
 # pylab.plot(data0[row], data180[row])
 
-pylab.plot(smooth(hist0))
-pylab.plot(smooth(hist180))
+pylab.plot(hist0)
+pylab.plot(hist180)
+# pylab.plot(smooth(hist0))
+# pylab.plot(smooth(hist180))
 
 # pylab.imshow(angles)
 
