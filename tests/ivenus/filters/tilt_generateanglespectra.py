@@ -33,6 +33,7 @@ import os, numpy as np
 from ivenus.io import ImageFile
 from scipy import ndimage
 import pylab
+from smooth import smooth
 
 datadir = "../../iVenus_large_dataset"
 f0 = ImageFile(os.path.join(datadir, "reconstruction", "turbine", "20120618_TURBINECT_0180_0_000_0000.fits"))
@@ -91,65 +92,6 @@ def fft_angles_and_intensities(image):
     return angles[bracket], np.abs(F[bracket])
 
 
-def smooth(x,window_len=11,window='hanning'):
-    """smooth the data using a window with requested size.
-
-    This method is based on the convolution of a scaled window with the signal.
-    The signal is prepared by introducing reflected copies of the signal
-    (with the window size) in both ends so that transient parts are minimized
-    in the begining and end part of the output signal.
-
-    input:
-        x: the input signal
-        window_len: the dimension of the smoothing window; should be an odd integer
-        window: the type of window from 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'
-            flat window will produce a moving average smoothing.
-
-    output:
-        the smoothed signal
-
-    example:
-
-    t=linspace(-2,2,0.1)
-    x=sin(t)+randn(len(t))*0.1
-    y=smooth(x)
-
-    see also:
-
-    numpy.hanning, numpy.hamming, numpy.bartlett, numpy.blackman, numpy.convolve
-    scipy.signal.lfilter
-
-    TODO: the window parameter could be the window itself if an array instead of a string
-    NOTE: length(output) != length(input), to correct this: return y[(window_len/2-1):-(window_len/2)] instead of just y.
-    """
-
-    if x.ndim != 1:
-        raise ValueError, "smooth only accepts 1 dimension arrays."
-
-    if x.size < window_len:
-        raise ValueError, "Input vector needs to be bigger than window size."
-
-
-    if window_len<3:
-        return x
-
-
-    if not window in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
-        raise ValueError, "Window is on of 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'"
-
-
-    s=np.r_[x[window_len-1:0:-1],x,x[-1:-window_len:-1]]
-    #print(len(s))
-    if window == 'flat': #moving average
-        w=np.ones(window_len,'d')
-    else:
-        w=eval('np.'+window+'(window_len)')
-
-    y=np.convolve(w/w.sum(),s,mode='valid')
-    return y
-
-
-    
 row = 100
 for row in range(10, 1000, 100):
     # pylab.plot(data0[:, row])
@@ -166,6 +108,10 @@ hist0, edges0 = np.histogram(angles0, weights=F0, bins=bins)
 angles180,F180 = fft_angles_and_intensities(data180)
 hist180, edges180 = np.histogram(angles180, weights=F180, bins=bins)
 
+# 
+np.save("anglespectrum0.npy", hist0)
+np.save("anglespectrum180.npy", hist180)
+
 # pylab.imshow(data0)
 
 # pylab.plot(data0[row])
@@ -173,12 +119,14 @@ hist180, edges180 = np.histogram(angles180, weights=F180, bins=bins)
 # pylab.plot(data0[:, 0], data180[:, 0])
 # pylab.plot(data0[row], data180[row])
 
+# pylab.imshow(angles)
+
 pylab.plot(hist0)
 pylab.plot(hist180)
 # pylab.plot(smooth(hist0))
 # pylab.plot(smooth(hist180))
-
-# pylab.imshow(angles)
+# pylab.plot(iq0.real)
+# pylab.plot(iq180.real)
 
 # pylab.imshow(np.log(np.abs(F0)+1))
 # pylab.imshow(np.log(np.abs(F180))+1)
