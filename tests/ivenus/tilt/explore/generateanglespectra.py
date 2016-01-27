@@ -34,7 +34,7 @@ from scipy import ndimage
 import pylab
 from smooth import smooth
 
-from tilt_inputimages import f0, f180
+from inputimages import f0, f180
 
 border = 5
 rotation = 30. # 45.

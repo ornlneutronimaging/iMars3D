@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from tilt_inputimages import f0, f180
+from inputimages import f0, f180
 from scipy import ndimage
 import numpy as np
 
