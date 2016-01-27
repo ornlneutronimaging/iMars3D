@@ -36,26 +36,50 @@ class PhaseCorrelation:
         """
         # 0 degree data
         data0 = img0.getData()
-        data0 = ndimage.rotate(data0, self.rotation)
-        sizeY, sizeX = data0.shape
-        # only take the rectangle region where data exist
-        data0 = data0[sizeY//4:sizeY*3//4, sizeX//4:sizeX*3//4]
+        hist0 = self._computeIthetaHistogram(data0)
         # 180 degree data
         # print data0.shape
         data180 = img180.getData()
         # flip horizontally
         data180 = np.fliplr(data180)
-        data180 = ndimage.rotate(data180, self.rotation)
-        sizeY, sizeX = data180.shape
-        data180 = data180[sizeY//4:sizeY*3//4, sizeX//4:sizeX*3//4]
+        hist180 = self._computeIthetaHistogram(data180)
+        # plot 
+        pylab.figure(figsize=(5, 14))
+        # - I(theta) histogram
+        axes = plt.subplot(3,1,1)
+        pylab.plot(hist0)
+        pylab.plot(hist180)
+        pylab.xlabel("I(theta)")
+        # correlate
+        r = self._correlate(hist0, hist180)
+        # find peak position
+        tilt = self._findPeakPosition(r)
+        # plot
+        # - save
+        logging_dir = self.logging_dir
+        if not os.path.exists(logging_dir):
+            os.makedirs(logging_dir)
+        pylab.savefig(os.path.join(logging_dir, "corr.pdf"))
+        # make tilt center around 0
+        if tilt > 180:
+            tilt = tilt-360
+        # tilt is the rotation angle divided by 2
+        return tilt/2
+        
+    
+    def _computeIthetaHistogram(self, data0):
+        data0 = ndimage.rotate(data0, self.rotation)
+        sizeY, sizeX = data0.shape
+        # only take the rectangle region where data exist
+        data0 = data0[sizeY//4:sizeY*3//4, sizeX//4:sizeX*3//4]
         # create histogram
         angles0,F0 = fft_angles_and_intensities(
             data0, self.border, os.path.join(self.logging_dir, "0"))
         hist0, edges0 = np.histogram(angles0, weights=F0, bins=self.bins)
-        angles180,F180 = fft_angles_and_intensities(
-            data180, self.border, os.path.join(self.logging_dir, "180"))
-        hist180, edges180 = np.histogram(angles180, weights=F180, bins=self.bins)
-        # 
+        return hist0
+
+        
+    def _correlate(self, hist0, hist180):
         # now that we have the histogram I(theta), we use 
         # phase correlation method to determine the shift
         hist0 = smooth(hist0)[:hist0.size]
@@ -67,6 +91,15 @@ class PhaseCorrelation:
         corr /= np.abs(corr)
         r = np.fft.ifft(corr)
         r = np.real(r)
+        # plot
+        # - phase correlation result
+        axes = plt.subplot(3,1,2)
+        iaxes = pylab.plot(r)
+        pylab.xlabel("Correlation")
+        return r
+        
+        
+    def _findPeakPosition(self, r):
         # the argmax of r should be what we want.
         # - only data within a few degrees are useful
         r[10:350] = 0
@@ -86,27 +119,12 @@ class PhaseCorrelation:
         coeff0, var_matrix = curve_fit(poly2, x, peak, p0=p0)
         # fitted peak
         peak_fit = poly2(x, *coeff0)
-        # plot 
-        pylab.figure(figsize=(5, 14))
-        # - I(theta) histogram
-        axes = plt.subplot(3,1,1)
-        pylab.plot(hist0)
-        pylab.plot(hist180)
-        pylab.xlabel("I(theta)")
-        # - phase correlation result
-        axes = plt.subplot(3,1,2)
-        iaxes = pylab.plot(r)
-        pylab.xlabel("Correlation")
+        # plot
         # - peak fitting
         axes = plt.subplot(3,1,3)
         pylab.plot(x, peak)
         pylab.plot(x, peak_fit)
         pylab.xlabel("Peak fitting")
-        # - save
-        logging_dir = self.logging_dir
-        if not os.path.exists(logging_dir):
-            os.makedirs(logging_dir)
-        pylab.savefig(os.path.join(logging_dir, "corr.pdf"))
         return coeff0[-1] - width + index
 
 
