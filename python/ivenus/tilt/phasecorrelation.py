@@ -19,6 +19,14 @@ class PhaseCorrelation:
     bins = 360
     logging_dir = "log.tilt-phasecorrelation"
     
+    def __init__(
+        self, border=None, rotation=None, bins=None, logging_dir=None):
+        self.border = border or self.__class__.border
+        self.rotation = rotation or self.__class__.rotation
+        self.bins = bins or self.__class__.bins
+        self.logging_dir = logging_dir or self.__class__.logging_dir
+        return
+    
     def __call__(self, img0, img180):
         """
         implementation details:
@@ -50,6 +58,8 @@ class PhaseCorrelation:
         # 
         # now that we have the histogram I(theta), we use 
         # phase correlation method to determine the shift
+        hist0 = smooth(hist0)[:hist0.size]
+        hist180 = smooth(hist180)[:hist180.size]
         iq0 = np.fft.fft(hist0)
         iq180 = np.fft.fft(hist180)
         # corr = iq0 * np.conjugate(iq180)
