@@ -32,8 +32,8 @@ class ImageSeries:
         
         paths = glob.glob(path_pattern)
         if len(paths)!=1:
-            raise RuntimeError("template %r no good: \npath_pattern=%r" % (
-                self.filename_template, path_pattern))
+            raise RuntimeError("template %r no good: \npath_pattern=%r\npaths=%s" % (
+                self.filename_template, path_pattern, paths))
     
         path = paths[0]
         return path
