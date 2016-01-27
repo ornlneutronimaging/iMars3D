@@ -82,9 +82,12 @@ def compute_tilt(normalized_ct_series):
         tilts.append(tilt)
         continue
     tilt = np.average(tilts)
-    if tilt > 180:
-        tilt = tilt-360
     return tilt
+def check_tilt(tilt, normalized_ct_series):
+    img = lambda angle: normalized_ct_series.getImageFile(angle)
+    from ivenus.tilt import check
+    check(tilt, img(0), img(180.20))
+    return
 
 
 def main():
@@ -92,8 +95,10 @@ def main():
     #    ct_series, df_images, ob_images,
     #    "normalized_%7.3f.npy", sys.stdout
     #)
-    tilt = compute_tilt(normalized_ct_series)
-    print tilt
+    # tilt = compute_tilt(normalized_ct_series)
+    # print tilt
+    check_tilt(-1.86, normalized_ct_series)
+    # check_tilt(-1.6, normalized_ct_series)
     return
 
 
