@@ -73,19 +73,27 @@ normalized_ct_series = ImageSeries(
     decimal_mark_replacement = ".",
     )
 def compute_tilt(normalized_ct_series):
-    img0 = normalized_ct_series.getImageFile(0)
-    img180 = normalized_ct_series.getImageFile(180.2)
     from ivenus.tilt import phasecorrelation
-    tilt = phasecorrelation.PhaseCorrelation()(img0, img180)
-    print tilt
-    return
+    img = lambda angle: normalized_ct_series.getImageFile(angle)
+    tilts = []
+    for i in range(3):
+        pc = phasecorrelation.PhaseCorrelation(logging_dir="log.tilt.%s"%i)
+        tilt = pc(img(0+.85*i), img(180.2+.85*i))
+        tilts.append(tilt)
+        continue
+    tilt = np.average(tilts)
+    if tilt > 180:
+        tilt = tilt-360
+    return tilt
+
 
 def main():
     # normalize(
     #    ct_series, df_images, ob_images,
     #    "normalized_%7.3f.npy", sys.stdout
     #)
-    compute_tilt(normalized_ct_series)
+    tilt = compute_tilt(normalized_ct_series)
+    print tilt
     return
 
 
