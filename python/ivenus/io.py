@@ -119,3 +119,8 @@ class NpyImageIO(AbstractImageFileIO):
         import numpy as np
         np.save(path, data)
         return
+        
+    @classmethod
+    def load(cls, path):
+        import numpy as np
+        return np.load(path)
