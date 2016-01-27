@@ -44,29 +44,34 @@ def average(images, prefix, console_out):
 
 
 def normalize(ct_series, df_images, ob_images, output_template, console_out):
+    # compute dark field and open beam
     df = average(df_images, "Dark field:", console_out)
     console_out.write("\n")
     np.save("df.npy", df)
     ob = average(ob_images, "Open beam:", console_out)
     console_out.write("\n")
     np.save("ob.npy", ob)
+    # normalize
     prefix = "Normalize:"
     N = len(ct_series.angles)
     for i, angle in enumerate(ct_series.angles):
         data = np.array(ct_series.getData(angle), dtype=float)
-        data -= df
-        data /= ob
+        data = (data-df)/ob
         f = ImageFile(output_template % angle)
         f.data = data
         f.save()
         console_out.write("\r%s: %2.0f%%" % (prefix, (i+1)*100./N))
         console_out.flush()
         continue
+    console_out.write("\n")
     return
 
 
 def main():
-    normalize(ct_series, df_images, ob_images, "normalized_%7.3f.npy", sys.stdout)
+    normalize(
+        ct_series, df_images, ob_images,
+        "normalized_%7.3f.npy", sys.stdout
+    )
     return
 
 
