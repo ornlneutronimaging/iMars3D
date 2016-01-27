@@ -17,7 +17,7 @@ from ivenus.io import ImageSeries, ImageFile
 
 datadir = "../iVenus_large_dataset/reconstruction/turbine"
 ct_series = ImageSeries(
-    os.path.join(datadir, "*CT_%.3f_*.fits"),
+    os.path.join(datadir, "*CT*_%.3f_*.fits"),
     angles = np.arange(0, 182, .85),
     )
 df_images = [
@@ -43,16 +43,29 @@ def average(images, prefix, console_out):
     return res/len(images)    
 
 
-def normalize(ct_series, df_images, ob_images):
-    df = average(df_images, "Dark field:", sys.stdout)
-    sys.stdout.write("\n")
-    ob = average(ob_images, "Open beam:", sys.stdout)
-    sys.stdout.write("\n")
+def normalize(ct_series, df_images, ob_images, output_template, console_out):
+    df = average(df_images, "Dark field:", console_out)
+    console_out.write("\n")
+    ob = average(ob_images, "Open beam:", console_out)
+    console_out.write("\n")
+    
+    prefix = "Normalize:"
+    N = len(ct_series.angles)
+    for i, angle in enumerate(ct_series.angles):
+        data = ct_series.getData(angle)
+        data -= df
+        data /= ob
+        f = ImageFile(output_template % angle)
+        f.data = data
+        f.save()
+        console_out.write("\r%s: %2.0f%%" % (prefix, i*100./N))
+        console_out.flush()
+        continue
     return
 
 
 def main():
-    normalize(ct_series, df_images, ob_images)
+    normalize(ct_series, df_images, ob_images, "normalized_%7.3f.npy", sys.stdout)
     return
 
 
