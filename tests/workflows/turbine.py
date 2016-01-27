@@ -67,11 +67,25 @@ def normalize(ct_series, df_images, ob_images, output_template, console_out):
     return
 
 
-def main():
-    normalize(
-        ct_series, df_images, ob_images,
-        "normalized_%7.3f.npy", sys.stdout
+normalized_ct_series = ImageSeries(
+    os.path.join("normalized*_%7.3f.npy"),
+    angles = np.arange(0, 182, .85),
+    decimal_mark_replacement = ".",
     )
+def compute_tilt(normalized_ct_series):
+    img0 = normalized_ct_series.getImageFile(0)
+    img180 = normalized_ct_series.getImageFile(180.2)
+    from ivenus.tilt import phasecorrelation
+    tilt = phasecorrelation.PhaseCorrelation()(img0, img180)
+    print tilt
+    return
+
+def main():
+    # normalize(
+    #    ct_series, df_images, ob_images,
+    #    "normalized_%7.3f.npy", sys.stdout
+    #)
+    compute_tilt(normalized_ct_series)
     return
 
 
