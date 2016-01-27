@@ -22,6 +22,8 @@ r = np.fft.ifft(corr)
 r = np.real(r)
 
 # the argmax of r should be what we want.
+# - only data within a few degrees are useful
+r[10:350] = 0
 index = np.argmax(r[1:]) + 1
 width = 2
 peak = r[index-width : index+width+1]
@@ -35,8 +37,8 @@ x = np.arange(peak.size)
 coeff0, var_matrix = curve_fit(poly2, x, peak, p0=p0)
 print coeff0
 peak_fit = poly2(x, *coeff0)
-pylab.plot(x, peak)
-pylab.plot(x, peak_fit)
+# npylab.plot(x, peak)
+# pylab.plot(x, peak_fit)
 print coeff0[-1] - width + index
 
 # pylab.plot(hist0)
@@ -47,6 +49,6 @@ print coeff0[-1] - width + index
 # pylab.plot(iq180.real)
 # pylab.plot(phase)
 # pylab.plot(freq)
-# pylab.plot(r)
+pylab.plot(r)
 
 pylab.show()
