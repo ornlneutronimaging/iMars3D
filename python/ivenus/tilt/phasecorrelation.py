@@ -2,7 +2,7 @@
 
 import os, numpy as np
 from scipy import ndimage
-import pylab
+import pylab, matplotlib as mpl
 from matplotlib import pyplot as plt
 from smooth import smooth
 from scipy.optimize import curve_fit
@@ -44,6 +44,7 @@ class PhaseCorrelation:
         data180 = np.fliplr(data180)
         hist180 = self._computeIthetaHistogram(data180)
         # plot 
+        mpl.use("Agg")
         pylab.figure(figsize=(5, 14))
         # - I(theta) histogram
         axes = plt.subplot(3,1,1)
