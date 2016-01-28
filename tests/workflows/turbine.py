@@ -129,20 +129,29 @@ def apply_tilt(tilt, normalized_ct_series, console_out):
 
 def reconstruct(ct_series, console_out):
     import tomopy
-    proj = [];  theta = []; N = len(ct_series.angles)
+    data = [];  theta = []; N = len(ct_series.angles)
     prefix = "Gather projection"
     for i,angle in enumerate(ct_series.angles):
-        if i%3 != 0: continue
+        # if i%3 != 0: continue
         theta.append(angle)
-        data = ct_series.getImageFile(angle).getData()
-        data[data<=0] = 1.
-        proj.append(data)
+        data1 = ct_series.getImageFile(angle).getData()
+        # data[data<=0] = 1.
+        data1 = data1[50:-50, 50:-50]
+        data.append(data1)
         console_out.write("\r%s: %2.0f%%" % (prefix, (i+1)*100./N))
         console_out.flush()
         continue
-    proj = np.array(proj, dtype=float)
+    console_out.write("\n"); console_out.flush()
+    Y,X = data[0].shape
+    console_out.write("tomopy.normalize_bg"); console_out.flush()
+    console_out.write("\n"); console_out.flush()
+    proj = tomopy.normalize_bg(data)
+    del data
+    theta = np.array(theta, dtype=float)
+    theta *= np.pi/180.
     # reconstruct
-    Y,X = proj[0].shape
+    console_out.write("tomopy.reconstruct"); console_out.flush()
+    console_out.write("\n"); console_out.flush()
     rec = tomopy.recon(
         proj[:, 923:924, :], 
         theta=theta, center=X/2.,
