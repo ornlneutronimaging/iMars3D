@@ -134,7 +134,9 @@ def reconstruct(ct_series, console_out):
     for i,angle in enumerate(ct_series.angles):
         if i%3 != 0: continue
         theta.append(angle)
-        proj.append(ct_series.getImageFile(angle).getData())
+        data = ct_series.getImageFile(angle).getData()
+        data[data<=0] = 1.
+        proj.append(data)
         console_out.write("\r%s: %2.0f%%" % (prefix, (i+1)*100./N))
         console_out.flush()
         continue
@@ -142,7 +144,7 @@ def reconstruct(ct_series, console_out):
     # reconstruct
     Y,X = proj[0].shape
     rec = tomopy.recon(
-        proj[:, 923:1024, :], 
+        proj[:, 923:924, :], 
         theta=theta, center=X/2.,
         algorithm='gridrec', emission=False
     )
