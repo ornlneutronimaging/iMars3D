@@ -45,19 +45,30 @@ def average(images, prefix, console_out):
 
 def normalize(ct_series, df_images, ob_images, output_template, console_out):
     # compute dark field and open beam
-    df = average(df_images, "Dark field:", console_out)
-    console_out.write("\n")
-    np.save("df.npy", df)
-    ob = average(ob_images, "Open beam:", console_out)
-    console_out.write("\n")
-    np.save("ob.npy", ob)
+    df_output = "df.npy"
+    if not os.path.exists(df_output):
+        df = average(df_images, "Dark field:", console_out)
+        console_out.write("\n")
+        np.save(df_output, df)
+    else:
+        df = np.load(df_output)
+    ob_output = "ob.npy"
+    if not os.path.exists(ob_output):
+        ob = average(ob_images, "Open beam:", console_out)
+        console_out.write("\n")
+        np.save(ob_output, ob)
+    else:
+        ob = np.load(ob_output)
     # normalize
     prefix = "Normalize:"
     N = len(ct_series.angles)
     for i, angle in enumerate(ct_series.angles):
+        fn = output_template % angle
+        # skip over existing results
+        if os.path.exists(fn): continue
         data = np.array(ct_series.getData(angle), dtype=float)
         data = (data-df)/ob
-        f = ImageFile(output_template % angle)
+        f = ImageFile(fn)
         f.data = data
         f.save()
         console_out.write("\r%s: %2.0f%%" % (prefix, (i+1)*100./N))
@@ -73,6 +84,9 @@ normalized_ct_series = ImageSeries(
     decimal_mark_replacement = ".",
     )
 def compute_tilt(normalized_ct_series):
+    tilt_out = "tilt.out"
+    if os.path.exists(tilt_out):
+        return float(open(tilt_out).read())
     from ivenus.tilt import phasecorrelation
     img = lambda angle: normalized_ct_series.getImageFile(angle)
     tilts = []
@@ -82,6 +96,7 @@ def compute_tilt(normalized_ct_series):
         tilts.append(tilt)
         continue
     tilt = np.average(tilts)
+    open(tilt_out, 'wt').write(str(tilt))
     return tilt
 def check_tilt(tilt, normalized_ct_series):
     img = lambda angle: normalized_ct_series.getImageFile(angle)
@@ -101,7 +116,10 @@ def apply_tilt(tilt, normalized_ct_series, console_out):
     prefix = "Apply tilt"
     N = len(normalized_ct_series.angles)
     for i,angle in enumerate(normalized_ct_series.angles):
-        apply(tilt, inputimg(angle), outputimg(angle))
+        outimg = outputimg(angle)
+        # skip over existing result
+        if os.path.exists(outimg.path): continue
+        apply(tilt, inputimg(angle), outimg)
         console_out.write("\r%s: %2.0f%%" % (prefix, (i+1)*100./N))
         console_out.flush()
         continue
@@ -133,15 +151,15 @@ def reconstruct(ct_series, console_out):
 
 
 def main():
-    # normalize(
-    #    ct_series, df_images, ob_images,
-    #    "normalized_%7.3f.npy", sys.stdout
-    #)
-    # tilt = compute_tilt(normalized_ct_series)
+    normalize(
+        ct_series, df_images, ob_images,
+        "normalized_%7.3f.npy", sys.stdout
+    )
+    tilt = compute_tilt(normalized_ct_series)
     # print tilt
-    tilt = -1.86
+    # tilt = -1.86
     # check_tilt(tilt, normalized_ct_series)
-    # apply_tilt(tilt, normalized_ct_series, sys.stdout)
+    apply_tilt(tilt, normalized_ct_series, sys.stdout)
     reconstruct(tiltcorrected_ct_series, sys.stdout)
     return
 
