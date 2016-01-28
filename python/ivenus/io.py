@@ -16,12 +16,12 @@ class ImageSeries:
         return
 
     
-    def getImageFile(self, angle):
-        p = self.getFilename(angle)
+    def getImageFile(self, angle, **kwds):
+        p = self.getFilename(angle, **kwds)
         return ImageFile(p)
     
         
-    def getFilename(self, angle):
+    def getFilename(self, angle, check_if_exists=True):
         path_pattern = self.filename_template % (angle,)
         dir = os.path.dirname(path_pattern)
         basename = os.path.basename(path_pattern)
@@ -29,7 +29,12 @@ class ImageSeries:
         # bad code
         path_pattern = os.path.join(
             dir, base.replace(".", self.decimal_mark_replacement) + ext)
-        
+        # don't need to check if file exists if we are creating it
+        if not check_if_exists:
+            return path_pattern
+        # check if file exists. this is good when reading
+        # original data files from the data acqusition system
+        # where file name convention is unknown
         paths = glob.glob(path_pattern)
         if len(paths)!=1:
             raise RuntimeError("template %r no good: \npath_pattern=%r\npaths=%s" % (
