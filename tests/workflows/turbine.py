@@ -88,6 +88,36 @@ def check_tilt(tilt, normalized_ct_series):
     from ivenus.tilt import check
     check(tilt, img(0), img(180.20))
     return
+tiltcorrected_ct_series = ImageSeries(
+    os.path.join("tiltcorrected_%7.3f.npy"),
+    angles = np.arange(0, 182, .85),
+    decimal_mark_replacement = ".",
+    )
+def apply_tilt(tilt, normalized_ct_series, console_out):
+    inputimg = lambda angle: normalized_ct_series.getImageFile(angle)
+    outputimg = lambda angle: tiltcorrected_ct_series.getImageFile(
+        angle, check_if_exists=False)
+    from ivenus.tilt import apply
+    prefix = "Apply tilt"
+    N = len(normalized_ct_series.angles)
+    for i,angle in enumerate(normalized_ct_series.angles):
+        apply(tilt, inputimg(angle), outputimg(angle))
+        console_out.write("\r%s: %2.0f%%" % (prefix, (i+1)*100./N))
+        console_out.flush()
+        continue
+    console_out.write("\n")
+    return
+
+
+def reconstruct(ct_series):
+    import tomopy
+    proj = []
+    rec = tomopy.recon(
+        proj[:, 923:1024, :], 
+        theta=theta, center=rot_center[0], 
+        algorithm='gridrec', emission=False
+    )
+    
 
 
 def main():
@@ -97,8 +127,10 @@ def main():
     #)
     # tilt = compute_tilt(normalized_ct_series)
     # print tilt
-    check_tilt(-1.86, normalized_ct_series)
-    # check_tilt(-1.6, normalized_ct_series)
+    tilt = -1.86
+    # check_tilt(tilt, normalized_ct_series)
+    apply_tilt(tilt, normalized_ct_series, sys.stdout)
+    # reconstruct(tiltcorrected_ct_series)
     return
 
 
