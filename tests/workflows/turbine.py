@@ -109,15 +109,27 @@ def apply_tilt(tilt, normalized_ct_series, console_out):
     return
 
 
-def reconstruct(ct_series):
+def reconstruct(ct_series, console_out):
     import tomopy
-    proj = []
+    proj = [];  theta = []; N = len(ct_series.angles)
+    prefix = "Gather projection"
+    for i,angle in enumerate(ct_series.angles):
+        if i%3 != 0: continue
+        theta.append(angle)
+        proj.append(ct_series.getImageFile(angle).getData())
+        console_out.write("\r%s: %2.0f%%" % (prefix, (i+1)*100./N))
+        console_out.flush()
+        continue
+    proj = np.array(proj, dtype=float)
+    # reconstruct
+    Y,X = proj[0].shape
     rec = tomopy.recon(
         proj[:, 923:1024, :], 
-        theta=theta, center=rot_center[0], 
+        theta=theta, center=X/2.,
         algorithm='gridrec', emission=False
     )
-    
+    tomopy.write_tiff_stack(rec, fname='recon', axis=0, overwrite=True)
+    return
 
 
 def main():
@@ -129,8 +141,8 @@ def main():
     # print tilt
     tilt = -1.86
     # check_tilt(tilt, normalized_ct_series)
-    apply_tilt(tilt, normalized_ct_series, sys.stdout)
-    # reconstruct(tiltcorrected_ct_series)
+    # apply_tilt(tilt, normalized_ct_series, sys.stdout)
+    reconstruct(tiltcorrected_ct_series, sys.stdout)
     return
 
 
