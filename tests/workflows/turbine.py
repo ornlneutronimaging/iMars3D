@@ -167,7 +167,6 @@ def reconstruct(proj_fn_template, layers, theta, console_out, outdir="recon"):
     layers: list of integers for layers to be reconstructed
     theta: sample rotation angle in radian
     """
-    import pdb; pdb.set_trace()
     import tomopy
     proj = tomopy.read_tiff_stack(proj_fn_template % layers[0], layers, digit=5)
     proj = np.swapaxes(proj, 0,1)
@@ -178,6 +177,7 @@ def reconstruct(proj_fn_template, layers, theta, console_out, outdir="recon"):
         proj,
         theta=theta, center=X/2.,
         algorithm='gridrec', emission=False,
+        ncore = 1,
     )
     console_out.write("done\n"); console_out.flush()
     # output
@@ -204,7 +204,7 @@ def main():
     theta = np.array(ct_series.angles, dtype=float)
     theta *= np.pi/180.
     proj_fn_template = "proj/proj_%05i.tiff"
-    layers = range(700,710)
+    layers = range(150,1330, 10)
     reconstruct(proj_fn_template, layers, theta, sys.stdout, outdir="recon")
     return
 
