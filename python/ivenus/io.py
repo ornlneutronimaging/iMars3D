@@ -4,25 +4,25 @@ import os, sys, numpy as np, glob
 class ImageSeries:
     
     
-    def __init__(self, filename_template, angles, decimal_mark_replacement="_"):
+    def __init__(self, filename_template, indices, decimal_mark_replacement="_"):
         """
         filename_template: examples 2014*_CT*_%07.3f_*.fits
-        angles: a list of angles
+        indices: a list of indices for images
         decimal_mark_replacement: in filenames, the "." decimal mark usually is replaced by a different symbol, often the underscore.
         """
         self.filename_template = filename_template
-        self.angles = angles
+        self.indices = indices
         self.decimal_mark_replacement = decimal_mark_replacement
         return
 
     
-    def getImageFile(self, angle, **kwds):
-        p = self.getFilename(angle, **kwds)
+    def getImageFile(self, index, **kwds):
+        p = self.getFilename(index, **kwds)
         return ImageFile(p)
     
         
-    def getFilename(self, angle, check_if_exists=True):
-        path_pattern = self.filename_template % (angle,)
+    def getFilename(self, index, check_if_exists=True):
+        path_pattern = self.filename_template % (index,)
         dir = os.path.dirname(path_pattern)
         basename = os.path.basename(path_pattern)
         base, ext = os.path.splitext(basename)
@@ -44,8 +44,8 @@ class ImageSeries:
         return path
     
     
-    def getData(self, angle):
-        path = self.getFilename(angle)
+    def getData(self, index):
+        path = self.getFilename(index)
         return ImageFile(path).getData()
 
 
