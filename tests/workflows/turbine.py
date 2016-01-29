@@ -127,37 +127,66 @@ def apply_tilt(tilt, normalized_ct_series, console_out):
     return
 
 
-def reconstruct(ct_series, console_out):
+def project(ct_series, outdir, console_out):
+    """convert ct image series to projection series"""
+    if os.path.exists(outdir):
+        msg = "%s existed, assume projection has already been done. skip this\n" % (
+            outdir,)
+        console_out.write(msg)
+        return
     import tomopy
-    data = [];  theta = []; N = len(ct_series.angles)
-    prefix = "Gather projection"
+    data = []; N = len(ct_series.angles)
+    prefix = "Read ct series"
     for i,angle in enumerate(ct_series.angles):
         # if i%3 != 0: continue
-        theta.append(angle)
         data1 = ct_series.getImageFile(angle).getData()
         # data[data<=0] = 1.
-        data1 = data1[50:-50, 50:-50]
+        data1 = data1[100:-100, 100:-100]
         data.append(data1)
         console_out.write("\r%s: %2.0f%%" % (prefix, (i+1)*100./N))
         console_out.flush()
         continue
     console_out.write("\n"); console_out.flush()
-    Y,X = data[0].shape
-    console_out.write("tomopy.normalize_bg"); console_out.flush()
-    console_out.write("\n"); console_out.flush()
-    proj = tomopy.normalize_bg(data)
+    # project
+    console_out.write("tomopy.normalize_bg..."); console_out.flush()
+    proj = tomopy.normalize_bg(data) # , ncore=ncore)
+    console_out.write("done\n"); console_out.flush()
     del data
-    theta = np.array(theta, dtype=float)
-    theta *= np.pi/180.
+    # remove negative intensities
+    proj[proj<0] = 0
+    # output
+    console_out.write("tomopy.write_tiff_stack..."); console_out.flush()
+    tomopy.write_tiff_stack(
+        proj, fname=os.path.join(outdir, 'proj'), axis=1, overwrite=False)
+    console_out.write("done\n"); console_out.flush()
+    return
+
+
+def reconstruct(proj_fn_template, layers, theta, console_out, outdir="recon"):
+    """proj_fn_template: projection filename tempate
+    layers: list of integers for layers to be reconstructed
+    theta: sample rotation angle in radian
+    """
+    import pdb; pdb.set_trace()
+    import tomopy
+    proj = tomopy.read_tiff_stack(proj_fn_template % layers[0], layers, digit=5)
+    proj = np.swapaxes(proj, 0,1)
+    Y,X = proj[0].shape
     # reconstruct
-    console_out.write("tomopy.reconstruct"); console_out.flush()
-    console_out.write("\n"); console_out.flush()
+    console_out.write("tomopy.reconstruct..."); console_out.flush()
     rec = tomopy.recon(
-        proj[:, 923:924, :], 
+        proj,
         theta=theta, center=X/2.,
-        algorithm='gridrec', emission=False
+        algorithm='gridrec', emission=False,
     )
-    tomopy.write_tiff_stack(rec, fname='recon', axis=0, overwrite=True)
+    console_out.write("done\n"); console_out.flush()
+    # output
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+    console_out.write("tomopy.write_tiff_stack..."); console_out.flush()
+    tomopy.write_tiff_stack(
+        rec, fname=os.path.join(outdir, 'recon'), axis=0, overwrite=True)
+    console_out.write("done\n"); console_out.flush()
     return
 
 
@@ -171,7 +200,12 @@ def main():
     # tilt = -1.86
     # check_tilt(tilt, normalized_ct_series)
     apply_tilt(tilt, normalized_ct_series, sys.stdout)
-    reconstruct(tiltcorrected_ct_series, sys.stdout)
+    project(tiltcorrected_ct_series, "proj", sys.stdout)
+    theta = np.array(ct_series.angles, dtype=float)
+    theta *= np.pi/180.
+    proj_fn_template = "proj/proj_%05i.tiff"
+    layers = range(700,710)
+    reconstruct(proj_fn_template, layers, theta, sys.stdout, outdir="recon")
     return
 
 
