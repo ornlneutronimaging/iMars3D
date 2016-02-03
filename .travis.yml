@@ -27,7 +27,8 @@ install:
   - export GIT_FULL_HASH=`git rev-parse HEAD`
   - conda config --set always_yes true
   - conda update conda
-  - conda create -n testenv pip nose python=$TRAVIS_PYTHON_VERSION numpy astropy
+  - conda create -n testenv pip nose python=$TRAVIS_PYTHON_VERSION
+  - conda install -n testenv numpy astropy pyyaml
 #  - conda install -n testenv -c scikit-xray xraylib lmfit=0.8.3 netcdf4 # install from scikit-xray channel
   - source activate testenv
   - pip install progressbar2
