@@ -1,9 +1,10 @@
 # ivenus.tilt
 
 import os, numpy as np
-
+import logging
 
 def compute(ct_series, workdir):
+    logger = logging.getLogger("ivenus.tilt")
     tilt_out = os.path.join(workdir, "tilt.out")
     # cached value?
     if os.path.exists(tilt_out):
@@ -15,12 +16,12 @@ def compute(ct_series, workdir):
     pairs = _find180DegImgPairs(ct_series.identifiers)
     tilts = []
     for i, (a0, a180) in enumerate(pairs):
-        print a0, a180
+        logger.info("working on pair %s, %s" % (a0, a180))
         pc = phasecorrelation.PhaseCorrelation(
             logging_dir=os.path.join(workdir, "log.tilt.%s"%i))
         tilt = pc(img(a0), img(a180))
         tilts.append(tilt)
-        print tilt
+        logger.info("calculated tilt: %s" % tilt)
         continue
     tilt = np.average(tilts)
     # save to cache
