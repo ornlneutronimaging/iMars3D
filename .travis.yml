@@ -30,6 +30,7 @@ install:
   - conda create -n testenv pip nose python=$TRAVIS_PYTHON_VERSION numpy astropy
 #  - conda install -n testenv -c scikit-xray xraylib lmfit=0.8.3 netcdf4 # install from scikit-xray channel
   - source activate testenv
+  - pip install progressbar2
   - python setup.py install
 #  - pip install coveralls
 #  - pip install codecov
