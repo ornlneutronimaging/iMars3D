@@ -9,16 +9,23 @@ class AbstractImageSeries:
         """
         self.mode = mode
         self.identifiers = identifiers
+        self.nImages = len(identifiers)
         return
+
+
+    def iterImages(self):
+        for identifier in self.identifiers:
+            yield self.getImage(identifier)
+        return
+
     
-    
-    def getImage(self, index):
+    def getImage(self, identifier):
         "return an image instance"
         raise NotImplementedError
     
         
-    def getData(self, index):
+    def getData(self, identifier):
         "return a numpy array of the image data"
-        img = self.getImage(index)
+        img = self.getImage(identifier)
         return img.getData()
 
