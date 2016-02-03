@@ -9,30 +9,30 @@ class ImageFileSeries(base):
     """
     
     
-    def __init__(self, filename_template, indices, decimal_mark_replacement="_", mode="r"):
+    def __init__(self, filename_template, identifiers, decimal_mark_replacement="_", mode="r"):
         """
         filename_template: examples 2014*_CT*_%07.3f_*.fits
-        indices: a list of indices for images
+        identifiers: a list of identifiers for images
         decimal_mark_replacement: in filenames, the "." decimal mark usually is replaced by a different symbol, often the underscore.
+        mode: r or w
         """
         if mode not in 'rw':
             raise ValueError("Invalid mode: %s" % mode)
-        base.__init__(self, mode)
+        base.__init__(self, mode, identifiers)
         
         self.filename_template = filename_template
-        self.indices = indices
         self.decimal_mark_replacement = decimal_mark_replacement
         return
 
     
-    def getImage(self, index):
+    def getImage(self, identifier):
         from .ImageFile import ImageFile
-        p = self.getFilename(index, **kwds)
+        p = self.getFilename(identifier)
         return ImageFile(p)
     
         
-    def getFilename(self, index):
-        path_pattern = self.filename_template % (index,)
+    def getFilename(self, identifier):
+        path_pattern = self.filename_template % (identifier,)
         dir = os.path.dirname(path_pattern)
         basename = os.path.basename(path_pattern)
         base, ext = os.path.splitext(basename)
@@ -53,3 +53,4 @@ class ImageFileSeries(base):
         path = paths[0]
         return path
     
+
