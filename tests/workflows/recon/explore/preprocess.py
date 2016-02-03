@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Workflow
+Desired Workflow. this script only have preprocessing steps: normalize, tilt correction, sinograms
 * crop images 
 * filter spots 
 * normalize
@@ -13,12 +13,12 @@ Workflow
 """
 
 import os, glob, numpy as np, sys
-from ivenus.io import ImageSeries, ImageFile
+from ivenus.io import ImageFileSeries, ImageFile
 
-datadir = "../iVenus_large_dataset/reconstruction/turbine"
-ct_series = ImageSeries(
+datadir = "../../../iVenus_large_dataset/reconstruction/turbine"
+ct_series = ImageFileSeries(
     os.path.join(datadir, "*CT*_%.3f_*.fits"),
-    angles = np.arange(0, 182, .85),
+    identifiers = np.arange(0, 182, .85),
     )
 df_images = [
     ImageFile(p) 
@@ -61,8 +61,8 @@ def normalize(ct_series, df_images, ob_images, output_template, console_out):
         ob = np.load(ob_output)
     # normalize
     prefix = "Normalize:"
-    N = len(ct_series.angles)
-    for i, angle in enumerate(ct_series.angles):
+    N = len(ct_series.identifiers)
+    for i, angle in enumerate(ct_series.identifiers):
         fn = output_template % angle
         # skip over existing results
         if os.path.exists(fn): continue
@@ -78,9 +78,9 @@ def normalize(ct_series, df_images, ob_images, output_template, console_out):
     return
 
 
-normalized_ct_series = ImageSeries(
+normalized_ct_series = ImageFileSeries(
     os.path.join("normalized*_%7.3f.npy"),
-    angles = np.arange(0, 182, .85),
+    identifiers = np.arange(0, 182, .85),
     decimal_mark_replacement = ".",
     )
 def compute_tilt(normalized_ct_series):
@@ -88,7 +88,7 @@ def compute_tilt(normalized_ct_series):
     if os.path.exists(tilt_out):
         return float(open(tilt_out).read())
     from ivenus.tilt import phasecorrelation
-    img = lambda angle: normalized_ct_series.getImageFile(angle)
+    img = lambda angle: normalized_ct_series.getImage(angle)
     tilts = []
     for i in range(3):
         pc = phasecorrelation.PhaseCorrelation(logging_dir="log.tilt.%s"%i)
@@ -99,23 +99,23 @@ def compute_tilt(normalized_ct_series):
     open(tilt_out, 'wt').write(str(tilt))
     return tilt
 def check_tilt(tilt, normalized_ct_series):
-    img = lambda angle: normalized_ct_series.getImageFile(angle)
+    img = lambda angle: normalized_ct_series.getImage(angle)
     from ivenus.tilt import check
     check(tilt, img(0), img(180.20))
     return
-tiltcorrected_ct_series = ImageSeries(
+tiltcorrected_ct_series = ImageFileSeries(
     os.path.join("tiltcorrected_%7.3f.npy"),
-    angles = np.arange(0, 182, .85),
+    identifiers = np.arange(0, 182, .85),
     decimal_mark_replacement = ".",
+    mode = 'w',
     )
 def apply_tilt(tilt, normalized_ct_series, console_out):
-    inputimg = lambda angle: normalized_ct_series.getImageFile(angle)
-    outputimg = lambda angle: tiltcorrected_ct_series.getImageFile(
-        angle, check_if_exists=False)
+    inputimg = lambda angle: normalized_ct_series.getImage(angle)
+    outputimg = lambda angle: tiltcorrected_ct_series.getImage(angle)
     from ivenus.tilt import apply
     prefix = "Apply tilt"
-    N = len(normalized_ct_series.angles)
-    for i,angle in enumerate(normalized_ct_series.angles):
+    N = len(normalized_ct_series.identifiers)
+    for i,angle in enumerate(normalized_ct_series.identifiers):
         outimg = outputimg(angle)
         # skip over existing result
         if os.path.exists(outimg.path): continue
@@ -135,11 +135,11 @@ def project(ct_series, outdir, console_out):
         console_out.write(msg)
         return
     import tomopy
-    data = []; N = len(ct_series.angles)
+    data = []; N = len(ct_series.identifiers)
     prefix = "Read ct series"
-    for i,angle in enumerate(ct_series.angles):
+    for i,angle in enumerate(ct_series.identifiers):
         # if i%3 != 0: continue
-        data1 = ct_series.getImageFile(angle).getData()
+        data1 = ct_series.getImage(angle).getData()
         # data[data<=0] = 1.
         data1 = data1[100:-100, 100:-100]
         data.append(data1)
@@ -201,11 +201,11 @@ def main():
     # check_tilt(tilt, normalized_ct_series)
     apply_tilt(tilt, normalized_ct_series, sys.stdout)
     project(tiltcorrected_ct_series, "proj", sys.stdout)
-    theta = np.array(ct_series.angles, dtype=float)
-    theta *= np.pi/180.
-    proj_fn_template = "proj/proj_%05i.tiff"
-    layers = range(150,1330, 10)
-    reconstruct(proj_fn_template, layers, theta, sys.stdout, outdir="recon")
+    # theta = np.array(ct_series.identifiers, dtype=float)
+    # theta *= np.pi/180.
+    # proj_fn_template = "proj/proj_%05i.tiff"
+    # layers = range(150,1330, 10)
+    # reconstruct(proj_fn_template, layers, theta, sys.stdout, outdir="recon")
     return
 
 

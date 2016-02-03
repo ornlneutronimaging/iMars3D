@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
 import os, sys, numpy as np
-from ivenus.io import ImageSeries
-ct_series = ImageSeries(
+from ivenus.io import ImageFileSeries
+ct_series = ImageFileSeries(
     os.path.join("tiltcorrected_%7.3f.npy"),
-    angles = np.arange(0, 182, .85),
+    identifiers = np.arange(0, 182, .85),
     decimal_mark_replacement = ".",
     )
 
@@ -49,7 +49,7 @@ def main():
     layers = alllayers[start:stop]
     # print len(layers)
     
-    theta = np.array(ct_series.angles, dtype=float)
+    theta = np.array(ct_series.identifiers, dtype=float)
     theta *= np.pi/180.
     proj_fn_template = "proj/proj_%05i.tiff"
     step = 10
