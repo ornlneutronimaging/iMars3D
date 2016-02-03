@@ -9,7 +9,7 @@ class ImageFileSeries(base):
     """
     
     
-    def __init__(self, filename_template, identifiers, decimal_mark_replacement="_", mode="r"):
+    def __init__(self, filename_template, identifiers, decimal_mark_replacement="_", mode="r", name=None):
         """
         filename_template: examples 2014*_CT*_%07.3f_*.fits
         identifiers: a list of identifiers for images
@@ -18,7 +18,7 @@ class ImageFileSeries(base):
         """
         if mode not in 'rw':
             raise ValueError("Invalid mode: %s" % mode)
-        base.__init__(self, mode, identifiers)
+        base.__init__(self, mode=mode, identifiers=identifiers, name=name)
         
         self.filename_template = filename_template
         self.decimal_mark_replacement = decimal_mark_replacement
@@ -54,7 +54,7 @@ class ImageFileSeries(base):
         return path
     
 
-def imageCollection(glob_pattern):
+def imageCollection(glob_pattern, name=None):
     """create an ImageFileSeries instance from a collection of image files
     
     This is intended for a bunch of images that cannot otherwise be identified.
@@ -67,4 +67,4 @@ def imageCollection(glob_pattern):
     """
     import glob
     files = glob.glob(glob_pattern)
-    return ImageFileSeries("%s", files, decimal_mark_replacement=".", mode='r')
+    return ImageFileSeries("%s", files, decimal_mark_replacement=".", mode='r', name=name)

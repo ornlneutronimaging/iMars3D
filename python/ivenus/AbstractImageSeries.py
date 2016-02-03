@@ -3,13 +3,14 @@
 class AbstractImageSeries:
 
     
-    def __init__(self, mode=None, identifiers=None):
+    def __init__(self, mode=None, identifiers=None, name=None):
         """mode: read (r) or write (w)
         identifiers: a list of identifiers, each identifies one image in the series
         """
         self.mode = mode
         self.identifiers = identifiers
         self.nImages = len(identifiers)
+        self.name = name
         return
 
 

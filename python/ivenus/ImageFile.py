@@ -35,11 +35,12 @@ class AbstractImageFileIO:
 
 
 class FitsImageIO(AbstractImageFileIO):
+
+    from astropy.io import fits
     
     @classmethod
     def load(cls, path):
-        from astropy.io import fits
-        f = fits.open(path)
+        f = cls.fits.open(path)
         d = f[0].data
         f.close()
         dtype = cls._getDataType(path)

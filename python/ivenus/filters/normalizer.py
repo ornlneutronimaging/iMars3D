@@ -2,19 +2,31 @@
 # -*- coding: utf-8 -*-
 
 
-def average(image_collection, prefix, console_out):
+import progressbar, numpy as np
+
+def average(image_collection):
     N = image_collection.nImages
     assert N
     res = None
+    prefix = "Averaging %s:" % image_collection.name or ""
+    bar = progressbar.ProgressBar(
+        widgets=[
+            prefix,
+            progressbar.Percentage(),
+            progressbar.Bar(),
+            ' [', progressbar.ETA(), '] ',
+        ],
+        max_value = N-1
+    )
     for i, im in enumerate(image_collection.iterImages()):
         data = np.array(im.getData(), dtype=float)
         if res is None:
             res = data
         else:
             res += data
-        console_out.write("\r%s: %2.0f%%" % (prefix, (i+1)*100./N))
-        console_out.flush()
+        bar.update(i)
         continue
+    print
     return res/N
 
 
