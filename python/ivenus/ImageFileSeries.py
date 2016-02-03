@@ -54,3 +54,17 @@ class ImageFileSeries(base):
         return path
     
 
+def imageCollection(glob_pattern):
+    """create an ImageFileSeries instance from a collection of image files
+    
+    This is intended for a bunch of images that cannot otherwise be identified.
+    This is useful for, for example, dark field images and open beam images,
+    which really do not need individual access but rather a way to iterate
+    over all images in the collection.
+
+    * glob_pattern: glob pattern for image filenames
+
+    """
+    import glob
+    files = glob.glob(glob_pattern)
+    return ImageFileSeries("%s", files, decimal_mark_replacement=".", mode='r')
