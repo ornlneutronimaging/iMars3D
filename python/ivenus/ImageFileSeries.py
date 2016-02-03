@@ -1,7 +1,7 @@
 import os, sys, numpy as np, glob
 
 
-from AbstractImageSeries import AbstractImageSeries as base
+from .AbstractImageSeries import AbstractImageSeries as base
 class ImageFileSeries(base):
 
     """Represent a series of image files. 
