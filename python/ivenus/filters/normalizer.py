@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
-import progressbar, numpy as np
+import progressbar, numpy as np, os
 
 def average(image_collection):
     N = image_collection.nImages
@@ -30,38 +30,51 @@ def average(image_collection):
     return res/N
 
 
-def normalize(ct_series, df_images, ob_images, output_template, console_out):
+def normalize(ct_series, df_images, ob_images, workdir, output_img_series):
+    """
+    * ct_series: an image series for ct scan
+    * df_images: dark field image collection
+    * ob_images: open beam image collection
+    * workdir: path where intermediate data files will be written into
+    """
     # compute dark field and open beam
-    df_output = "df.npy"
+    if not os.path.exists(workdir):
+        os.makedirs(workdir)
+    # dark field
+    df_output = os.path.join(workdir, "df.npy")
     if not os.path.exists(df_output):
-        df = average(df_images, "Dark field:", console_out)
-        console_out.write("\n")
+        df = average(df_images)
         np.save(df_output, df)
     else:
         df = np.load(df_output)
-    ob_output = "ob.npy"
+    # open beam
+    ob_output = os.path.join(workdir, "ob.npy")
     if not os.path.exists(ob_output):
-        ob = average(ob_images, "Open beam:", console_out)
-        console_out.write("\n")
+        ob = average(ob_images)
         np.save(ob_output, ob)
     else:
         ob = np.load(ob_output)
     # normalize
-    prefix = "Normalize:"
-    N = len(ct_series.identifiers)
+    prefix = "Normalizing %s:" % ct_series.name or ""
+    N = ct_series.nImages
+    bar = progressbar.ProgressBar(
+        widgets=[
+            prefix,
+            progressbar.Percentage(),
+            progressbar.Bar(),
+            ' [', progressbar.ETA(), '] ',
+        ],
+        max_value = N-1
+    )
     for i, angle in enumerate(ct_series.identifiers):
-        fn = output_template % angle
         # skip over existing results
-        if os.path.exists(fn): continue
-        data = np.array(ct_series.getData(angle), dtype=float)
-        data = (data-df)/ob
-        f = ImageFile(fn)
-        f.data = data
-        f.save()
-        console_out.write("\r%s: %2.0f%%" % (prefix, (i+1)*100./N))
-        console_out.flush()
+        if not output_img_series.exists(angle):
+            data = np.array(ct_series.getData(angle), dtype=float)
+            data = (data-df)/ob
+            output_img_series.putImage(angle, data)
+        bar.update(i)
         continue
-    console_out.write("\n")
+    print
     return
 
 # End of file

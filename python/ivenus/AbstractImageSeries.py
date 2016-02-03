@@ -23,10 +23,19 @@ class AbstractImageSeries:
     def getImage(self, identifier):
         "return an image instance"
         raise NotImplementedError
-    
-        
+
+
     def getData(self, identifier):
         "return a numpy array of the image data"
         img = self.getImage(identifier)
         return img.getData()
 
+
+    def exists(self, identifier):
+        "check whether an image exists"
+        raise NotImplementedError
+    
+        
+    def putImage(self, identifier, data):
+        "write image data for one image identified by the identifier"
+        raise NotImplementedError

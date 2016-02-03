@@ -1,4 +1,5 @@
 import os, sys, numpy as np, glob
+from .ImageFile import ImageFile
 
 
 from .AbstractImageSeries import AbstractImageSeries as base
@@ -26,19 +27,12 @@ class ImageFileSeries(base):
 
     
     def getImage(self, identifier):
-        from .ImageFile import ImageFile
         p = self.getFilename(identifier)
         return ImageFile(p)
     
         
     def getFilename(self, identifier):
-        path_pattern = self.filename_template % (identifier,)
-        dir = os.path.dirname(path_pattern)
-        basename = os.path.basename(path_pattern)
-        base, ext = os.path.splitext(basename)
-        # bad code
-        path_pattern = os.path.join(
-            dir, base.replace(".", self.decimal_mark_replacement) + ext)
+        path_pattern = self._getPathpattern(identifier)
         # don't need to check if file exists if we are creating it
         if self.mode == 'w':
             return path_pattern
@@ -52,6 +46,32 @@ class ImageFileSeries(base):
     
         path = paths[0]
         return path
+    
+    
+    def exists(self, identifier):
+        assert self.mode == 'w'
+        p = self._getPathpattern(identifier)
+        return os.path.exists(p)
+
+
+    def putImage(self, identifier, data):
+        p = self._getPathpattern(identifier)
+        img = ImageFile(p)
+        img.data = data
+        img.save()
+        return
+
+    
+    def _getPathpattern(self, identifier):
+        path_pattern = self.filename_template % (identifier,)
+        dir = os.path.dirname(path_pattern)
+        basename = os.path.basename(path_pattern)
+        base, ext = os.path.splitext(basename)
+        # bad code
+        path_pattern = os.path.join(
+            dir, base.replace(".", self.decimal_mark_replacement) + ext)
+        return path_pattern
+    
     
 
 def imageCollection(glob_pattern, name=None):
