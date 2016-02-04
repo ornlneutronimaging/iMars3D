@@ -15,6 +15,8 @@ class ImageFile(AbstractImage):
         
         
     def save(self):
+        dir = os.path.dirname(self.path)
+        if dir and not os.path.exists(dir): os.makedirs(dir)
         io = self._getIO()
         io.dump(self.data, self.path)
         return

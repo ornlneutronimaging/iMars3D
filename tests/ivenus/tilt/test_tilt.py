@@ -15,7 +15,7 @@ def test_tilt():
         identifiers = angles,
         name = "CT",
     )
-    print(tilt.compute(ct_series, "work"))
+    print(tilt.compute(ct_series, "_tmp/test_tilt/work"))
     return
     
 

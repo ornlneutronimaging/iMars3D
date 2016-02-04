@@ -31,10 +31,10 @@ def test_normalize():
     )
     # output
     normalized_ct = io.ImageFileSeries(
-        "normalized_%.3f.npy", identifiers=angles, 
+        "_tmp/test_normalizer/out/normalized_%.3f.npy", identifiers=angles, 
         decimal_mark_replacement=".", mode="w", name="Normalized"
         )
-    normalizer.normalize(ct_series, dfs, obs, "work", normalized_ct)
+    normalizer.normalize(ct_series, dfs, obs, "_tmp/test_normalizer/work", normalized_ct)
     return
     
 

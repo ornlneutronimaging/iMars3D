@@ -2,9 +2,20 @@
 
 class AbstractImage:
 
-    # data should be a property of an image instance.
-    # set this to a npy array before the save method is called
-    data = None 
+    @property
+    def data(self):
+        if not hasattr(self, "_data"):
+            self._data = self.getData()
+        return self._data
+
+    @data.setter
+    def data(self, v):
+        self._data = data
+
+    @data.deleter
+    def data(self):
+        del self._data
+
 
     def getData(self):
         raise NotImplementedError

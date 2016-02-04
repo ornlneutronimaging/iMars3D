@@ -6,6 +6,8 @@ import os, numpy as np, ivenus
 
 dir = os.path.dirname(__file__)
 datadir = os.path.join(dir, "..", "iVenus_data_set", "turbine")
+workdir = "_tmp/test_components/work"
+outdir = "_tmp/test_components/out"
 # dark field
 pattern = os.path.join(datadir, "*DF*.fits")
 dfs = ivenus.io.imageCollection(pattern, name="Dark Field")
@@ -19,23 +21,23 @@ ct_series = ivenus.io.ImageFileSeries(
     identifiers = angles,
     name = "CT",
 )
+# normalized ct
+normalized_ct = ivenus.io.ImageFileSeries(
+    os.path.join(outdir, "normalized_%.3f.npy"), identifiers=angles, 
+    decimal_mark_replacement=".",
+    name="Normalized", mode="w"
+)
 # tilt corrected
 tiltcorrected_series = ivenus.io.ImageFileSeries(
-    "tiltcorrected_%.3f.npy",
+    os.path.join(outdir, "tiltcorrected_%.3f.npy"),
     identifiers = angles,
-    name = "Tilt corrected CT",
-    mode = 'w',
+    name = "Tilt corrected CT", mode = 'w',
 )
-
+#
 
 def test_normalization():
     # output
-    normalized_ct = ivenus.io.ImageFileSeries(
-        "normalized_%.3f.npy", identifiers=angles, 
-        decimal_mark_replacement=".", mode="w", name="Normalized"
-        )
-    #
-    normalization = ivenus.components.Normalization(workdir="work")
+    normalization = ivenus.components.Normalization(workdir=workdir)
     normalization(ct_series, dfs, obs, normalized_ct)
     return
 
@@ -49,7 +51,7 @@ def test_tiltcalc():
         name = "CT",
     )
     #
-    tiltcalc = ivenus.components.TiltCalculation(workdir="work")
+    tiltcalc = ivenus.components.TiltCalculation(workdir=workdir)
     tiltcalc(ct_series)
     return
 
@@ -61,8 +63,8 @@ def test_tiltcorr():
 
 
 def main():
-    test_normalization()
-    test_tiltcalc()
+    # test_normalization()
+    # test_tiltcalc()
     test_tiltcorr()
     return
 

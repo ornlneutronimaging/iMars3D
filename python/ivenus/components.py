@@ -41,8 +41,13 @@ class TiltCorrection(Component):
         return
     
     def __call__(self, in_img_series, out_img_series):
+        tilt = self.tilt
         inputimg = lambda identifier: in_img_series.getImage(identifier)
         outputimg = lambda identifier: out_img_series.getImage(identifier)
+        # compute border pixels
+        inimgsize = max(inputimg(in_img_series.identifiers[0]).data.shape)
+        border_pixels = _calc_border_pixels(tilt, inimgsize)
+        # 
         prefix = "Applying tilt to %r" % (in_img_series.name or "",)
         N = in_img_series.nImages
         bar = progressbar.ProgressBar(
@@ -59,12 +64,46 @@ class TiltCorrection(Component):
             # skip over existing result
             if out_img_series.exists(identifier): continue
             # apply tilt
-            apply(self.tilt, inputimg(identifier), outputimg(identifier))
+            out = outputimg(identifier)
+            apply(tilt, inputimg(identifier), out, save=False)
+            # remove the border
+            out.data = out.data[border_pixels:-border_pixels, border_pixels:-border_pixels]
+            # save to disk
+            out.save()
             # progress report
             bar.update(i)
             continue
         print
         return
+
+
+def _calc_border_pixels(angle, size):
+    """angle is in degrees
+    
+    Whe the image is rotated, scipy will return a larger image that 
+    has borders around the original image. 
+    4 triangles show about on the edge with zeros in them.
+    since the tilt angle is always small, we can simply take 
+    a square cut at the center of that image.
+
+    so there are three squares:
+    * original square A from the input image
+    * the sqaure returned by scipy, B. it is larger than A, and it is at "angle"
+      with respect to A
+    * sqaure C to be the output image. it is at "angle" with respect to
+      A, and parallel to B. it is the smallest.
+
+    the sizes have the following relations
+    B = A(cos theta + sin theta)
+    A = C(cos theta + sin theta)
+    """
+    from math import pi, sin, cos
+    t = abs(angle * pi / 180)
+    factor = cos(t) + sin(t)
+    B = size * factor
+    C = size / factor
+    border_pixels = (B-C)/2 + 1
+    return int(border_pixels)
 
 
 # End of file

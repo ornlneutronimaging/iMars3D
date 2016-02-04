@@ -38,7 +38,7 @@ def check(tilt, img0, img180):
     return
 
 
-def apply(tilt, img, outimg):
+def apply(tilt, img, outimg, save=True):
     """apply tilt to the given image
     """
     from scipy import ndimage
@@ -47,7 +47,8 @@ def apply(tilt, img, outimg):
     data = img.getData()
     data = ndimage.rotate(data, -tilt)
     outimg.data = data
-    outimg.save()
+    if save:
+        outimg.save()
     return
 
 
