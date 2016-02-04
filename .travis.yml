@@ -39,7 +39,7 @@ install:
 script:
    - python tests/getdata.py
    - python tests/ivenus/signon.py
-   - nosetests --exe
+   - py.test
 
 notifications:
   email:
