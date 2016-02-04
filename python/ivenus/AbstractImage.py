@@ -9,7 +9,7 @@ class AbstractImage:
         return self._data
 
     @data.setter
-    def data(self, v):
+    def data(self, data):
         self._data = data
 
     @data.deleter
