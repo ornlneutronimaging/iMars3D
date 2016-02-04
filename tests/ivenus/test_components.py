@@ -33,7 +33,12 @@ tiltcorrected_series = ivenus.io.ImageFileSeries(
     identifiers = angles,
     name = "Tilt corrected CT", mode = 'w',
 )
-#
+# sinograms
+sinograms = ivenus.io.ImageFileSeries(
+    os.path.join(outdir, "sinogram_%i.npy"),
+    name = "Sinogram", mode = 'w',
+)
+
 
 def test_normalization():
     # output
@@ -62,10 +67,17 @@ def test_tiltcorr():
     return
 
 
+def test_projection():
+    proj = ivenus.components.Projection()
+    proj(ct_series, sinograms)
+    return
+
+
 def main():
     # test_normalization()
     # test_tiltcalc()
-    test_tiltcorr()
+    # test_tiltcorr()
+    test_projection()
     return
 
 

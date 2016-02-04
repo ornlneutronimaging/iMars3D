@@ -10,7 +10,8 @@ class ImageFileSeries(base):
     """
     
     
-    def __init__(self, filename_template, identifiers, decimal_mark_replacement="_", mode="r", name=None):
+    def __init__(self, filename_template, 
+                 identifiers=None, decimal_mark_replacement="_", mode="r", name=None):
         """
         filename_template: examples 2014*_CT*_%07.3f_*.fits
         identifiers: a list of identifiers for images
@@ -19,6 +20,8 @@ class ImageFileSeries(base):
         """
         if mode not in 'rw':
             raise ValueError("Invalid mode: %s" % mode)
+        if identifiers is None:
+            identifiers = []
         base.__init__(self, mode=mode, identifiers=identifiers, name=name)
         
         self.filename_template = filename_template

@@ -3,25 +3,9 @@
 
 import progressbar
 
+from .AbstractComponent import AbstractComponent
 
-class Component:
-    pass
-
-
-class Normalization(Component):
-    
-    def __init__(self, workdir):
-        self.workdir = workdir
-        return
-    
-    def __call__(self, ct_series, df_images, ob_images, output_img_series):
-        workdir = self.workdir
-        from .filters.normalizer import normalize
-        normalize(ct_series, df_images, ob_images, workdir, output_img_series)
-        return
-
-
-class TiltCalculation(Component):
+class TiltCalculation(AbstractComponent):
     
     def __init__(self, workdir):
         self.workdir = workdir
@@ -33,7 +17,7 @@ class TiltCalculation(Component):
         return compute(ct_series, workdir)
 
 
-class TiltCorrection(Component):
+class TiltCorrection(AbstractComponent):
     
     def __init__(self, tilt):
         "tilt: tilt angle in degrees"

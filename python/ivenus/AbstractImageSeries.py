@@ -12,6 +12,10 @@ class AbstractImageSeries:
         self.nImages = len(identifiers)
         self.name = name
         return
+        
+        
+    def __getitem__(self, i):
+        return self.getImage(self.identifiers[i])
 
 
     def iterImages(self):
