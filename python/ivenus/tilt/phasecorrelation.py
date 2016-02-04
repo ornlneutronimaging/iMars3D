@@ -4,7 +4,7 @@ import os, numpy as np
 from scipy import ndimage
 import pylab, matplotlib as mpl
 from matplotlib import pyplot as plt
-from smooth import smooth
+from .smooth import smooth
 from scipy.optimize import curve_fit
 
 class PhaseCorrelation:
