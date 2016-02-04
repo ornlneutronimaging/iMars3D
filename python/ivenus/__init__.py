@@ -2,6 +2,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+import matplotlib as mpl; mpl.use("Agg")
+
 import yaml, os
 conf_path = "ivenus.conf"
 config = dict()
