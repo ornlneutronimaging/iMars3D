@@ -23,3 +23,10 @@ class AbstractImage:
         
     def save(self):
         raise NotImplementedError
+
+        
+    def plot(self):
+        """plot the data"""
+        import pylab
+        pylab.imshow(self.data)
+        return
