@@ -13,7 +13,7 @@ class Normalization(AbstractComponent):
     
     def __call__(self, ct_series, df_images, ob_images, output_img_series):
         workdir = self.workdir
-        from .filters.normalizer import normalize
+        from ..filters.normalizer import normalize
         normalize(ct_series, df_images, ob_images, workdir, output_img_series)
         return
 
