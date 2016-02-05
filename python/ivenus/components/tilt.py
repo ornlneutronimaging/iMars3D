@@ -13,7 +13,7 @@ class TiltCalculation(AbstractComponent):
     
     def __call__(self, ct_series):
         workdir = self.workdir
-        from .tilt import compute
+        from ..tilt import compute
         return compute(ct_series, workdir)
 
 
@@ -43,7 +43,7 @@ class TiltCorrection(AbstractComponent):
             ],
             max_value = N-1
         )
-        from .tilt import apply
+        from ..tilt import apply
         for i,identifier in enumerate(in_img_series.identifiers):
             # skip over existing result
             if out_img_series.exists(identifier): continue
