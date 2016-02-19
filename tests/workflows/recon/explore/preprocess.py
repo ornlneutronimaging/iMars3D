@@ -13,9 +13,9 @@ Desired Workflow. this script only have preprocessing steps: normalize, tilt cor
 """
 
 import os, glob, numpy as np, sys
-from ivenus.io import ImageFileSeries, ImageFile
+from imars3d.io import ImageFileSeries, ImageFile
 
-datadir = "../../../iVenus_large_dataset/reconstruction/turbine"
+datadir = "../../../iMars3D_large_dataset/reconstruction/turbine"
 ct_series = ImageFileSeries(
     os.path.join(datadir, "*CT*_%.3f_*.fits"),
     identifiers = np.arange(0, 182, .85),
@@ -87,7 +87,7 @@ def compute_tilt(normalized_ct_series):
     tilt_out = "tilt.out"
     if os.path.exists(tilt_out):
         return float(open(tilt_out).read())
-    from ivenus.tilt import phasecorrelation
+    from imars3d.tilt import phasecorrelation
     img = lambda angle: normalized_ct_series.getImage(angle)
     tilts = []
     for i in range(3):
@@ -100,7 +100,7 @@ def compute_tilt(normalized_ct_series):
     return tilt
 def check_tilt(tilt, normalized_ct_series):
     img = lambda angle: normalized_ct_series.getImage(angle)
-    from ivenus.tilt import check
+    from imars3d.tilt import check
     check(tilt, img(0), img(180.20))
     return
 tiltcorrected_ct_series = ImageFileSeries(
@@ -112,7 +112,7 @@ tiltcorrected_ct_series = ImageFileSeries(
 def apply_tilt(tilt, normalized_ct_series, console_out):
     inputimg = lambda angle: normalized_ct_series.getImage(angle)
     outputimg = lambda angle: tiltcorrected_ct_series.getImage(angle)
-    from ivenus.tilt import apply
+    from imars3d.tilt import apply
     prefix = "Apply tilt"
     N = len(normalized_ct_series.identifiers)
     for i,angle in enumerate(normalized_ct_series.identifiers):

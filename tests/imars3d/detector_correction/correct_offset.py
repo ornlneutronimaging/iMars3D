@@ -2,11 +2,11 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
-from ivenus import config, io
-from ivenus import detector_correction
+from imars3d import config, io
+from imars3d import detector_correction
 
 
-file = '/Users/j35/Dropbox (ORNL)/iVenus_data_set/Low_res_Gdmask_r0000.fits'
+file = '/Users/j35/Dropbox (ORNL)/iMars3D_data_set/Low_res_Gdmask_r0000.fits'
 #print('Does file exist: %s' %os.path.isfile(file))
 
 # retrieve image

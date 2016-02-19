@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
 import numpy as np, os
-from ivenus import filters, io
+from imars3d import filters, io
 
 def test(interactive=False):
     # test data
     dir = os.path.dirname(__file__)
-    path = os.path.join(dir, "..", "..", "iVenus_data_set", "20120618_TURBINECT_0180_46_750_0055.fits")
+    path = os.path.join(dir, "..", "..", "iMars3D_data_set", "20120618_TURBINECT_0180_46_750_0055.fits")
     img = io.ImageFile(path).getData()
 
     # filter

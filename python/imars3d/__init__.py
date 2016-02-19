@@ -1,11 +1,11 @@
-# iVenus python package
+# iMars3D python package
 
 from __future__ import absolute_import, division, print_function
 
 import matplotlib as mpl; mpl.use("Agg")
 
 import yaml, os
-conf_path = "ivenus.conf"
+conf_path = "imars3d.conf"
 config = dict()
 if os.path.exists(conf_path):
     config = yaml.load(open(conf_path))

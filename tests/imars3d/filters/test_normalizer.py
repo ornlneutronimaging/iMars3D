@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import os, numpy as np
-from ivenus import io
-from ivenus.filters import normalizer
+from imars3d import io
+from imars3d.filters import normalizer
 
 def test_average():
     dir = os.path.dirname(__file__)
-    pattern = os.path.join(dir, "..", "..", "iVenus_data_set", "turbine", "*DF*.fits")
+    pattern = os.path.join(dir, "..", "..", "iMars3D_data_set", "turbine", "*DF*.fits")
     ic = io.imageCollection(pattern, name="Dark Field")
     a = normalizer.average(ic)
     return
@@ -15,7 +15,7 @@ def test_average():
 
 def test_normalize():
     dir = os.path.dirname(__file__)
-    datadir = os.path.join(dir, "..", "..", "iVenus_data_set", "turbine")
+    datadir = os.path.join(dir, "..", "..", "iMars3D_data_set", "turbine")
     # dark field
     pattern = os.path.join(datadir, "*DF*.fits")
     dfs = io.imageCollection(pattern, name="Dark Field")

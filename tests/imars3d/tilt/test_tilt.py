@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import os, numpy as np
-from ivenus import io
-from ivenus import tilt
+from imars3d import io
+from imars3d import tilt
 
 def test_tilt():
     dir = os.path.dirname(__file__)
-    datadir = os.path.join(dir, "..", "..", "iVenus_data_set", "turbine")
+    datadir = os.path.join(dir, "..", "..", "iMars3D_data_set", "turbine")
     # ct
     angles = np.arange(0, 181, .85)
     ct_series = io.ImageFileSeries(

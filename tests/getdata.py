@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-# this script should be run root of iVenus pkg
+# this script should be run root of iMars3D pkg
 
-path = "tests/iVenus_data_set"
+path = "tests/iMars3D_data_set"
 
 import os
 if not os.path.exists(path):
