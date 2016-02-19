@@ -1,10 +1,10 @@
-# ivenus.tilt
+# imars3d.tilt
 
 import os, numpy as np
 import logging
 
 def compute(ct_series, workdir):
-    logger = logging.getLogger("ivenus.tilt")
+    logger = logging.getLogger("imars3d.tilt")
     tilt_out = os.path.join(workdir, "tilt.out")
     # cached value?
     if os.path.exists(tilt_out):
@@ -32,7 +32,7 @@ def compute(ct_series, workdir):
 def check(tilt, img0, img180):
     """check tilt using a pair of images
     """
-    from ivenus import io
+    from imars3d import io
     apply(tilt, img0, io.ImageFile("tilted-0.npy"))
     apply(tilt, img180, io.ImageFile("tilted-180.npy"))
     return

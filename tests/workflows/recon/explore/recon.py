@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import os, sys, numpy as np
-from ivenus.io import ImageFileSeries
+from imars3d.io import ImageFileSeries
 ct_series = ImageFileSeries(
     os.path.join("tiltcorrected_%7.3f.npy"),
     identifiers = np.arange(0, 182, .85),

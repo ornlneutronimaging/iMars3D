@@ -1,4 +1,4 @@
-from ivenus import config
+from imars3d import config
 
 
 

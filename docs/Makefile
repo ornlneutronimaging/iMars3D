@@ -87,9 +87,9 @@ qthelp:
 	@echo
 	@echo "Build finished; now you can run "qcollectiongenerator" with the" \
 	      ".qhcp project file in $(BUILDDIR)/qthelp, like this:"
-	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/iVenus.qhcp"
+	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/iMars3D.qhcp"
 	@echo "To view the help file:"
-	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/iVenus.qhc"
+	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/iMars3D.qhc"
 
 applehelp:
 	$(SPHINXBUILD) -b applehelp $(ALLSPHINXOPTS) $(BUILDDIR)/applehelp
@@ -104,8 +104,8 @@ devhelp:
 	@echo
 	@echo "Build finished."
 	@echo "To view the help file:"
-	@echo "# mkdir -p $$HOME/.local/share/devhelp/iVenus"
-	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/iVenus"
+	@echo "# mkdir -p $$HOME/.local/share/devhelp/iMars3D"
+	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/iMars3D"
 	@echo "# devhelp"
 
 epub:

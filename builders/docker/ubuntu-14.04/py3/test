@@ -1,5 +1,5 @@
 # run the following
-docker run -it linjiao/ivenus-ubuntu-py3:14.04
+docker run -it linjiao/imars3d-ubuntu-py3:14.04
 
 # and then in the docker environ, do
 # git pull

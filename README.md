@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/ornlneutronimaging/iVenus.svg?branch=master)](https://travis-ci.org/ornlneutronimaging/iVenus) 
+[![Build Status](https://travis-ci.org/ornlneutronimaging/iMars3D.svg?branch=master)](https://travis-ci.org/ornlneutronimaging/iMars3D) 
 
-# iVenus
+# iMars3D
 Normalization and more, for the Neutron Imaging Beam Lines

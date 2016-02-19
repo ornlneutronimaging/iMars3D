@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 # define distribution
 setup(
-    name = "ivenus",
+    name = "imars3d",
     version = "0.1",
     packages = find_packages("python", exclude=['tests', 'notebooks']),
     package_dir = {'': "python"},
@@ -17,11 +17,11 @@ setup(
     ],
     dependency_links = [
     ],
-    author = "iVenus team",
+    author = "iMars3D team",
     description = "Neutron imaging data analysis at ORNL",
     license = 'BSD',
     keywords = "neutron imaging",
-    url = "https://github.com/ornlneutronimaging/iVenus",
+    url = "https://github.com/ornlneutronimaging/iMars3D",
     # download_url = '',
 )
 

@@ -2,7 +2,7 @@ FROM ubuntu:14.04
 
 MAINTAINER "Jiao Lin <linjiao@caltech.edu>"
 
-LABEL Description="image prepared for buildindg iVenus"
+LABEL Description="image prepared for buildindg iMars3D"
 
 # use bash instead of sh
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
@@ -30,8 +30,8 @@ RUN pip install progressbar2
 
 # get source
 RUN apt-get -qy install git
-RUN git clone https://github.com/ornlneutronimaging/iVenus
-WORKDIR iVenus
+RUN git clone https://github.com/ornlneutronimaging/iMars3D
+WORKDIR iMars3D
 # build and install
 RUN python setup.py install
 
@@ -39,7 +39,7 @@ RUN python setup.py install
 # test
 RUN apt-get -qy install unzip
 RUN python tests/getdata.py
-RUN python tests/ivenus/signon.py
+RUN python tests/imars3d/signon.py
 
 # make matplotlib happy
 RUN apt-get -qy install libsm6 libxrender1 libfontconfig1 

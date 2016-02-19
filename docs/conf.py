@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# iVenus documentation build configuration file, created by
+# iMars3D documentation build configuration file, created by
 # sphinx-quickstart on Fri Dec 11 06:11:09 2015.
 #
 # This file is execfile()d with the current directory set to its
@@ -50,9 +50,9 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'iVenus'
-copyright = u'2015, iVenus team'
-author = u'iVenus team'
+project = u'iMars3D'
+copyright = u'2015, iMars3D team'
+author = u'iMars3D team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -204,7 +204,7 @@ html_static_path = ['_static']
 #html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'iVenusdoc'
+htmlhelp_basename = 'iMars3Ddoc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -226,8 +226,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  (master_doc, 'iVenus.tex', u'iVenus Documentation',
-   u'iVenus team', 'manual'),
+  (master_doc, 'iMars3D.tex', u'iMars3D Documentation',
+   u'iMars3D team', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -256,7 +256,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'ivenus', u'iVenus Documentation',
+    (master_doc, 'imars3d', u'iMars3D Documentation',
      [author], 1)
 ]
 
@@ -270,8 +270,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  (master_doc, 'iVenus', u'iVenus Documentation',
-   author, 'iVenus', 'One line description of project.',
+  (master_doc, 'iMars3D', u'iMars3D Documentation',
+   author, 'iMars3D', 'One line description of project.',
    'Miscellaneous'),
 ]
 
