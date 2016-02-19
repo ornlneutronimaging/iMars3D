@@ -39,7 +39,7 @@ class PhaseCorrelation:
         # 0 degree data
         data0 = img0.getData()
         self._updateProgress()
-        hist0 = self._computeIthetaHistogram(data0)
+        hist0 = self._computeIthetaHistogram(data0, logging_subdir="0deg")
         # 180 degree data
         # print data0.shape
         data180 = img180.getData()
@@ -47,7 +47,7 @@ class PhaseCorrelation:
         # flip horizontally
         data180 = np.fliplr(data180)
         self._updateProgress()
-        hist180 = self._computeIthetaHistogram(data180)
+        hist180 = self._computeIthetaHistogram(data180, logging_subdir="180deg")
         # plot 
         pylab.figure(figsize=(5, 14))
         # - I(theta) histogram
@@ -74,7 +74,7 @@ class PhaseCorrelation:
         return tilt/2
         
     
-    def _computeIthetaHistogram(self, data0):
+    def _computeIthetaHistogram(self, data0, logging_subdir):
         data0 = ndimage.rotate(data0, self.rotation)
         self._updateProgress()
         sizeY, sizeX = data0.shape
@@ -82,7 +82,7 @@ class PhaseCorrelation:
         data0 = data0[sizeY//4:sizeY*3//4, sizeX//4:sizeX*3//4]
         # create histogram
         angles0,F0 = fft_angles_and_intensities(
-            data0, self.border, os.path.join(self.logging_dir, "0"), self._updateProgress)
+            data0, self.border, os.path.join(self.logging_dir, logging_subdir), self._updateProgress)
         self._updateProgress()
         hist0, edges0 = np.histogram(angles0, weights=F0, bins=self.bins)
         self._updateProgress()
