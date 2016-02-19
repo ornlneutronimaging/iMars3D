@@ -38,7 +38,7 @@ install:
 
 script:
    - python tests/getdata.py
-   - python tests/ivenus/signon.py
+   - python tests/imars3d/signon.py
    - py.test
 
 notifications:

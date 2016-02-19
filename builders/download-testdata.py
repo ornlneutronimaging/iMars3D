@@ -16,7 +16,7 @@ if len(sys.argv) < 2:
 OUT=os.path.abspath(sys.argv[1])
 WORK=tempfile.mkdtemp()
 os.makedirs(OUT)
-cmd = "wget -O iMars3D_data_set.zip https://www.dropbox.com/sh/g5tho8czs8fi5lm/AAAZsZmqdqWLuo5c-OXtRlcJa?dl=1"
+cmd = "wget -O iMars3D_data_set.zip https://www.dropbox.com/sh/2pk45r9acqmk1z8/AAAf31rvhTZWzZR6DHY3evnva?dl=1"
 sp.check_call(cmd.split(), cwd=WORK)
 cmd = "unzip %s/iMars3D_data_set.zip" % WORK
 sp.call(cmd.split(), cwd=OUT)
