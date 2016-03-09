@@ -107,4 +107,4 @@ class TomopyImageIO(AbstractImageFileIO):
         ext = os.path.splitext(path)[-1][1:]
         name = 'read_%s' % ext
         h = getattr(cls.reader, name)
-        return h(data, path)
+        return h(path)
