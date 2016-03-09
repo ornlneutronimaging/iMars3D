@@ -5,7 +5,8 @@ import sys
 import os, numpy as np, imars3d
 
 dir = os.path.dirname(__file__)
-datadir = os.path.join(dir, "..", "iMars3D_data_set", "turbine")
+# datadir = os.path.join(dir, "..", "iMars3D_data_set", "turbine")
+datadir = os.path.join(dir, "..", "iMars3D_large_dataset", "reconstruction", "turbine")
 workdir = "_tmp/test_components/work"
 outdir = "_tmp/test_components/out"
 # dark field
@@ -15,7 +16,7 @@ dfs = imars3d.io.imageCollection(pattern, name="Dark Field")
 pattern = os.path.join(datadir, "*DF*.fits")
 obs = imars3d.io.imageCollection(pattern, name="Open Beam")
 # ct
-angles = np.arange(0, 52, 8.5)
+angles = np.arange(0, 182, .85)
 ct_series = imars3d.io.ImageFileSeries(
     os.path.join(datadir, "*CT*_%.3f_*.fits"),
     identifiers = angles,
@@ -73,11 +74,17 @@ def test_projection():
     return
 
 
+def test_recon():
+    from imars3d.recon.use_tomopy import recon
+    recon("range(150, 1330)", "np.arange(0, 182, .85)", outdir=outdir, sinogram_template=os.path.join(outdir, "sinogram_%i.npy"),
+    return
+
+
 def main():
     # test_normalization()
     # test_tiltcalc()
     # test_tiltcorr()
-    test_projection()
+    # test_projection()
     return
 
 
