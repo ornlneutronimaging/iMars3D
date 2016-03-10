@@ -1,7 +1,6 @@
 # interface for image series
 
-class AbstractImageSeries:
-
+class AbstractImageSeries(object):
     
     def __init__(self, mode=None, identifiers=None, name=None):
         """mode: read (r) or write (w)
@@ -15,7 +14,12 @@ class AbstractImageSeries:
         
         
     def __getitem__(self, i):
+        if isinstance(i, slice):
+            return self.getslice(i)
         return self.getImage(self.identifiers[i])
+
+    def getslice(self, s):
+        raise NotImplementedError
 
     def __iter__(self):
         return ImageIterator(self)

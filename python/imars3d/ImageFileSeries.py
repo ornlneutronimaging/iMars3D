@@ -64,6 +64,12 @@ class ImageFileSeries(base):
         img.save()
         return
 
+
+    def getslice(self, s):
+        return self.__class__(
+            self.filename_template, self.identifiers[s],
+            self.decimal_mark_replacement, self.mode, self.name)
+
     
     def _getPathpattern(self, identifier):
         path_pattern = self.filename_template % (identifier,)
