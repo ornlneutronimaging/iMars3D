@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# tell pytest to skip this test
+import pytest
+pytestmark = pytest.mark.skipif(True, reason="need large dataset")
+
 import sys
 import os, numpy as np, imars3d
 
