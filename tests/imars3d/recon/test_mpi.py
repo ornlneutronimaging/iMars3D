@@ -20,8 +20,19 @@ def test_recon_mpi():
     return
 
 
+def test_recon_mpi_2cpu():
+    layers = range(900, 905)
+    recon_template = os.path.join("_tmp/test_mpi_2cpu", "recon_%05i.tiff")
+    cmd = 'python -c "from imars3d.recon.mpi import recon_mpi; import numpy as np; recon_mpi(range(900,905), np.arange(0, 182, .85)*np.pi/180., %r, %r, stepsize=10)"' % (sinogram_template, recon_template)
+    cmd = "mpirun -np 2 %s" % cmd
+    if os.system(cmd):
+        raise RuntimeError("%s failed" % cmd)
+    return
+
+
 def main():
     test_recon_mpi()
+    test_recon_mpi_2cpu()
     return
 
 

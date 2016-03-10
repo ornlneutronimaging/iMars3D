@@ -55,10 +55,11 @@ parallalization. sth similar to $ mpirun -np NODES python "code to call this met
     
     alllayers = layers
     totalN = len(alllayers)
-    N = totalN // size
+    N = int(np.ceil(totalN*1. / size))
     start, stop = rank*N, (rank+1)*N
     layers = alllayers[start:stop]
-    # print len(layers)
+    # print("node %s of %s handles %s" % (rank, size, layers))
+    # print("N, start, stop=%s, %s, %s" % (N, start, stop))
 
     if recon is None:
         from .use_tomopy import recon_batch_singlenode as recon
