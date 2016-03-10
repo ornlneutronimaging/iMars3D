@@ -17,6 +17,7 @@ pattern = os.path.join(datadir, "*OB*.fits")
 obs = imars3d.io.imageCollection(pattern, name="Open Beam")
 # ct
 angles = np.arange(0, 182, .85)
+theta = angles * np.pi / 180.
 ct_series = imars3d.io.ImageFileSeries(
     os.path.join(datadir, "*CT*_%.3f_*.fits"),
     identifiers = angles,
@@ -43,6 +44,11 @@ intfluct_corrected_series = imars3d.io.ImageFileSeries(
 # sinograms
 sinograms = imars3d.io.ImageFileSeries(
     os.path.join(outdir, "sinogram_%i.tiff"),
+    name = "Sinogram", mode = 'w',
+)
+# reconstructed
+recon_series = imars3d.io.ImageFileSeries(
+    os.path.join(outdir, "recon_%i.tiff"),
     name = "Sinogram", mode = 'w',
 )
 
@@ -87,17 +93,19 @@ def test_projection():
 
 
 def test_recon():
-    from imars3d.recon.use_tomopy import recon
-    recon("range(150, 1330)", "np.arange(0, 182, .85)", outdir=outdir, sinogram_template=os.path.join(outdir, "sinogram_%i.tiff"))
+    from imars3d.recon.mpi import recon
+    recon_series.identifiers = sinograms.identifiers
+    recon(sinograms, theta, recon_series, nodes=20)
     return
 
 
 def main():
     # test_normalization()
     # test_tiltcalc()
-    test_tiltcorr()
-    test_correct_intensity_fluctuation()
+    # test_tiltcorr()
+    # test_correct_intensity_fluctuation()
     test_projection()
+    test_recon()
     return
 
 
