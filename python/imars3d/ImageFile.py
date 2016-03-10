@@ -9,6 +9,10 @@ class ImageFile(AbstractImage):
         return
 
 
+    def __repr__(self):
+        return "ImageFile(path=%r)" % self.path
+
+
     def getData(self):
         io = self._getIO()
         return io.load(self.path)

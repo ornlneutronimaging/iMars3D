@@ -17,6 +17,12 @@ class AbstractImageSeries:
     def __getitem__(self, i):
         return self.getImage(self.identifiers[i])
 
+    def __iter__(self):
+        return ImageIterator(self)
+
+    def __len__(self):
+        return len(self.identifiers)
+
 
     def iterImages(self):
         for identifier in self.identifiers:
@@ -43,3 +49,21 @@ class AbstractImageSeries:
     def putImage(self, identifier, data):
         "write image data for one image identified by the identifier"
         raise NotImplementedError
+
+
+class ImageIterator():
+
+    def __init__(self, imgseries):
+        self.imgseries = imgseries
+        self.index = 0
+        return
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        if self.index >= len(self.imgseries):
+            raise StopIteration
+        r = self.imgseries[self.index]
+        self.index +=1
+        return r

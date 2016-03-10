@@ -30,3 +30,5 @@ class AbstractImage:
         import pylab
         pylab.imshow(self.data)
         return
+
+
