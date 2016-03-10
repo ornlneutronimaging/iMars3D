@@ -66,7 +66,7 @@ parallalization. sth similar to $ mpirun -np NODES python "code to call this met
     return
 
 
-def recon(
+def recon_batch(
     sinogram_template, layers, theta, console_out,
     outdir="recon"):
     """Use tomopy for reconstruction
@@ -102,6 +102,33 @@ def recon(
     tomopy.write_tiff_stack(
         rec, fname=os.path.join(outdir, 'recon'), axis=0, overwrite=True)
     console_out.write("done\n"); console_out.flush()
+    return
+
+
+def recon(sinogram, theta, outpath):
+    """Use tomopy to reconstruct from one sinogram
+    
+    theta: sample rotation angle in radian
+    """
+    import tomopy, imars3d.io
+    proj = [sinogram.data]
+    proj = np.array(proj)
+    # tomopy.recon needs the shape to be
+    # angles, Y, X
+    proj = np.swapaxes(proj, 0, 1)
+    Y,X = proj[0].shape
+    # reconstruct
+    rec = tomopy.recon(
+        proj,
+        theta=theta, center=X/2.,
+        algorithm='gridrec', emission=False,
+        ncore = 1,
+    )
+    rec = rec[0] # there is only one layer
+    # output
+    img = imars3d.io.ImageFile(path=outpath)
+    img.data = rec
+    img.save()
     return
 
 
