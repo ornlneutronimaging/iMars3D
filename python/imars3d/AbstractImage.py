@@ -32,3 +32,5 @@ class AbstractImage:
         return
 
 
+    def __repr__(self):
+        raise NotImplementedError
