@@ -9,6 +9,10 @@ class ImageFile(AbstractImage):
         return
 
 
+    def __repr__(self):
+        return "ImageFile(path=%r)" % self.path
+
+
     def getData(self):
         io = self._getIO()
         return io.load(self.path)
@@ -24,7 +28,11 @@ class ImageFile(AbstractImage):
 
     def _getIO(self):
         fn, ext = os.path.splitext(self.path)
-        return eval(ext[1:].capitalize() + "ImageIO")
+        try:
+            IO  = eval(ext[1:].capitalize() + "ImageIO")
+        except NameError:
+            IO = TomopyImageIO
+        return IO
 
 
 class AbstractImageFileIO:
@@ -85,3 +93,22 @@ class NpyImageIO(AbstractImageFileIO):
     def load(cls, path):
         import numpy as np
         return np.load(path)
+
+
+class TomopyImageIO(AbstractImageFileIO):
+
+    from tomopy.io import reader, writer
+
+    @classmethod
+    def dump(cls, data, path):
+        ext = os.path.splitext(path)[-1][1:]
+        name = 'write_%s' % ext
+        h = getattr(cls.writer, name)
+        return h(data, path, overwrite=True)
+
+    @classmethod
+    def load(cls, path):
+        ext = os.path.splitext(path)[-1][1:]
+        name = 'read_%s' % ext
+        h = getattr(cls.reader, name)
+        return h(path)

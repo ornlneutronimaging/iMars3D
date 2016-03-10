@@ -30,3 +30,7 @@ class AbstractImage:
         import pylab
         pylab.imshow(self.data)
         return
+
+
+    def __repr__(self):
+        raise NotImplementedError

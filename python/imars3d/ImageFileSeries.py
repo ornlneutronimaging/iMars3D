@@ -18,6 +18,32 @@ class ImageFileSeries(base):
         decimal_mark_replacement: in filenames, the "." decimal mark usually is replaced by a different symbol, often the underscore.
         mode: r or w
         """
+        self._init(filename_template, identifiers, decimal_mark_replacement, mode, name)
+        return
+
+
+    def __getstate__(self):
+        return dict(
+            name = self.name,
+            mode = self.mode,
+            filename_template = self.filename_template,
+            identifiers = self.identifiers,
+            decimal_mark_replacement = self.decimal_mark_replacement
+            )
+
+
+    def __setstate__(self, state):
+        return self._init(**state)
+
+
+    def _init(self, filename_template=None,
+              identifiers=None, decimal_mark_replacement="_", mode="r", name=None):
+        """
+        filename_template: examples 2014*_CT*_%07.3f_*.fits
+        identifiers: a list of identifiers for images
+        decimal_mark_replacement: in filenames, the "." decimal mark usually is replaced by a different symbol, often the underscore.
+        mode: r or w
+        """
         if mode not in 'rw':
             raise ValueError("Invalid mode: %s" % mode)
         if identifiers is None:
@@ -27,6 +53,12 @@ class ImageFileSeries(base):
         self.filename_template = filename_template
         self.decimal_mark_replacement = decimal_mark_replacement
         return
+
+    
+    def getslice(self, s):
+        return self.__class__(
+            self.filename_template, self.identifiers[s],
+            self.decimal_mark_replacement, self.mode, self.name)
 
     
     def getImage(self, identifier):
@@ -64,7 +96,7 @@ class ImageFileSeries(base):
         img.save()
         return
 
-    
+
     def _getPathpattern(self, identifier):
         path_pattern = self.filename_template % (identifier,)
         dir = os.path.dirname(path_pattern)

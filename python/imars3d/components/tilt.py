@@ -46,7 +46,10 @@ class TiltCorrection(AbstractComponent):
         from ..tilt import apply
         for i,identifier in enumerate(in_img_series.identifiers):
             # skip over existing result
-            if out_img_series.exists(identifier): continue
+            if out_img_series.exists(identifier):
+                print("%s already existed" % out_img_series.getImage(identifier))
+                bar.update(i)
+                continue
             # apply tilt
             out = outputimg(identifier)
             apply(tilt, inputimg(identifier), out, save=False)
@@ -87,6 +90,7 @@ def _calc_border_pixels(angle, size):
     B = size * factor
     C = size / factor
     border_pixels = (B-C)/2 + 1
+    # border_pixels *= 1.2
     return int(border_pixels)
 
 
