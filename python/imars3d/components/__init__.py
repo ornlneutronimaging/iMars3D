@@ -46,5 +46,24 @@ class Projection(AbstractComponent):
         return
 
 
+class IntensityFluctuationCorrection(AbstractComponent):
+    
+    """The neutron beam intensity fluctuates and the simple normalization
+using the white beam measurements is not enough. This component
+should normalize the intensity using the intensities near the edges"""
+
+    def __call__(self, input_ct_series, output_ct_series):
+        import tomopy, numpy as np
+        data = [img.data for img in input_ct_series]
+        data = np.array(data)
+        data2 = tomopy.normalize_bg(data)
+        data2[data2<0] = 0
+        for i, img in enumerate(output_ct_series):
+            img.data = data2[i]
+            img.save()
+            continue
+        return
+        
+
 
 # End of file
