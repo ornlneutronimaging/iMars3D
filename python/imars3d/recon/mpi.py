@@ -5,31 +5,41 @@ import progressbar
 import os, sys, numpy as np
 
 
-def recon(sinograms, theta, recon_series):
+def recon(sinograms, theta, recon_series, nodes=None, **kwds):
     """reconstruct from given sinograms by running reconstruction algorithms parallely
 
 This is a wrapper application of recon_mpi.
+This is a method that users should use, not recon_mpi below.
 The signature of this function is the same as .use_tomopy.recon.
 
     """
     # python code to run parallely
-    sinogram_template = sinogram_
-    py_code = """
-from imars3d.recon.use_tomopy import recon_mpi
-recon_mpi(layers=%(layers)s, theta=%(theta)s, 
-    sinogram_template=%(sinogram_template)r, outdir=%(outdir)s, steps=10)
-""" % locals()
-    import tempfile
+    py_code_template = """
+import pickle
+kargs = pickle.load(open(%(kargs_pkl)r))
+
+from imars3d.recon.mpi import recon_mpi
+recon_mpi(**kargs)
+"""
+    import tempfile, pickle
     dir = tempfile.mkdtemp()
+    # save params
+    kargs_pkl = os.path.join(dir, "kargs.pkl")
+    import pickle
+    kargs = dict(sinograms=sinograms, theta=theta, recon_series=recon_series)
+    kargs.update(kwds)
+    pickle.dump(kargs, open(kargs_pkl, 'w'))
+    # write python code
+    pycode = py_code_template % locals()
     pyfile = os.path.join(dir, "recon.py")
-    open(pyfile, 'wt').write(py_code)
-    
+    open(pyfile, 'wt').write(pycode)
+    # cpus
     if not nodes:
         import multiprocessing as mp
         nodes = mp.cpu_count() - 1
     nodes = max(nodes, 1)
-    
-    cmd = 'mpi run -np %(nodes)s python %(pyfile)s' % locals()
+    # shell cmd
+    cmd = 'mpirun -np %(nodes)s python %(pyfile)s' % locals()
     if os.system(cmd):
         raise RuntimeError("%s failed" % cmd)
     return
