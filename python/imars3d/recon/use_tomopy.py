@@ -66,42 +66,31 @@ parallalization. sth similar to $ mpirun -np NODES python "code to call this met
     return
 
 
-def recon_batch(
-    sinogram_template, layers, theta, console_out,
-    outdir="recon"):
-    """Use tomopy for reconstruction
+def recon_batch_singlenode(sinograms, theta, recon_series):
+    """reconstruct from a bunch of sinograms.
+This is intended to be run on just one node.
 
     sinogram_template: sinogram filename tempate
     layers: list of integers for layers to be reconstructed
     theta: sample rotation angle in radian
     """
     import tomopy, imars3d.io
-    # proj = tomopy.read_tiff_stack(
-    #    sinogram_template % layers[0], layers, digit=5)
-    # proj = np.swapaxes(proj, 0,1)
-    # Y,X = proj[0].shape
-    sinograms = imars3d.io.ImageFileSeries(
-        sinogram_template, name = "Sinogram", identifiers=layers,
-    )
-    proj = [sinograms[i].data for i in range(layers)]
+    proj = [img.data for img in sinograms]
     proj = np.array(proj)
+    proj = np.swapaxes(proj, 0, 1)
     Y,X = proj[0].shape
     # reconstruct
-    console_out.write("tomopy.reconstruct..."); console_out.flush()
     rec = tomopy.recon(
         proj,
         theta=theta, center=X/2.,
         algorithm='gridrec', emission=False,
         ncore = 1,
     )
-    console_out.write("done\n"); console_out.flush()
     # output
-    if not os.path.exists(outdir):
-        os.makedirs(outdir)
-    console_out.write("tomopy.write_tiff_stack..."); console_out.flush()
-    tomopy.write_tiff_stack(
-        rec, fname=os.path.join(outdir, 'recon'), axis=0, overwrite=True)
-    console_out.write("done\n"); console_out.flush()
+    for i, img in enumerate(recon_series):
+        img.data = rec[i]
+        img.save()
+        continue
     return
 
 
