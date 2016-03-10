@@ -13,7 +13,7 @@ outdir = "_tmp/test_components/out"
 pattern = os.path.join(datadir, "*DF*.fits")
 dfs = imars3d.io.imageCollection(pattern, name="Dark Field")
 # open beam
-pattern = os.path.join(datadir, "*DF*.fits")
+pattern = os.path.join(datadir, "*OB*.fits")
 obs = imars3d.io.imageCollection(pattern, name="Open Beam")
 # ct
 angles = np.arange(0, 182, .85)
@@ -24,19 +24,25 @@ ct_series = imars3d.io.ImageFileSeries(
 )
 # normalized ct
 normalized_ct = imars3d.io.ImageFileSeries(
-    os.path.join(outdir, "normalized_%.3f.npy"), identifiers=angles, 
+    os.path.join(outdir, "normalized_%.3f.tiff"), identifiers=angles, 
     decimal_mark_replacement=".",
     name="Normalized", mode="w"
 )
 # tilt corrected
 tiltcorrected_series = imars3d.io.ImageFileSeries(
-    os.path.join(outdir, "tiltcorrected_%.3f.npy"),
+    os.path.join(outdir, "tiltcorrected_%.3f.tiff"),
     identifiers = angles,
     name = "Tilt corrected CT", mode = 'w',
 )
+# intensity fluctuation corrected
+intfluct_corrected_series = imars3d.io.ImageFileSeries(
+    os.path.join(outdir, "intfluctcorrected_%.3f.tiff"),
+    identifiers = angles,
+    name = "Intensity fluctuation corrected CT", mode = 'w',
+)
 # sinograms
 sinograms = imars3d.io.ImageFileSeries(
-    os.path.join(outdir, "sinogram_%i.npy"),
+    os.path.join(outdir, "sinogram_%i.tiff"),
     name = "Sinogram", mode = 'w',
 )
 
@@ -64,27 +70,34 @@ def test_tiltcalc():
 
 def test_tiltcorr():
     tiltcorr = imars3d.components.TiltCorrection(tilt=-2.)
-    tiltcorr(ct_series, tiltcorrected_series)
+    tiltcorr(normalized_ct, tiltcorrected_series)
+    return
+
+
+def test_correct_intensity_fluctuation():
+    ifcorr = imars3d.components.IntensityFluctuationCorrection()
+    ifcorr(tiltcorrected_series, intfluct_corrected_series)
     return
 
 
 def test_projection():
     proj = imars3d.components.Projection()
-    proj(ct_series, sinograms)
+    proj(intfluct_corrected_series, sinograms)
     return
 
 
 def test_recon():
     from imars3d.recon.use_tomopy import recon
-    recon("range(150, 1330)", "np.arange(0, 182, .85)", outdir=outdir, sinogram_template=os.path.join(outdir, "sinogram_%i.npy"),
+    recon("range(150, 1330)", "np.arange(0, 182, .85)", outdir=outdir, sinogram_template=os.path.join(outdir, "sinogram_%i.tiff"))
     return
 
 
 def main():
     # test_normalization()
     # test_tiltcalc()
-    # test_tiltcorr()
-    # test_projection()
+    test_tiltcorr()
+    test_correct_intensity_fluctuation()
+    test_projection()
     return
 
 
