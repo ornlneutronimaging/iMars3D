@@ -9,8 +9,6 @@ def recon_batch_singlenode(sinograms, theta, recon_series):
     """reconstruct from a bunch of sinograms.
 This is intended to be run on just one node.
 
-    sinogram_template: sinogram filename tempate
-    layers: list of integers for layers to be reconstructed
     theta: sample rotation angle in radian
     """
     import tomopy, imars3d.io
