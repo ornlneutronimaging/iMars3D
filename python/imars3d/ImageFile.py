@@ -104,7 +104,7 @@ class TomopyImageIO(AbstractImageFileIO):
         ext = os.path.splitext(path)[-1][1:]
         name = 'write_%s' % ext
         h = getattr(cls.writer, name)
-        return h(data, path)
+        return h(data, path, overwrite=True)
 
     @classmethod
     def load(cls, path):
