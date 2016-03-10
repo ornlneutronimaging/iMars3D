@@ -11,20 +11,17 @@ outdir = "_tmp"
 sinogram = imars3d.io.ImageFile(
     path = os.path.join(datadir, "turbine", "sinogram_900.tiff")
     )
+angles = np.arange(0, 182, .85)
+theta = angles * np.pi / 180.
 
 def test_recon():
     from imars3d.recon.use_tomopy import recon
-    angles = np.arange(0, 182, .85)
-    theta = angles * np.pi / 180.
     out = os.path.join(outdir, "recon_900.tiff")
     recon(sinogram, theta, out)
     return
 
-
 def test_recon_batch_singlenode():
     from imars3d.recon.use_tomopy import recon_batch_singlenode
-    angles = np.arange(0, 182, .85)
-    theta = angles * np.pi / 180.
     layers = range(901, 905)
     sinograms = imars3d.io.ImageFileSeries(
         os.path.join(datadir, "turbine", "sinogram_%i.tiff"),

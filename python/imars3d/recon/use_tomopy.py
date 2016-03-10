@@ -5,67 +5,6 @@ import progressbar
 import os, sys, numpy as np
 
 
-def recon_mpi_app(
-    layers, theta, nodes=None, outdir="out",
-    signogram_template="sinograms/sinogram_%05i.tiff"):
-    """reconstruction
-
-This is a wrapper application of recon_mpi.
-
-Example:
-    recon("range(155, 1550)", "np.arange(0, 52, 8.5)", sinogram_template
-    """
-    py_code = "from imars3d.recon.use_tomopy import recon_mpi; recon_mpi(layers=%(layers)s, theta=%(theta)s, sinogram_template=%(sinogram_template)r, outdir=%(outdir)s, steps=10)" % locals()
-    import tempfile
-    dir = tempfile.mkdtemp()
-    pyfile = os.path.join(dir, "recon.py")
-    open(pyfile, 'wt').write(py_code)
-    
-    if not nodes:
-        import multiprocessing as mp
-        nodes = mp.cpu_count() - 1
-    nodes = max(nodes, 1)
-    
-    cmd = 'mpi run -np %(nodes)s python %(pyfile)s' % locals()
-    if os.system(cmd):
-        raise RuntimeError("%s failed" % cmd)
-    return
-
-
-def recon_mpi(
-    layers, theta,
-    signogram_template="sinograms/sinogram_%05i.tiff", 
-    steps=10, outdir="out"):
-    """reconstruction using mpi.
-This method needs to be run on several mpi nodes to achieve
-parallalization. sth similar to $ mpirun -np NODES python "code to call this method"
-
-* layers: list of integers
-* theta: angles in degrees
-    """
-    from mpi4py import MPI
-    comm = MPI.COMM_WORLD
-    size = comm.Get_size()
-    rank = comm.Get_rank()
-    
-    alllayers = layers
-    totalN = len(alllayers)
-    N = totalN // size
-    start, stop = rank*N, (rank+1)*N
-    layers = alllayers[start:stop]
-    # print len(layers)
-    
-    theta *= np.pi/180.
-    for i in range(len(layers)//steps+1):
-        layers1 = layers[i*steps: (i+1)*steps]
-        if not layers1: continue
-        outdir1 = os.path.join(outdir, "recon/node%s/step%s" % (rank, i))
-        print outdir1
-        recon_mpi_onenode(sinogram_template, layers1, theta, sys.stdout, outdir1)
-        continue
-    return
-
-
 def recon_batch_singlenode(sinograms, theta, recon_series):
     """reconstruct from a bunch of sinograms.
 This is intended to be run on just one node.
