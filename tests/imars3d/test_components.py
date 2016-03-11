@@ -53,7 +53,7 @@ sinograms = imars3d.io.ImageFileSeries(
 # reconstructed
 recon_series = imars3d.io.ImageFileSeries(
     os.path.join(outdir, "recon_%i.tiff"),
-    name = "Sinogram", mode = 'w',
+    name = "Reconstructed", mode = 'w',
 )
 
 
