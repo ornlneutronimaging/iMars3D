@@ -17,9 +17,10 @@ def compute(ct_series, workdir):
     tilts = []
     for i, (a0, a180) in enumerate(pairs):
         logger.info("working on pair %s, %s" % (a0, a180))
-        pc = phasecorrelation.PhaseCorrelation(
-            logging_dir=os.path.join(workdir, "log.tilt.%s"%i))
+        logging_dir=os.path.join(workdir, "log.tilt.%s"%i)
+        pc = phasecorrelation.PhaseCorrelation(logging_dir=logging_dir)
         tilt = pc(img(a0), img(a180))
+        open(os.path.join(logging_dir, 'tilt.out'), 'wt').write("%s" % tilt)
         tilts.append(tilt)
         logger.info("calculated tilt: %s" % tilt)
         continue
