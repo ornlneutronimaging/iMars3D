@@ -71,3 +71,5 @@ class ImageIterator():
         r = self.imgseries[self.index]
         self.index +=1
         return r
+
+    __next__ = next
