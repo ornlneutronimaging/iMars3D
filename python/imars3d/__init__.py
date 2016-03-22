@@ -66,7 +66,11 @@ def build_sinograms(ct_series, workdir='work'):
     return ct_series.identifiers, sinograms
 
 
-def reconstruct(angles, sinograms, workdir="work"):
+def reconstruct(angles, sinograms, workdir="work", **kwds):
+    """reconstruct
+
+ * angles: ct scan angles in degrees
+    """
     recon_series = io.ImageFileSeries(
         os.path.join(workdir, "recon_%i.tiff"),
         identifiers = sinograms.identifiers,
@@ -75,5 +79,5 @@ def reconstruct(angles, sinograms, workdir="work"):
     import numpy as np
     theta = angles * np.pi / 180.
     from imars3d.recon.mpi import recon
-    recon(sinograms, theta, recon_series)
+    recon(sinograms, theta, recon_series, **kwds)
     return recon_series
