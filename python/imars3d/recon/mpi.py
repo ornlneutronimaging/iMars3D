@@ -16,7 +16,7 @@ The signature of this function is the same as .use_tomopy.recon.
     # python code to run parallely
     py_code_template = """
 import pickle
-kargs = pickle.load(open(%(kargs_pkl)r))
+kargs = pickle.load(open(%(kargs_pkl)r, 'rb'))
 
 from imars3d.recon.mpi import recon_mpi
 recon_mpi(**kargs)
@@ -28,7 +28,7 @@ recon_mpi(**kargs)
     import pickle
     kargs = dict(sinograms=sinograms, theta=theta, recon_series=recon_series)
     kargs.update(kwds)
-    pickle.dump(kargs, open(kargs_pkl, 'w'))
+    pickle.dump(kargs, open(kargs_pkl, 'wb'))
     # write python code
     pycode = py_code_template % locals()
     pyfile = os.path.join(dir, "recon.py")
@@ -47,7 +47,7 @@ recon_mpi(**kargs)
 
 def recon_mpi(
     sinograms, theta, recon_series,
-    stepsize=10, 
+    stepsize=10, center=None,
     recon=None):
     """reconstruction using mpi.
 This method needs to be run on several mpi nodes to achieve
@@ -79,7 +79,7 @@ parallalization. sth similar to $ mpirun -np NODES python "code to call this met
         if not len(sinograms): continue
         recon_series1 = recon_series[start:stop1]
         try:
-            recon(sinograms1, theta, recon_series1)
+            recon(sinograms1, theta, recon_series1, center=center)
         except:
             print("node %s of %s: recon %s:%s failed" % (rank, size, start, stop1))
         start = stop1
