@@ -11,7 +11,7 @@ class PhaseCorrelation:
 
     # intensities in freq domain along x,y axes are always high
     # clearn them within the border size
-    border = 5
+    border = 0.01
     # see below doc in __call__
     rotation = 30. # 45.
     # this is for collecting I(theta) histogram. 
@@ -22,6 +22,7 @@ class PhaseCorrelation:
     def __init__(
         self, border=None, rotation=None, bins=None, logging_dir=None):
         self.border = border or self.__class__.border
+        assert self.border > 0
         self.rotation = rotation or self.__class__.rotation
         self.bins = bins or self.__class__.bins
         self.logging_dir = logging_dir or self.__class__.logging_dir
@@ -75,6 +76,7 @@ class PhaseCorrelation:
         
     
     def _computeIthetaHistogram(self, data0, logging_subdir):
+        logging_dir = os.path.join(self.logging_dir, logging_subdir)
         data0 = ndimage.rotate(data0, self.rotation)
         self._updateProgress()
         sizeY, sizeX = data0.shape
@@ -82,10 +84,16 @@ class PhaseCorrelation:
         data0 = data0[sizeY//4:sizeY*3//4, sizeX//4:sizeX*3//4]
         # create histogram
         angles0,F0 = fft_angles_and_intensities(
-            data0, self.border, os.path.join(self.logging_dir, logging_subdir), self._updateProgress)
+            data0, self.border, logging_dir, self._updateProgress)
         self._updateProgress()
         hist0, edges0 = np.histogram(angles0, weights=F0, bins=self.bins)
         self._updateProgress()
+        np.save(os.path.join(logging_dir, "I_theta_raw.npy"), hist0)
+        # remove points around 0, 90, 180, 270
+        for index in [0, 90, 180, 270]:
+            remove_badpoints(hist0, index, 5)
+            continue
+        np.save(os.path.join(logging_dir, "I_theta.npy"), hist0)
         return hist0
 
         
@@ -115,14 +123,19 @@ class PhaseCorrelation:
         iaxes = pylab.plot(r)
         pylab.xlabel("Correlation")
         self._updateProgress()
+        np.save(os.path.join(self.logging_dir, "correlation.npy"), r)
         return r
         
         
     def _findPeakPosition(self, r):
         # the argmax of r should be what we want.
         # - only data within a few degrees are useful
+        sigma = np.std(r) # need this later
         r[10:350] = 0
         index = np.argmax(r[1:]) + 1
+        # check if the max value is larger than fluctuation
+        if r[index] < 2*sigma:
+            return 0
         # - fit the peak with a polynomial and get the high point
         width = 2
         peak = r[index-width : index+width+1]
@@ -164,11 +177,15 @@ def fft_angles_and_intensities(image, border, logging_dir, update_progress):
     """read image and create the angles and intensities
     in the frequency domain for the image.
     """
+    border = int(border * min(image.shape))
+    # print("border=%s" % border)
     F = np.fft.fft2(image)
     update_progress()
     # clean up borders
-    F[0:border,:] = 0; F[:, 0:border] = 0
-    F[-border:] = 0; F[:, -border:] = 0
+    F[0:border,:] = np.nan; F[:, 0:border] = np.nan
+    F[-border:] = np.nan; F[:, -border:] = np.nan
+    # fill borders with zeros
+    F[F!=F] = 0
     # shift origin to the center of the freq-domain image
     F = np.fft.fftshift(F)
     update_progress()
@@ -207,3 +224,22 @@ def fft_angles_and_intensities(image, border, logging_dir, update_progress):
     update_progress()
     # return angles, np.abs(F)
     return angles[bracket], np.abs(F[bracket])
+
+
+def remove_badpoints(spectrum, index, width):
+    assert width > 0
+    good = np.median(np.concatenate((spectrum[index+width: index+2*width], spectrum[index-2*width: index-width])))
+    start = index-width
+    end = index+width
+    if start * end > 0:
+        ranges = (start, end),
+    elif start < 0 and end > 0:
+        ranges = (start, -1), (0, end)
+    else:
+        raise ValueError("Don't know how to deal with region (%s, %s)" % (start, end))
+    # assign good values to bad points
+    for s, e in ranges:
+        spectrum[s:e] = good
+        continue
+    return
+    
