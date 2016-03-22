@@ -5,7 +5,7 @@ import progressbar
 import os, sys, numpy as np
 
 
-def recon_batch_singlenode(sinograms, theta, recon_series):
+def recon_batch_singlenode(sinograms, theta, recon_series, center=None):
     """reconstruct from a bunch of sinograms.
 This is intended to be run on just one node.
 
@@ -16,10 +16,12 @@ This is intended to be run on just one node.
     proj = np.array(proj)
     proj = np.swapaxes(proj, 0, 1)
     Y,X = proj[0].shape
+    if center is None:
+        center = X/2.
     # reconstruct
     rec = tomopy.recon(
         proj,
-        theta=theta, center=X/2.,
+        theta=theta, center=center,
         algorithm='gridrec', emission=False,
         ncore = 1,
     )
@@ -31,7 +33,7 @@ This is intended to be run on just one node.
     return
 
 
-def recon(sinogram, theta, outpath):
+def recon(sinogram, theta, outpath, center=None):
     """Use tomopy to reconstruct from one sinogram
     
     theta: sample rotation angle in radian
@@ -43,10 +45,12 @@ def recon(sinogram, theta, outpath):
     # angles, Y, X
     proj = np.swapaxes(proj, 0, 1)
     Y,X = proj[0].shape
+    if center is None:
+        center = X/2.
     # reconstruct
     rec = tomopy.recon(
         proj,
-        theta=theta, center=X/2.,
+        theta=theta, center=center,
         algorithm='gridrec', emission=False,
         ncore = 1,
     )
