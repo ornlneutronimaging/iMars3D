@@ -15,7 +15,8 @@ def test_tilt():
         identifiers = angles,
         name = "CT",
     )
-    print(tilt.compute(ct_series, "_tmp/test_tilt/work"))
+    t = tilt.compute(ct_series, "_tmp/test_tilt/work")
+    assert t>-2 and t<-1
     return
     
 
