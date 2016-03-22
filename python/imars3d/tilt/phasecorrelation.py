@@ -130,24 +130,29 @@ class PhaseCorrelation:
     def _findPeakPosition(self, r):
         # the argmax of r should be what we want.
         # - only data within a few degrees are useful
-        sigma = np.std(r) # need this later
-        r[10:350] = 0
-        index = np.argmax(r[1:]) + 1
+        sigma = np.std(r[1:]) # need this later
+        # take the spectrum around 0 degree
+        WIDTH_TO_SEARCH = 10
+        r1 = np.concatenate((r[-WIDTH_TO_SEARCH:], r[:WIDTH_TO_SEARCH]))
+        r1[WIDTH_TO_SEARCH] = 0 # set value at 0 degree to zero
+        index = np.argmax(r1)
         # check if the max value is larger than fluctuation
-        if r[index] < 2*sigma:
+        # import pdb; pdb.set_trace()
+        if r1[index] < 2*sigma:
             return 0
         # - fit the peak with a polynomial and get the high point
         width = 2
-        peak = r[index-width : index+width+1]
+        assert index-width > 0
+        peak = r1[index-width : index+width+1]
         def poly2(x, *p):
             a0, a1, a2 = p
             return a0-a1*(x-a2)**2
         # initial guess for fit
-        p0 = [r[index], 1., width]
+        p0 = [r1[index], 1., width]
         # x axis
         x = np.arange(peak.size)
-        # import pdb; pdb.set_trace()
         # fit
+        # import pdb; pdb.set_trace()
         coeff0, var_matrix = curve_fit(poly2, x, peak, p0=p0)
         self._updateProgress()
         # fitted peak
@@ -159,7 +164,7 @@ class PhaseCorrelation:
         pylab.plot(x, peak_fit)
         pylab.xlabel("Peak fitting")
         self._updateProgress()
-        return coeff0[-1] - width + index
+        return coeff0[-1]-width + index-WIDTH_TO_SEARCH
 
 
     def _initProgress(self):
