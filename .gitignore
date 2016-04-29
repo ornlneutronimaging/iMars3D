@@ -1,5 +1,6 @@
 *.pyc
 *~
 .ipynb*
-/tests/iVenus_data_set
+/tests/iMars3D*data*set
+_tmp
 
