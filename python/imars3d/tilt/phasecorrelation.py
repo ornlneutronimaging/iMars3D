@@ -59,7 +59,7 @@ class PhaseCorrelation:
         # correlate
         r = self._correlate(hist0, hist180)
         # find peak position
-        tilt = self._findPeakPosition(r)
+        tilt, weight = self._findPeakPosition(r)
         # plot
         # - save
         logging_dir = self.logging_dir
@@ -72,7 +72,7 @@ class PhaseCorrelation:
         # tilt is the rotation angle divided by 2
         self._updateProgress()
         print
-        return tilt/2
+        return tilt/2, weight
         
     
     def _computeIthetaHistogram(self, data0, logging_subdir):
@@ -139,10 +139,13 @@ class PhaseCorrelation:
         # check if the max value is larger than fluctuation
         # import pdb; pdb.set_trace()
         if r1[index] < 2*sigma:
-            return 0
+            return 0, np.exp(-(r1[index]-sigma)**2/2/sigma/sigma)
         # - fit the peak with a polynomial and get the high point
         width = 2
-        assert index-width > 0
+        if index - width <= 0:
+            # XXX need more checking of this
+            return 0, np.exp(-(r1[index]-sigma)**2/2/sigma/sigma)
+        weight = 1-np.exp(-r1[index]**2/2/sigma/sigma)
         peak = r1[index-width : index+width+1]
         def poly2(x, *p):
             a0, a1, a2 = p
@@ -164,7 +167,8 @@ class PhaseCorrelation:
         pylab.plot(x, peak_fit)
         pylab.xlabel("Peak fitting")
         self._updateProgress()
-        return coeff0[-1]-width + index-WIDTH_TO_SEARCH
+        value = coeff0[-1]-width + index-WIDTH_TO_SEARCH
+        return value, weight
 
 
     def _initProgress(self):

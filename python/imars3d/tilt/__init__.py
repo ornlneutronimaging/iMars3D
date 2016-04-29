@@ -19,12 +19,15 @@ def compute(ct_series, workdir):
         logger.info("working on pair %s, %s" % (a0, a180))
         logging_dir=os.path.join(workdir, "log.tilt.%s"%i)
         pc = phasecorrelation.PhaseCorrelation(logging_dir=logging_dir)
-        tilt = pc(img(a0), img(a180))
-        open(os.path.join(logging_dir, 'tilt.out'), 'wt').write("%s" % tilt)
-        tilts.append(tilt)
-        logger.info("calculated tilt: %s" % tilt)
+        tilt, weight = pc(img(a0), img(a180))
+        open(os.path.join(logging_dir, 'tilt.out'), 'wt')\
+            .write("%s\t%s\n" % (tilt, weight))
+        tilts.append((tilt, weight))
+        logger.info("calculated tilt: %s. weight: %s" % (tilt, weight))
         continue
-    tilt = np.average(tilts)
+    tilts = np.array(tilts)
+    tilts, weights = tilts.T
+    tilt = (tilts * weights).sum() / weights.sum()
     # save to cache
     open(tilt_out, 'wt').write(str(tilt))
     return tilt
