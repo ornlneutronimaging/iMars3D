@@ -1,6 +1,12 @@
 # -*- python -*-
 # -*- coding: utf-8 -*-
 
+
+"""
+Components should have the method __call__ with input and output image series
+as the parameters.
+"""
+
 import progressbar
 
 from .AbstractComponent import AbstractComponent
