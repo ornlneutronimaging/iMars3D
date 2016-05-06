@@ -1,15 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-datadir = 'data'
+import os
+dir = os.path.dirname(__file__)
+datadir = os.path.join(dir, "raw")
+CT_subdir = os.path.join("ct_scans", "Derek_injec")
 workdir = "work"
 outdir = "out"
 
 import sys
-import os, numpy as np, imars3d as i3, tomopy
+import numpy as np, imars3d as i3, tomopy
 
 from imars3d.CT import CT
-ct = CT(datadir)
+ct = CT(datadir, CT_subdir=CT_subdir, CT_identifier="Derek_injec")
 # dark field
 dfs = i3.io.imageCollection(ct.DF_pattern, name="Dark Field")
 # open beam
