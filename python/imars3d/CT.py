@@ -40,7 +40,7 @@ class CT:
             np.arange(angles[0], angles[-1]+delta/2., delta),
             np.array(angles)
             ).all()
-        self.angles = angles # in degrees
+        self.angles = np.array(angles) # in degrees
         printf_pattern_candidates = [
             "*CT*_%07.3f_*.fits",
             "*CT*_%.3f_*.fits",
