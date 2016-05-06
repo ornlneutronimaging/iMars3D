@@ -6,8 +6,10 @@ import numpy as np
 
 class CT:
 
-    def __init__(self, path):
+    def __init__(self, path, CT_subdir=None, CT_identifier=None):
         self.path = path
+        self.CT_subdir = CT_subdir or '.'
+        self.CT_identifier = CT_identifier or 'CT'
         self.sniff()
         return
 
@@ -23,8 +25,24 @@ class CT:
         
         
     def find_CT(self):
-        pattern = '*CT*_*_*.fits'
-        files = glob.glob(os.path.join(self.path, pattern))
+        CT_identifier = self.CT_identifier
+        subdir = os.path.join(self.path, self.CT_subdir)
+        patterns = [
+            '*%s*_*_*.fits' % CT_identifier,
+            '*_*_*.fits',
+            ]
+        found = None
+        for pattern in patterns:
+            files = glob.glob(os.path.join(subdir, pattern))
+            if len(files):
+                found = pattern
+                break
+            continue
+        if not found:
+            raise RuntimeError(
+                "failed to find CT images. directory: %s, patterns tried: %s"%(
+                    subdir, patterns)
+                )
         re_pattern = '(\S+)_(\d+)_(\d+)_(\d+).fits'
         def fn2angle(fn):
             import re
@@ -33,22 +51,23 @@ class CT:
         fns = map(os.path.basename, files)
         angles = map(fn2angle, fns)
         angles = sorted(angles)
-        assert len(angles) > 2
+        assert len(angles) > 2, "too few angles"
         delta = angles[1] - angles[0]
         # make sure angles are spaced correctly
-        assert np.isclose(
+        condition = np.isclose(
             np.arange(angles[0], angles[-1]+delta/2., delta),
             np.array(angles)
             ).all()
+        assert condition, "angles not spaced correctly: %s" % (angles,)
         self.angles = np.array(angles) # in degrees
         printf_pattern_candidates = [
-            "*CT*_%07.3f_*.fits",
-            "*CT*_%.3f_*.fits",
+            "*%s" % CT_identifier + "*_%07.3f_*.fits",
+            "*%s" % CT_identifier + "*_%.3f_*.fits",
             ]
         found = None
         for c in printf_pattern_candidates:
             from .ImageFileSeries import ImageFileSeries
-            c = os.path.join(self.path, c)
+            c = os.path.join(subdir, c)
             ifs = ImageFileSeries(c, angles)
             bad = False
             for angle in angles:
@@ -89,17 +108,18 @@ class CT:
         found = None
         for c in candidates:
             p = os.path.join(self.path, c)
-            if os.path.exists(c):
+            if os.path.exists(p):
                 found = c; break
             continue
         if not found:
             # fall back is no subdir
             found = '.'
         setattr(self, '%s_subdir' % kind, found)
+        subdir = found
         candidates = filenamepattern_candidates
         found = None
         for c in candidates:
-            pattern = os.path.join(self.path, self.OB_subdir, c)
+            pattern = os.path.join(self.path, subdir, c)
             files = glob.glob(pattern)
             if files:
                 found = pattern; break
