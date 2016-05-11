@@ -18,5 +18,7 @@ class InstallChipsInNewDetector(object):
         self.new_detector = np.zeros((self.new_detector_height, 
                                       self.new_detector_width))
         
-    def put_chip_in_place(self, chip_data, y_position, x_position):
-        pass
+    def put_chip_in_place(self, chip_data=None, y_position=0, x_position=0):
+        [chip_height, chip_width] = chip_data.shape
+        self.new_detector[y_position : y_position + chip_height, 
+                          x_position : x_position + chip_width] = chip_data

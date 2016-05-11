@@ -6,20 +6,21 @@ from imars3d import config, io
 from imars3d import detector_correction
 
 
-file = '/Users/j35/Dropbox (ORNL)/iMars3D_data_set/Low_res_Gdmask_r0000.fits'
+file = './tests/iMars3D_data_set/Low_res_Gdmask_r0000.fits'
 #print('Does file exist: %s' %os.path.isfile(file))
 
 # retrieve image
 image_data = io.ImageFile(file).getData()
 
-#plt.figure()
+#plt.figure(1)
+#plt.title("Before")
 #plt.imshow(image_data, cmap='gray')
 #plt.colorbar()
 #plt.show()
 
 (detector_width, detector_height) = image_data.shape
-chip_width = detector_width/2
-chip_height = detector_height/2
+chip_width = int(detector_width/2)
+chip_height = int(detector_height/2)
 
 # isolate chips data
 chip1 = image_data[0:chip_height, 0:chip_width]
@@ -28,7 +29,7 @@ chip3 = image_data[chip_height:detector_height, 0:chip_width]
 chip4 = image_data[chip_height:detector_height, chip_width:detector_width]
 
 # init final image
-detector_config = '../config/detector_offset.yml'
+detector_config = './python/imars3d/config/detector_offset.yml'
 
 # retrieve offset values
 chips_offset = detector_correction.retrieve_mcp_chips_offset.RetrieveMCPChipsOffset(detector_config)
@@ -42,13 +43,41 @@ new_detector_height_offset = chips_offset.get_detector_new_height_offset()
 new_detector_width = detector_width + new_detector_width_offset
 new_detector_height = detector_height + new_detector_height_offset
 
-install_chips_in_new_detector = detector_correction.install_chips_in_new_detector.InstallChipsInNewDetector()
+install_chips_in_new_detector = detector_correction.install_chips_in_new_detector.InstallChipsInNewDetector(new_detector_height = new_detector_height,
+                                                                                                            new_detector_width = new_detector_width)
+install_chips_in_new_detector.put_chip_in_place(chip_data = chip1, y_position = 0, x_position = 0)
+
+chip2_offset = chips_offset.chips.chip2
+install_chips_in_new_detector.put_chip_in_place(chip_data = chip2, 
+                                                y_position = chip2_offset.y_offset, 
+                                                x_position = chip2_offset.x_offset + chip_width)
+
+
+chip3_offset = chips_offset.chips.chip3
+install_chips_in_new_detector.put_chip_in_place(chip_data = chip3, 
+                                                y_position = chip3_offset.y_offset + chip_height, 
+                                                x_position = chip3_offset.x_offset)
+
+
+chip4_offset = chips_offset.chips.chip4
+install_chips_in_new_detector.put_chip_in_place(chip_data = chip4, 
+                                                y_position = chip4_offset.y_offset + chip_height, 
+                                                x_position = chip4_offset.x_offset + chip_width)
+
+# retrieve new detector
+new_detector = install_chips_in_new_detector.new_detector
+
+#plt.figure(2)
+#plt.title("After")
+#plt.imshow(new_detector, cmap='gray')
+#plt.colorbar()
+#plt.show()
+
+# correct gap by using linear interpolation
+fill_gap = detector_correction.fill_gap_between_chips.FillGapBetweenChips(detector_data = new_detector)
+fill_gap.correct_gap( fill_method = 'interpolation_x_axis',
+                      width_range = [chip_width, chip_width + chip2_offset.x_offset],
+                      height_range = [chip2_offset.y_offset, chip_height])
 
 
 
-#install_chips_in_new_detector.put_chip_in_place(chip1, )                                                                                                           
-
-
-#new_detector_width = detector_width + xmax
-#new_detector_height = detector_height + ymax
-#new_image_data = np.zeros(())

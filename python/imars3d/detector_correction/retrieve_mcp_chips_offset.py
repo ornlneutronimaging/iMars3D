@@ -1,5 +1,4 @@
-from imars3d import config
-
+from imars3d.config import *
 
 
 class Chips(object):
@@ -32,11 +31,12 @@ class RetrieveMCPChipsOffset(object):
         self.config_file_name = config_file_name
         self.retrieve_all_offset()
         
+        
     def retrieve_all_offset(self):
         '''
         retrieve from the yml file the various xoffset, yoffset of the chips
         '''
-        detector_config = config.loadYmlConfig(self.config_file_name)
+        detector_config = loadYmlConfig(self.config_file_name)
         chips_offset = detector_config.detector.chips
         
         self.chips = Chips()
