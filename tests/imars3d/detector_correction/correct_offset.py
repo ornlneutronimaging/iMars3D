@@ -75,9 +75,66 @@ new_detector = install_chips_in_new_detector.new_detector
 
 # correct gap by using linear interpolation
 fill_gap = detector_correction.fill_gap_between_chips.FillGapBetweenChips(detector_data = new_detector)
-fill_gap.correct_gap( fill_method = 'interpolation_x_axis',
-                      width_range = [chip_width, chip_width + chip2_offset.x_offset],
-                      height_range = [chip2_offset.y_offset, chip_height])
 
+method = 'mean'
+
+if method == 'interpolation':
+
+
+    # top and bottom vertical strips
+    fill_gap.correct_gap( fill_method = 'interpolation_x_axis',
+                          width_range = [chip_width, chip_width + chip2_offset.x_offset],
+                          height_range = [chip2_offset.y_offset, chip_height])
+    fill_gap.correct_gap( fill_method = 'interpolation_x_axis',
+                          width_range = [chip3_offset.x_offset + chip_width, 
+                                         chip3_offset.x_offset + chip_width + chip4_offset.x_offset],
+                          height_range = [chip4_offset.y_offset + chip_height, 
+                                          2*chip_height + chip4_offset.y_offset])
+    
+    # horizontal strips
+    fill_gap.correct_gap( fill_method = 'interpolation_y_axis',
+                          width_range = [chip3_offset.x_offset, chip_width + chip3_offset.x_offset],
+                          height_range = [chip_height, chip_height + chip3_offset.y_offset])
+    fill_gap.correct_gap( fill_method = 'interpolation_y_axis',
+                          width_range = [chip4_offset.x_offset + chip_width, chip4_offset.x_offset + 2*chip_width],
+                          height_range = [chip2_offset.y_offset + chip_height, chip_height + chip4_offset.y_offset])
+    
+    # center of detector
+    fill_gap.correct_gap( fill_method = 'interpolation_x_axis',
+                          width_range = [chip_width, chip_width + max(chip2_offset.x_offset, chip4_offset.x_offset)],
+                          height_range = [chip_height, chip_height + max(chip3_offset.y_offset, chip4_offset.y_offset)])
+
+elif method == 'mean':
+    
+    # top and bottom vertical strips
+    fill_gap.correct_gap( fill_method = 'mean_x_axis',
+                          width_range = [chip_width, chip_width + chip2_offset.x_offset],
+                          height_range = [chip2_offset.y_offset, chip_height])    
+    fill_gap.correct_gap( fill_method = 'mean_x_axis',
+                          width_range = [chip3_offset.x_offset + chip_width, 
+                                         chip3_offset.x_offset + chip_width + chip4_offset.x_offset],
+                          height_range = [chip4_offset.y_offset + chip_height, 
+                                          2*chip_height + chip4_offset.y_offset])
+
+    # horizontal strips
+    fill_gap.correct_gap( fill_method = 'mean_y_axis',
+                          width_range = [chip3_offset.x_offset, chip_width + chip3_offset.x_offset],
+                          height_range = [chip_height, chip_height + chip3_offset.y_offset])
+    fill_gap.correct_gap( fill_method = 'mean_y_axis',
+                          width_range = [chip4_offset.x_offset + chip_width, chip4_offset.x_offset + 2*chip_width],
+                          height_range = [chip2_offset.y_offset + chip_height, chip_height + chip4_offset.y_offset])
+
+
+    # center of detector
+    fill_gap.correct_gap( fill_method = 'mean_x_axis',
+                          width_range = [chip_width, chip_width + max(chip2_offset.x_offset, chip4_offset.x_offset)],
+                          height_range = [chip_height, chip_height + max(chip3_offset.y_offset, chip4_offset.y_offset)])
+
+
+plt.figure(3)
+plt.title("After")
+plt.imshow(fill_gap.detector_data, cmap='gray')
+plt.colorbar()
+plt.show()
 
 
