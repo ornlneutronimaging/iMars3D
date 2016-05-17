@@ -53,7 +53,6 @@ def test_mcp_create_new_detector():
     
     assert (new_detector == expected_new_detector).all()
 
-
 def main():
     test_mcp_chips_offset()
     test_mcp_create_new_detector()
