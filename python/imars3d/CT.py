@@ -23,6 +23,37 @@ class CT:
         self.sniff()
         return
 
+        
+    def recon(self, workdir='work', outdir='out'):
+        from . import io
+        # dark field
+        dfs = io.imageCollection(self.DF_pattern, name="Dark Field")
+        # open beam
+        obs = io.imageCollection(self.OB_pattern, name="Open Beam")
+        # ct
+        angles = self.angles
+        theta = angles * np.pi / 180.
+        pattern = self.CT_pattern
+        ct_series = io.ImageFileSeries(pattern, identifiers = angles, name = "CT")
+        # process
+        import imars3d as i3
+        normalized = i3.normalize(ct_series, dfs, obs, workdir=os.path.join(workdir, 'normalization'))
+        tilt_corrected = i3.correct_tilt(normalized, workdir=os.path.join(workdir, 'tilt-correction'))
+        if_corrected = i3.correct_intensity_fluctuation(tilt_corrected, workdir=os.path.join(workdir, 'intensity-fluctuation-correction'))
+        angles, sinograms = i3.build_sinograms(if_corrected, workdir=os.path.join(workdir, 'sinogram'))
+        # take the middle part to calculate the center of rotation
+        # FIXME: hard coded numbers
+        sino = [s.data for s in sinograms[900:1100]]
+        sino= np.array(sino)
+        proj = np.swapaxes(sino, 0, 1)
+        import tomopy
+        rot_center = tomopy.find_center(proj, theta, emission=False, init=1024, tol=0.5)
+        rot_center = rot_center[0]
+        # reconstruct
+        recon = i3.reconstruct(angles, sinograms, workdir=outdir, center=rot_center)
+        return
+        
+
 
     def sniff(self):
         self.find_OB()
