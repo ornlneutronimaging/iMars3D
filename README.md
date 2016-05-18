@@ -5,6 +5,8 @@ Normalization, corrections, and reconstruction for the Neutron Imaging Beam Line
 
 Reconstruction of a CT scan:
 
+```
 >>> from imars3d.CT import CT
 >>> ct = CT("/path/to/mydata")
 >>> ct.recon()
+```
