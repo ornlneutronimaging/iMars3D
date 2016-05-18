@@ -16,8 +16,6 @@ class FillGapBetweenChips(object):
     
     '''
     
-    
-    
     def __init__(self, detector_data=None):
         if detector_data is None:
             raise ValueError
