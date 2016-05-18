@@ -11,7 +11,7 @@ def addRandomOutliers(img, N, center, fluctuation):
     """add N random outliers into the image
     with values fluctating around the given center value
     """
-    indexes = np.random.random_integers(0, img.size, N)
+    indexes = np.random.random_integers(0, img.size-1, N)
     saved = img.shape
     img.shape = -1,
     img[indexes] = np.random.randn(N) * fluctuation + center
