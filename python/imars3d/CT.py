@@ -3,13 +3,23 @@
 
 import os, glob
 import numpy as np
+import progressbar
 
 class CT:
 
     def __init__(self, path, CT_subdir=None, CT_identifier=None):
         self.path = path
-        self.CT_subdir = CT_subdir or '.'
-        self.CT_identifier = CT_identifier or 'CT'
+        if CT_subdir is not None:
+            # if ct is in a subdir, its name most likely the
+            # whole subdir is just for ct and no OB/DF.
+            # in that case we don't usually need CT_identifier
+            self.CT_subdir = CT_subdir
+            self.CT_identifier = CT_identifier or '*'
+        else:
+            # if CT is not in a subdir, it is most likely
+            # the CT files are identified by string "CT"
+            self.CT_subdir = '.'
+            self.CT_identifier = CT_identifier or 'CT'
         self.sniff()
         return
 
@@ -70,12 +80,23 @@ class CT:
             c = os.path.join(subdir, c)
             ifs = ImageFileSeries(c, angles)
             bad = False
-            for angle in angles:
+            # progress bar
+            bar = progressbar.ProgressBar(
+                widgets=[
+                    "Checking CT fn pattern",
+                    progressbar.Percentage(),
+                    progressbar.Bar(),
+                    ' [', progressbar.ETA(), '] ',
+                ],
+                max_value = len(angles) - 1
+            )
+            for i, angle in enumerate(angles):
                 try:
                     ifs.getFilename(angle)
                 except:
                     bad = True
                     break
+                bar.update(i)
                 continue
             if not bad:
                 found = c
@@ -132,5 +153,19 @@ class CT:
 
     pass
 
+
+def get_ct_scan_info(files):
+    re_pattern = '(\S+)_(\S+)_(\d+)_(\d+)_(\d+).fits'
+    def _(fn):
+        import re
+        m = re.match(re_pattern, fn)
+        if not m: return
+        angle = float('%s.%s' % (m.group(3), m.group(4)))
+        date = m.group(1)
+        name = m.group(2)
+        return date, name, angle
+    fns = map(os.path.basename, files)
+    info = map(_, fns)
+    return info
 
 # End of file
