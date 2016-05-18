@@ -16,7 +16,8 @@ if logging_conf:
     logging.config.dictConfig(logging_conf)
 
 
-from . import io, components
+from . import io, components, detector_correction
+
 
 
 def normalize(ct_series,  dfs, obs, workdir='work'):
