@@ -75,9 +75,15 @@ class ImageFileSeries(base):
         # original data files from the data acqusition system
         # where file name convention is unknown
         paths = glob.glob(path_pattern)
-        if len(paths)!=1:
+        if len(paths)==0:
             raise RuntimeError("template %r no good: \npath_pattern=%r\npaths=%s" % (
                 self.filename_template, path_pattern, paths))
+        elif len(paths) > 1:
+            pathlist = '\n'.join(paths)
+            msg = "\ntemplate %r (path_pattern=%s) found multiple files for %s:\n%s\n" % (
+                self.filename_template, path_pattern, identifier, pathlist)
+            import warnings
+            warnings.warn(msg)
     
         path = paths[0]
         return path
