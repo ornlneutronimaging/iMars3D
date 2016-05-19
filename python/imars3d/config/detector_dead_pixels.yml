@@ -1,0 +1,27 @@
+detector:
+    name: 'MCP'
+    mode:
+        low_resolution:
+            group1:
+                top: 195
+                bottom: 200
+                left: 190
+                right: 194
+            group2:
+                top: 10
+                bottom: 20
+                left: 5
+                right: 15
+                
+        high_resolution:
+            group1:
+                top: 1598
+                bottom: 2579
+                left: 1555
+                right: 2535
+            group2:
+                top: 1000
+                bottom: 1020
+                left: 1050
+                right: 1100
+                
