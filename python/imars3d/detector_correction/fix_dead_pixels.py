@@ -1,5 +1,4 @@
 import numpy as np
-from imars3d import detector_correction
 
 
 class FixDeadPixels(object):
