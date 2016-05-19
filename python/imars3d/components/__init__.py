@@ -11,6 +11,19 @@ import progressbar
 
 from .AbstractComponent import AbstractComponent
 
+class GammaFiltering(AbstractComponent):
+    
+    def __init__(self, boxsize=5):
+        self.boxsize = boxsize
+        return
+    
+    def __call__(self, ct_series, output_img_series):
+        boxsize = self.boxsize
+        from ..filters.gamma_filtering import filter
+        filter(ct_series, output_img_series, boxsize=boxsize)
+        return
+
+
 class Normalization(AbstractComponent):
     
     def __init__(self, workdir):

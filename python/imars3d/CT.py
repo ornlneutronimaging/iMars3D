@@ -37,7 +37,8 @@ class CT:
         ct_series = io.ImageFileSeries(pattern, identifiers = angles, name = "CT")
         # process
         import imars3d as i3
-        normalized = i3.normalize(ct_series, dfs, obs, workdir=os.path.join(workdir, 'normalization'))
+        gamma_filtered = i3.gamma_filter(ct_series, workdir=os.path.join(workdir, 'gamma-filter'))
+        normalized = i3.normalize(gamma_filtered, dfs, obs, workdir=os.path.join(workdir, 'normalization'))
         tilt_corrected = i3.correct_tilt(normalized, workdir=os.path.join(workdir, 'tilt-correction'))
         if_corrected = i3.correct_intensity_fluctuation(tilt_corrected, workdir=os.path.join(workdir, 'intensity-fluctuation-correction'))
         angles, sinograms = i3.build_sinograms(if_corrected, workdir=os.path.join(workdir, 'sinogram'))

@@ -11,7 +11,7 @@ def test(interactive=False):
 
     # filter
     orig_max = np.max(img)
-    img = filters.gamma_filtering.filter(img)
+    img = filters.gamma_filtering.filter_one(img)
     new_max = np.max(img)
     assert new_max < orig_max
     

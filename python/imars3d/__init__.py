@@ -20,6 +20,18 @@ from . import io, components
 from . import detector_correction
 
 
+def gamma_filter(ct_series, workdir='work', **kwds):
+    gf_ct = io.ImageFileSeries(
+        os.path.join(workdir, "gamma_filtered_%07.3f.tiff"), 
+        identifiers=ct_series.identifiers, 
+        decimal_mark_replacement=".",
+        name="Gamma-filtered", mode="w"
+    )    
+    filter = components.GammaFiltering(**kwds)
+    filter(ct_series, gf_ct)
+    return gf_ct
+
+
 def normalize(ct_series,  dfs, obs, workdir='work'):
     normalized_ct = io.ImageFileSeries(
         os.path.join(workdir, "normalized_%07.3f.tiff"), 
