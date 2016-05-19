@@ -95,11 +95,21 @@ class CT:
         assert len(angles) > 2, "too few angles"
         delta = angles[1] - angles[0]
         # make sure angles are spaced correctly
-        condition = np.isclose(
-            np.arange(angles[0], angles[-1]+delta/2., delta),
-            np.array(angles)
-            ).all()
-        assert condition, "angles not spaced correctly: %s" % (angles,)
+        expected = np.arange(angles[0], angles[-1]+delta/2., delta)
+        if len(expected) != len(angles):
+            missing = [a for a in expected if not np.isclose(a, angles).any()]
+            if len(missing):
+                msg = "Missing angles: %s.\nStart: %s, End: %s, Step: %s" % (
+                    missing, expected[0], expected[-1], delta)
+                raise RuntimeError(msg)
+            # nothing is missing, we are good
+            angles = expected
+        else:
+            condition = np.isclose(
+                np.arange(angles[0], angles[-1]+delta/2., delta),
+                np.array(angles)
+                ).all()
+            assert condition, "angles not spaced correctly: %s" % (angles,)
         self.angles = np.array(angles) # in degrees
         printf_pattern_candidates = [
             "*%s" % CT_identifier + "*_%07.3f_*.fits",
@@ -125,6 +135,8 @@ class CT:
                 try:
                     ifs.getFilename(angle)
                 except:
+                    import traceback as tb
+                    tb.print_exc()
                     bad = True
                     break
                 bar.update(i)
