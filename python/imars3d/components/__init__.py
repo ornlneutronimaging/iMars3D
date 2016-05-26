@@ -11,6 +11,19 @@ import progressbar
 
 from .AbstractComponent import AbstractComponent
 
+
+class Cropping(AbstractComponent):
+
+    def __init__(self, box):
+        self.box = box
+        return
+    
+    def __call__(self, ct_series, output_series):
+        from ..filters.cropping import filter
+        filter(ct_series, output_series, box = self.box)
+        return
+
+
 class GammaFiltering(AbstractComponent):
     
     def __init__(self, boxsize=5):
@@ -50,16 +63,18 @@ class Projection(AbstractComponent):
         Y, X = data0.shape
         # array to hold all data
         import numpy as np
-        data = np.zeros( (N, Y, X), dtype=float )
+        data = np.zeros( (N, Y, X), dtype="float32")
         # read data
         for i in range(N):
             data[i, :] = ct_series[i].data
             continue
         # 
+        # from scipy import ndimage
         sinograms.identifiers = range(Y)
         for y in range(Y):
             sino = sinograms[y]
             sino.data = data[:, y, :]
+            # sino.data = ndimage.median_filter(sino.data, 5)
             sino.save()
             continue
         return

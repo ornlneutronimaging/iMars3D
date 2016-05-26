@@ -20,6 +20,18 @@ from . import io, components
 from . import detector_correction
 
 
+def crop(ct_series, workdir='work', **kwds):
+    cropped_ct = io.ImageFileSeries(
+        os.path.join(workdir, "cropped_%07.3f.tiff"), 
+        identifiers=ct_series.identifiers, 
+        decimal_mark_replacement=".",
+        name="Cropped", mode="w"
+    )    
+    filter = components.Cropping(**kwds)
+    filter(ct_series, cropped_ct)
+    return cropped_ct
+
+
 def gamma_filter(ct_series, workdir='work', **kwds):
     gf_ct = io.ImageFileSeries(
         os.path.join(workdir, "gamma_filtered_%07.3f.tiff"), 
