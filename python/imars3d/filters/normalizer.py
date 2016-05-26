@@ -6,7 +6,7 @@ import progressbar, numpy as np, os
 
 def average(image_collection):
     N = image_collection.nImages
-    assert N
+    assert N, "image_collection %s does contain any images" % (image_collection.name,)
     res = None
     prefix = "Averaging %s:" % image_collection.name or ""
     bar = progressbar.ProgressBar(
