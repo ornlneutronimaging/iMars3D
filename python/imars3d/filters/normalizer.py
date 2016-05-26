@@ -19,7 +19,7 @@ def average(image_collection):
         max_value = N-1
     )
     for i, im in enumerate(image_collection.iterImages()):
-        data = np.array(im.getData(), dtype=float)
+        data = np.array(im.getData(), dtype="float32")
         if res is None:
             res = data
         else:
@@ -69,7 +69,7 @@ def normalize(ct_series, df_images, ob_images, workdir, output_img_series):
     for i, angle in enumerate(ct_series.identifiers):
         # skip over existing results
         if not output_img_series.exists(angle):
-            data = np.array(ct_series.getData(angle), dtype=float)
+            data = np.array(ct_series.getData(angle), dtype="float32")
             data = (data-df)/ob
             output_img_series.putImage(angle, data)
         bar.update(i)
