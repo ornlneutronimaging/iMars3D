@@ -7,7 +7,8 @@ import progressbar
 
 class CT:
 
-    def __init__(self, path, CT_subdir=None, CT_identifier=None):
+    def __init__(self, path, CT_subdir=None, CT_identifier=None,
+                 workdir='work', outdir='out'):
         self.path = path
         if CT_subdir is not None:
             # if ct is in a subdir, its name most likely the
@@ -21,35 +22,101 @@ class CT:
             self.CT_subdir = '.'
             self.CT_identifier = CT_identifier or 'CT'
         self.sniff()
-        return
 
-        
-    def recon(self, workdir='work', outdir='out'):
         from . import io
         # dark field
-        dfs = io.imageCollection(self.DF_pattern, name="Dark Field")
+        self.dfs = io.imageCollection(self.DF_pattern, name="Dark Field")
         # open beam
-        obs = io.imageCollection(self.OB_pattern, name="Open Beam")
+        self.obs = io.imageCollection(self.OB_pattern, name="Open Beam")
         # ct
         angles = self.angles
-        theta = angles * np.pi / 180.
+        self.theta = angles * np.pi / 180.
         pattern = self.CT_pattern
-        ct_series = io.ImageFileSeries(pattern, identifiers = angles, name = "CT")
-        # process
+        self.ct_series = io.ImageFileSeries(pattern, identifiers = angles, name = "CT")
+
+        self.workdir = workdir
+        self.outdir = outdir
+        return
+
+
+    def recon(self, workdir=None, outdir=None):
+        workdir = workdir or self.workdir;  outdir = outdir or self.outdir
+        # preprocess
+        if_corrected = self.preprocess(workdir=workdir, outdir=outdir)
+        # reconstruct
+        self.reconstruct(if_corrected, workdir=workdir, outdir=outdir)
+        return        
+
+
+    def estimateSum(self, series, out):
+        sum = None
+        for i,img in enumerate(series):
+            if i%5!=0: continue # skip some
+            data = img.data
+            if sum is None:
+                sum = np.array(data, dtype='float32')
+            else:
+                sum += data
+        from . import io
+        im = io.ImageFile(out)
+        im.data = sum
+        im.save()
+        return
+
+
+    def crop(self, series, left=None, right=None, top=None, bottom=None):
+        Y,X = self.ct_series[0].data.shape
+        left = left or 0
+        right = right or X
+        top = top or 0
+        bottom = bottom or Y
+        box = left, right, top, bottom
+        from . import crop
+        return crop(series, workdir=self.workdir, box=box)
+
+        
+    def preprocess(self, workdir=None, outdir=None):
+        workdir = workdir or self.workdir
+        outdir = outdir or self.outdir
+        # get image objs
+        dfs = self.dfs; obs = self.obs
+        ct_series = self.ct_series
+        theta = self.theta
+        # preprocess
         import imars3d as i3
         gamma_filtered = i3.gamma_filter(ct_series, workdir=os.path.join(workdir, 'gamma-filter'))
         normalized = i3.normalize(gamma_filtered, dfs, obs, workdir=os.path.join(workdir, 'normalization'))
         tilt_corrected = i3.correct_tilt(normalized, workdir=os.path.join(workdir, 'tilt-correction'))
         if_corrected = i3.correct_intensity_fluctuation(tilt_corrected, workdir=os.path.join(workdir, 'intensity-fluctuation-correction'))
-        angles, sinograms = i3.build_sinograms(if_corrected, workdir=os.path.join(workdir, 'sinogram'))
+        return if_corrected
+
+
+    def reconstruct(self, ct_series, workdir=None, outdir=None):
+        workdir = workdir or self.workdir;  
+        outdir = outdir or self.outdir
+        theta = self.theta
+        # preprocess
+        import imars3d as i3
+        angles, sinograms = i3.build_sinograms(ct_series, workdir=os.path.join(workdir, 'sinogram'))
         # take the middle part to calculate the center of rotation
-        # FIXME: hard coded numbers
-        sino = [s.data for s in sinograms[900:1100]]
+        NSINO = len(sinograms)
+        sino = [s.data for s in sinograms[NSINO//3: NSINO*2//3]]
+        # sino = [s.data for s in sinograms]
         sino= np.array(sino)
         proj = np.swapaxes(sino, 0, 1)
         import tomopy
-        rot_center = tomopy.find_center(proj, theta, emission=False, init=1024, tol=0.5)
+        X = proj.shape[-1]
+        DEVIATION = 40 # max deviation of rot center from center of image
+        tomopy.write_center(
+            proj.copy(), theta, cen_range=[X//2-DEVIATION, X//2+DEVIATION, 1.],
+            dpath=os.path.join(workdir, 'tomopy-findcenter'), emission=False)
+        rot_center = tomopy.find_center(proj, theta, emission=False, init=X//2, tol=0.5)
         rot_center = rot_center[0]
+        if rot_center < X//2 - DEVIATION or rot_center > X//2+DEVIATION:
+            raise RuntimeError(
+                "Rotation center %s deviates a lot from the image center %s" \
+                % (X//2, rot_center))
+        print('* Rotation center: %s' % rot_center)
         # reconstruct
         recon = i3.reconstruct(angles, sinograms, workdir=outdir, center=rot_center)
         return
