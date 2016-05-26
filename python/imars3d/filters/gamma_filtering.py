@@ -8,6 +8,7 @@ def filter(ct_series, output_img_series, **kwds):
     """
     prefix = "Gamma-filtering %s:" % ct_series.name or ""
     N = ct_series.nImages
+    import progressbar
     bar = progressbar.ProgressBar(
         widgets=[
             prefix,
@@ -35,7 +36,7 @@ def filter_one(img, **kwds):
     """
     max = np.iinfo(img.dtype).max
     threshold = max/2
-    img = np.array(img, np.float)
+    img = np.array(img, "float32")
     remove_outliers_bymedian(img, img>threshold, **kwds)
     return img
     
