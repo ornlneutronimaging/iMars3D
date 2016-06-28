@@ -12,6 +12,18 @@ import progressbar
 from .AbstractComponent import AbstractComponent
 
 
+class Smoothing(AbstractComponent):
+
+    def __init__(self, size):
+        self.size = size
+        return
+    
+    def __call__(self, ct_series, output_series):
+        from ..filters.smoothing import filter
+        filter(ct_series, output_series, size = self.size)
+        return
+
+
 class Cropping(AbstractComponent):
 
     def __init__(self, box):
@@ -69,13 +81,28 @@ class Projection(AbstractComponent):
             data[i, :] = ct_series[i].data
             continue
         # 
-        # from scipy import ndimage
+        prefix = "Computing sinograms from %r" % (ct_series.name or "",)
+        bar = progressbar.ProgressBar(
+            widgets=[
+                prefix,
+                progressbar.Percentage(),
+                progressbar.Bar(),
+                ' [', progressbar.ETA(), '] ',
+            ],
+            max_value = Y - 1
+        )
+        from scipy import ndimage
         sinograms.identifiers = range(Y)
         for y in range(Y):
             sino = sinograms[y]
+            if sinograms.exists(y):
+                print("%s already existed" % sino)
+                bar.update(y)
+                continue
             sino.data = data[:, y, :]
-            # sino.data = ndimage.median_filter(sino.data, 5)
+            sino.data = ndimage.median_filter(sino.data, 5)
             sino.save()
+            bar.update(y)
             continue
         return
 

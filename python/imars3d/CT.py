@@ -39,17 +39,49 @@ class CT:
         return
 
 
-    def recon(self, workdir=None, outdir=None):
+    def recon(self, workdir=None, outdir=None, **kwds):
         workdir = workdir or self.workdir;  outdir = outdir or self.outdir
         # preprocess
         if_corrected = self.preprocess(workdir=workdir, outdir=outdir)
+        # auto-cropping
+        cropped = self.autoCrop(if_corrected)
+        # smoothing
+        smoothed = self.smooth(cropped, 5)
         # reconstruct
-        self.reconstruct(if_corrected, workdir=workdir, outdir=outdir)
-        return        
+        self.reconstruct(cropped, workdir=workdir, outdir=outdir, **kwds)
+        return
 
 
-    def estimateSum(self, series, out):
-        sum = None
+    def autoCrop(self, series):
+        # estimate average
+        ave = self.estimateAverage(series)
+        from . import io
+        def save(d, p): 
+            im = io.ImageFile(p); im.data = d; im.save()
+        save(ave, "estimate-ave.tiff")
+        # smooth it
+        from scipy import ndimage 
+        sm = ndimage.median_filter(ave, 9)
+        save(sm, "sm-estimate-ave.tiff")
+        # find foreground rectangle
+        Y, X = np.where(sm < 0.8)
+        ymax = Y.max(); ymin = Y.min()
+        xmax = X.max(); xmin = X.min()
+        # expand it a bit
+        width = xmax - xmin; height = ymax - ymin
+        xmin -= width/6.; xmax += width/6.
+        ymin -= height/6.; ymax += height/6.
+        HEIGHT, WIDTH = ave.shape
+        if xmin < 0: xmin = 0
+        if xmax > WIDTH-1: xmax =WIDTH-1
+        if ymin < 0: ymin = 0
+        if ymax > HEIGHT-1: ymax =HEIGHT-1
+        # crop
+        return self.crop(series, left=xmin, right=xmax, top=ymin, bottom=ymax)
+
+
+    def estimateAverage(self, series):
+        sum = None; N = 0
         for i,img in enumerate(series):
             if i%5!=0: continue # skip some
             data = img.data
@@ -57,11 +89,9 @@ class CT:
                 sum = np.array(data, dtype='float32')
             else:
                 sum += data
-        from . import io
-        im = io.ImageFile(out)
-        im.data = sum
-        im.save()
-        return
+            N += 1
+            continue
+        return sum/N
 
 
     def crop(self, series, left=None, right=None, top=None, bottom=None):
@@ -72,7 +102,12 @@ class CT:
         bottom = bottom or Y
         box = left, right, top, bottom
         from . import crop
-        return crop(series, workdir=self.workdir, box=box)
+        return crop(series, workdir=os.path.join(self.workdir, 'crop'), box=box)
+
+
+    def smooth(self, series, size=None):
+        from . import smooth
+        return smooth(series, workdir=os.path.join(self.workdir, 'smoothed'), size=size)
 
         
     def preprocess(self, workdir=None, outdir=None):
@@ -91,7 +126,7 @@ class CT:
         return if_corrected
 
 
-    def reconstruct(self, ct_series, workdir=None, outdir=None):
+    def reconstruct(self, ct_series, workdir=None, outdir=None, rot_center=None):
         workdir = workdir or self.workdir;  
         outdir = outdir or self.outdir
         theta = self.theta
@@ -110,14 +145,16 @@ class CT:
         tomopy.write_center(
             proj.copy(), theta, cen_range=[X//2-DEVIATION, X//2+DEVIATION, 1.],
             dpath=os.path.join(workdir, 'tomopy-findcenter'), emission=False)
-        rot_center = tomopy.find_center(proj, theta, emission=False, init=X//2, tol=0.5)
-        rot_center = rot_center[0]
-        if rot_center < X//2 - DEVIATION or rot_center > X//2+DEVIATION:
-            raise RuntimeError(
-                "Rotation center %s deviates a lot from the image center %s" \
-                % (X//2, rot_center))
+        if rot_center is None:
+            rot_center = tomopy.find_center(proj, theta, emission=False, init=X//2, tol=0.5)
+            rot_center = rot_center[0]
+            if rot_center < X//2 - DEVIATION or rot_center > X//2+DEVIATION:
+                raise RuntimeError(
+                    "Rotation center %s deviates a lot from the image center %s" \
+                    % (rot_center, X//2))
         print('* Rotation center: %s' % rot_center)
-        # reconstruct
+        open(os.path.join(workdir, 'rot_center'), 'wt').write(str(rot_center))
+        # reconstruct 
         recon = i3.reconstruct(angles, sinograms, workdir=outdir, center=rot_center)
         return
         

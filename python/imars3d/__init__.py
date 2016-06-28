@@ -20,6 +20,18 @@ from . import io, components
 from . import detector_correction
 
 
+def smooth(ct_series, workdir='work', **kwds):
+    smoothed_ct = io.ImageFileSeries(
+        os.path.join(workdir, "smoothed_%07.3f.tiff"), 
+        identifiers=ct_series.identifiers, 
+        decimal_mark_replacement=".",
+        name="Smoothed", mode="w"
+    )    
+    filter = components.Smoothing(**kwds)
+    filter(ct_series, smoothed_ct)
+    return smoothed_ct
+
+
 def crop(ct_series, workdir='work', **kwds):
     cropped_ct = io.ImageFileSeries(
         os.path.join(workdir, "cropped_%07.3f.tiff"), 
