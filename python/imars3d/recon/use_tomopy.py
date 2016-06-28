@@ -5,7 +5,8 @@ import progressbar
 import os, sys, numpy as np
 
 
-def recon_batch_singlenode(sinograms, theta, recon_series, center=None):
+def recon_batch_singlenode(
+        sinograms, theta, recon_series, center=None, algorithm=None):
     """reconstruct from a bunch of sinograms.
 This is intended to be run on just one node.
 
@@ -19,10 +20,13 @@ This is intended to be run on just one node.
     if center is None:
         center = X/2.
     # reconstruct
+    algorithm = algorithm or 'gridrec'
+    # algorithm='fbp',
+    # lgorithm='pml_hybrid',
     rec = tomopy.recon(
         proj,
         theta=theta, center=center,
-        algorithm='gridrec', emission=False,
+        algorithm=algorithm, emission=False,
         ncore = 1,
     )
     # output
@@ -51,7 +55,8 @@ def recon(sinogram, theta, outpath, center=None):
     rec = tomopy.recon(
         proj,
         theta=theta, center=center,
-        algorithm='gridrec', emission=False,
+        algorithm='gridrec',
+        emission=False,
         ncore = 1,
     )
     rec = rec[0] # there is only one layer
