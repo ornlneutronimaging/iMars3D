@@ -44,7 +44,7 @@ class GammaFiltering(AbstractComponent):
     
     def __call__(self, ct_series, output_img_series):
         boxsize = self.boxsize
-        from ..filters.gamma_filtering import filter
+        from ..filters.gamma_filtering import filter_parallel as filter
         filter(ct_series, output_img_series, boxsize=boxsize)
         return
 
