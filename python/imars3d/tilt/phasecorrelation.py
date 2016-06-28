@@ -138,7 +138,7 @@ class PhaseCorrelation:
         index = np.argmax(r1)
         # check if the max value is larger than fluctuation
         # import pdb; pdb.set_trace()
-        if r1[index] < 2*sigma:
+        if r1[index] < 2.5*sigma:
             return 0, np.exp(-(r1[index]-sigma)**2/2/sigma/sigma)
         # - fit the peak with a polynomial and get the high point
         width = 2
