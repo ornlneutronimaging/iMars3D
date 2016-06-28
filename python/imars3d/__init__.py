@@ -16,7 +16,7 @@ if logging_conf:
     logging.config.dictConfig(logging_conf)
 
 
-from . import io, components
+from . import io, components, decorators as dec
 from . import detector_correction
 
 
@@ -43,7 +43,7 @@ def crop(ct_series, workdir='work', **kwds):
     filter(ct_series, cropped_ct)
     return cropped_ct
 
-
+@dec.timeit
 def gamma_filter(ct_series, workdir='work', **kwds):
     gf_ct = io.ImageFileSeries(
         os.path.join(workdir, "gamma_filtered_%07.3f.tiff"), 
@@ -55,7 +55,7 @@ def gamma_filter(ct_series, workdir='work', **kwds):
     filter(ct_series, gf_ct)
     return gf_ct
 
-
+@dec.timeit
 def normalize(ct_series,  dfs, obs, workdir='work'):
     normalized_ct = io.ImageFileSeries(
         os.path.join(workdir, "normalized_%07.3f.tiff"), 
@@ -67,7 +67,7 @@ def normalize(ct_series,  dfs, obs, workdir='work'):
     normalization(ct_series, dfs, obs, normalized_ct)
     return normalized_ct
 
-
+@dec.timeit
 def correct_tilt(ct_series, workdir='work'):
     tiltcalc = components.TiltCalculation(workdir=workdir)
     tilt = tiltcalc(ct_series)
@@ -81,7 +81,7 @@ def correct_tilt(ct_series, workdir='work'):
     tiltcorr(ct_series, tiltcorrected_series)
     return tiltcorrected_series
     
-
+@dec.timeit
 def correct_intensity_fluctuation(ct_series, workdir='work'):
     intfluct_corrected_series = io.ImageFileSeries(
         os.path.join(workdir, "intfluctcorrected_%07.3f.tiff"),
@@ -92,7 +92,7 @@ def correct_intensity_fluctuation(ct_series, workdir='work'):
     ifcorr(ct_series, intfluct_corrected_series)
     return intfluct_corrected_series
 
-
+@dec.timeit
 def build_sinograms(ct_series, workdir='work'):
     sinograms = io.ImageFileSeries(
         os.path.join(workdir, "sinogram_%i.tiff"),
