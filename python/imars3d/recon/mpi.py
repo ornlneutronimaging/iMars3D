@@ -35,8 +35,8 @@ recon_mpi(**kargs)
     open(pyfile, 'wt').write(pycode)
     # cpus
     if not nodes:
-        import multiprocessing as mp
-        nodes = mp.cpu_count() - 1
+        import psutil
+        nodes = psutil.cpu_count() - 1
     nodes = max(nodes, 1)
     # shell cmd
     cmd = 'mpirun -np %(nodes)s python %(pyfile)s' % locals()
