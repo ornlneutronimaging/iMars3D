@@ -4,6 +4,7 @@
 import os, glob
 import numpy as np
 import progressbar
+from . import decorators as dec
 
 class CT:
 
@@ -52,6 +53,7 @@ class CT:
         return
 
 
+    @dec.timeit
     def autoCrop(self, series):
         # estimate average
         ave = self.estimateAverage(series)
@@ -105,11 +107,12 @@ class CT:
         return crop(series, workdir=os.path.join(self.workdir, 'crop'), box=box)
 
 
+    @dec.timeit
     def smooth(self, series, size=None):
         from . import smooth
         return smooth(series, workdir=os.path.join(self.workdir, 'smoothed'), size=size)
 
-        
+    @dec.timeit
     def preprocess(self, workdir=None, outdir=None):
         workdir = workdir or self.workdir
         outdir = outdir or self.outdir
@@ -126,6 +129,7 @@ class CT:
         return if_corrected
 
 
+    @dec.timeit
     def reconstruct(self, ct_series, workdir=None, outdir=None, rot_center=None):
         workdir = workdir or self.workdir;  
         outdir = outdir or self.outdir
