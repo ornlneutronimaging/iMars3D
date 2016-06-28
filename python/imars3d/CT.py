@@ -49,7 +49,7 @@ class CT:
         # smoothing
         smoothed = self.smooth(cropped, 5)
         # reconstruct
-        self.reconstruct(cropped, workdir=workdir, outdir=outdir, **kwds)
+        self.reconstruct(smoothed, workdir=workdir, outdir=outdir, **kwds)
         return
 
 
