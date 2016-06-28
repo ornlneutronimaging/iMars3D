@@ -6,7 +6,7 @@ helpers to convert functions working for one image
 to functions working for an image series
 """
 
-import numpy as np, sys
+import numpy as np, sys, os
 
 def filter_parallel_onenode(
         ct_series, output_img_series, desc, filter_one, **kwds):
@@ -21,7 +21,13 @@ def filter_parallel_onenode(
     comm = MPI.COMM_WORLD
     size = comm.Get_size()
     rank = comm.Get_rank()
-
+    # create the output dir
+    dir = os.path.dirname(output_img_series.filename_template)
+    if not os.path.exists(dir):
+        if rank == 0:
+            os.makedirs(dir)
+        comm.Barrier()
+    #
     prefix = "%s %s:" % (desc, ct_series.name or "")
     totalN = ct_series.nImages
     # number of images to process in this process
@@ -30,7 +36,7 @@ def filter_parallel_onenode(
     start, stop = rank*N, min(totalN, (rank+1)*N)
     # 
     for angle in ct_series.identifiers[start: stop]:
-        print>>sys.stderr, angle
+        print>>sys.stderr, "%s: %s" % (prefix, angle)
         # skip over existing results
         if not output_img_series.exists(angle):
             data = ct_series.getData(angle)
