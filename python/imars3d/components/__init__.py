@@ -19,7 +19,7 @@ class Smoothing(AbstractComponent):
         return
     
     def __call__(self, ct_series, output_series):
-        from ..filters.smoothing import filter
+        from ..filters.smoothing import filter_parallel as filter
         filter(ct_series, output_series, size = self.size)
         return
 
@@ -91,7 +91,7 @@ class Projection(AbstractComponent):
             ],
             max_value = Y - 1
         )
-        from scipy import ndimage
+        from ..filters.smoothing import filter_one as smooth
         sinograms.identifiers = range(Y)
         for y in range(Y):
             sino = sinograms[y]
@@ -100,7 +100,7 @@ class Projection(AbstractComponent):
                 bar.update(y)
                 continue
             sino.data = data[:, y, :]
-            sino.data = ndimage.median_filter(sino.data, 5)
+            sino.data = smooth(sino.data, 5)
             sino.save()
             bar.update(y)
             continue
