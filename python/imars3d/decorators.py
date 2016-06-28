@@ -49,6 +49,7 @@ method(*args, **kwds)
             import psutil
             nodes = psutil.cpu_count() - 1
         nodes = max(nodes, 1)
+        nodes = min(nodes, 10)
         # shell cmd
         cmd = 'mpirun -np %(nodes)s python %(pyfile)s' % locals()
         print("* running %s" % cmd)

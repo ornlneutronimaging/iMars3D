@@ -6,7 +6,7 @@ helpers to convert functions working for one image
 to functions working for an image series
 """
 
-import numpy as np, sys, os
+import numpy as np, sys, os, time
 
 def filter_parallel_onenode(
         ct_series, output_img_series, desc, filter_one, **kwds):
@@ -27,6 +27,8 @@ def filter_parallel_onenode(
         if rank == 0:
             os.makedirs(dir)
         comm.Barrier()
+    # start processing at different time
+    time.sleep(rank*0.2)
     #
     prefix = "%s %s:" % (desc, ct_series.name or "")
     totalN = ct_series.nImages
