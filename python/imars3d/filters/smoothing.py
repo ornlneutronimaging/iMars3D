@@ -1,39 +1,32 @@
 # -*- python -*-
 # -*- coding: utf-8 -*-
 
+import numpy as np, sys
+
+DESC = 'Smoothing'
+def filter_parallel(ct_series, output_img_series, **kwds):
+    from .batch import filter_parallel
+    return filter_parallel(
+        ct_series, output_img_series, DESC, filter_one, **kwds)
+
 
 def filter(ct_series, output_img_series, **kwds):
-    """
-    * ct_series: an image series for ct scan
-    """
-    prefix = "Smoothing %s:" % ct_series.name or ""
-    N = ct_series.nImages
-    import progressbar
-    bar = progressbar.ProgressBar(
-        widgets=[
-            prefix,
-            progressbar.Percentage(),
-            progressbar.Bar(),
-            ' [', progressbar.ETA(), '] ',
-        ],
-        max_value = N-1
-    )
-    for i, angle in enumerate(ct_series.identifiers):
-        # skip over existing results
-        if not output_img_series.exists(angle):
-            data = ct_series.getData(angle)
-            output_img_series.putImage(angle, filter_one(data, **kwds))
-        bar.update(i)
-        continue
-    print
-    return
-
+    from .batch import filter
+    return filter(
+        ct_series, output_img_series, DESC, filter_one, **kwds)
 
 def filter_one(img, size):
     """smoothing given image
     - img: image npy array
     - size: size of median filter
     """
-    from scipy.ndimage import median_filter
-    return median_filter(img, size)
+    # from scipy.ndimage import median_filter
+    # return median_filter(img, size)
+    # convert to float32 if it is float
+    typename = img.dtype.name
+    if typename.startswith('float') and typename != 'float32':
+        img = np.array(img, dtype="float32")
+    import cv2
+    return cv2.medianBlur(img, size)
 
+# End of file
