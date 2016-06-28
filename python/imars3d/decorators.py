@@ -51,9 +51,9 @@ method(*args, **kwds)
         nodes = max(nodes, 1)
         # shell cmd
         cmd = 'mpirun -np %(nodes)s python %(pyfile)s' % locals()
-        print "* running %s" % cmd
+        print("* running %s" % cmd)
         if os.system(cmd):
             raise RuntimeError("%s failed" % cmd)
-        print "done."
+        print("done.")
         return
     return _

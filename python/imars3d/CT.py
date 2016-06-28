@@ -146,10 +146,12 @@ class CT:
         import tomopy
         X = proj.shape[-1]
         DEVIATION = 40 # max deviation of rot center from center of image
+        print("* Exploring rotation center...")
         tomopy.write_center(
             proj.copy(), theta, cen_range=[X//2-DEVIATION, X//2+DEVIATION, 1.],
             dpath=os.path.join(workdir, 'tomopy-findcenter'), emission=False)
         if rot_center is None:
+            print("* Finding rotation center...")
             rot_center = tomopy.find_center(proj, theta, emission=False, init=X//2, tol=0.5)
             rot_center = rot_center[0]
             if rot_center < X//2 - DEVIATION or rot_center > X//2+DEVIATION:
@@ -166,11 +168,11 @@ class CT:
 
     def sniff(self):
         self.find_OB()
-        print " * found OB pattern: %s" % self.OB_pattern
+        print(" * found OB pattern: %s" % self.OB_pattern)
         self.find_DF()
-        print " * found DF pattern: %s" % self.DF_pattern
+        print(" * found DF pattern: %s" % self.DF_pattern)
         self.find_CT()
-        print " * found CT pattern: %s" % self.CT_pattern
+        print(" * found CT pattern: %s" % self.CT_pattern)
         return
         
         
