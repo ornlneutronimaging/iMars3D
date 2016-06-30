@@ -20,8 +20,8 @@ def filter_one(img, size):
     - img: image npy array
     - size: size of median filter
     """
-    # from scipy.ndimage import median_filter
-    # return median_filter(img, size)
+    from scipy.ndimage import median_filter
+    return median_filter(img, size)
     # convert to float32 if it is float
     typename = img.dtype.name
     if typename.startswith('float') and typename != 'float32':
