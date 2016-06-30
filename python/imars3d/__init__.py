@@ -98,7 +98,7 @@ def build_sinograms(ct_series, workdir='work'):
         os.path.join(workdir, "sinogram_%i.tiff"),
         name = "Sinogram", mode = 'w',
     )
-    proj = components.Projection()
+    proj = components.Projection_MP()
     proj(ct_series, sinograms)
     return ct_series.identifiers, sinograms
 
