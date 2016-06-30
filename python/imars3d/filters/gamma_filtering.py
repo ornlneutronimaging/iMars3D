@@ -43,3 +43,5 @@ def remove_outliers_bymedian(img, outlier_indexes, boxsize=5):
             img[max(ind1-halfsize, 0):ind1+halfsize+1, max(ind2-halfsize, 0):ind2+halfsize+1])
         continue
     return img
+
+# End of file
