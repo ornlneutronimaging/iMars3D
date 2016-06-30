@@ -12,6 +12,7 @@ def timeit(method):
 
         print >> __timeit__logstream, '%r (%r, %r) %2.2f sec' % \
               (method.__name__, args, kw, te-ts)
+        __timeit__logstream.flush()
         return result
 
     return timed
@@ -36,7 +37,6 @@ method(*args, **kwds)
         dir = tempfile.mkdtemp(dir=tmpdir)
         # save params
         args_pkl = os.path.join(dir, "args.pkl")
-        import pickle
         allargs = args, kwds
         pickle.dump(allargs, open(args_pkl, 'wb'))
         # write python code
@@ -53,8 +53,13 @@ method(*args, **kwds)
         # shell cmd
         cmd = 'mpirun -np %(nodes)s python %(pyfile)s' % locals()
         print("* running %s" % cmd)
-        if os.system(cmd):
-            raise RuntimeError("%s failed" % cmd)
+        import subprocess as sp, shlex
+        args = shlex.split(cmd)
+        logfile = os.path.join(dir, 'log.run')
+        outstream = open(logfile, 'wt')
+        outstream.write('%s\n\n' % cmd)
+        if sp.call(args, stdout=outstream, stderr=outstream, shell=False):
+            raise RuntimeError("%s failed. See log file %s" % (cmd, logfile))
         print("done.")
         return
     return _
