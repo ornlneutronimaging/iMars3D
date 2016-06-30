@@ -63,48 +63,7 @@ class Normalization(AbstractComponent):
 
 
 from .tilt import TiltCalculation, TiltCorrection
-
-
-class Projection(AbstractComponent):
-
-    def __call__(self, ct_series, sinograms):
-        """convert ct image series to sinogram series"""
-        N = ct_series.nImages
-        img0 = ct_series[0]
-        data0 = img0.data
-        Y, X = data0.shape
-        # array to hold all data
-        import numpy as np
-        data = np.zeros( (N, Y, X), dtype="float32")
-        # read data
-        for i in range(N):
-            data[i, :] = ct_series[i].data
-            continue
-        # 
-        prefix = "Computing sinograms from %r" % (ct_series.name or "",)
-        bar = progressbar.ProgressBar(
-            widgets=[
-                prefix,
-                progressbar.Percentage(),
-                progressbar.Bar(),
-                ' [', progressbar.ETA(), '] ',
-            ],
-            max_value = Y - 1
-        )
-        from ..filters.smoothing import filter_one as smooth
-        sinograms.identifiers = range(Y)
-        for y in range(Y):
-            sino = sinograms[y]
-            if sinograms.exists(y):
-                print("%s already existed" % sino)
-                bar.update(y)
-                continue
-            sino.data = data[:, y, :]
-            sino.data = smooth(sino.data, 5)
-            sino.save()
-            bar.update(y)
-            continue
-        return
+from .projection import Projection, Projection_MP
 
 
 class IntensityFluctuationCorrection(AbstractComponent):
