@@ -2,31 +2,17 @@
 # -*- coding: utf-8 -*-
 
 
+DESC = 'Cropping'
+def filter_parallel(ct_series, output_img_series, **kwds):
+    from .batch import filter_parallel
+    return filter_parallel(
+        ct_series, output_img_series, DESC, filter_one, **kwds)
+
+
 def filter(ct_series, output_img_series, **kwds):
-    """
-    * ct_series: an image series for ct scan
-    """
-    prefix = "Cropping %s:" % ct_series.name or ""
-    N = ct_series.nImages
-    import progressbar
-    bar = progressbar.ProgressBar(
-        widgets=[
-            prefix,
-            progressbar.Percentage(),
-            progressbar.Bar(),
-            ' [', progressbar.ETA(), '] ',
-        ],
-        max_value = N-1
-    )
-    for i, angle in enumerate(ct_series.identifiers):
-        # skip over existing results
-        if not output_img_series.exists(angle):
-            data = ct_series.getData(angle)
-            output_img_series.putImage(angle, filter_one(data, **kwds))
-        bar.update(i)
-        continue
-    print
-    return
+    from .batch import filter
+    return filter(
+        ct_series, output_img_series, DESC, filter_one, **kwds)
 
 
 def filter_one(img, box=None):
@@ -38,3 +24,4 @@ def filter_one(img, box=None):
     img = img[top:bottom+1, left:right+1]
     return img
 
+# End of file
