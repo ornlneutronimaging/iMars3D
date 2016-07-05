@@ -134,7 +134,7 @@ class CT:
         normalized = i3.normalize(gamma_filtered, dfs, obs, workdir=os.path.join(workdir, 'normalization'))
         tilt_corrected = i3.correct_tilt(
             normalized, workdir=os.path.join(workdir, 'tilt-correction'),
-            max_npairs=None)
+            max_npairs=None, parallel=self.parallel_preprocessing)
         if_corrected = i3.correct_intensity_fluctuation(tilt_corrected, workdir=os.path.join(workdir, 'intensity-fluctuation-correction'))
         return if_corrected
 

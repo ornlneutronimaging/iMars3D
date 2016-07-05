@@ -68,7 +68,7 @@ def normalize(ct_series,  dfs, obs, workdir='work'):
     return normalized_ct
 
 @dec.timeit
-def correct_tilt(ct_series, workdir='work', max_npairs=10):
+def correct_tilt(ct_series, workdir='work', max_npairs=10, parallel=True):
     tiltcalc = components.TiltCalculation(workdir=workdir, max_npairs=max_npairs)
     tilt = tiltcalc(ct_series)
     
@@ -78,7 +78,7 @@ def correct_tilt(ct_series, workdir='work', max_npairs=10):
         name = "Tilt corrected CT", mode = 'w',
     )
     tiltcorr = components.TiltCorrection(tilt=tilt)
-    tiltcorr(ct_series, tiltcorrected_series)
+    tiltcorr(ct_series, tiltcorrected_series, parallel=parallel)
     return tiltcorrected_series
     
 @dec.timeit

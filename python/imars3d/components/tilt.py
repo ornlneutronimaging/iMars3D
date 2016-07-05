@@ -25,7 +25,7 @@ class TiltCorrection(AbstractComponent):
         self.tilt = tilt
         return
     
-    def __call__(self, in_img_series, out_img_series):
+    def __call__(self, in_img_series, out_img_series, parallel=True):
         tilt = self.tilt
         inputimg = lambda identifier: in_img_series.getImage(identifier)
         outputimg = lambda identifier: out_img_series.getImage(identifier)
@@ -33,7 +33,10 @@ class TiltCorrection(AbstractComponent):
         inimgsize = max(inputimg(in_img_series.identifiers[0]).data.shape)
         border_pixels = _calc_border_pixels(tilt, inimgsize)
         # 
-        from ..filters.batch import filter
+        if parallel:
+            from ..filters.batch import filter_parallel as filter
+        else:
+            from ..filters.batch import filter
         DESC = "Applying tilt"
         return filter(
             in_img_series, out_img_series, DESC, apply_tilt_oneimg,
