@@ -19,17 +19,30 @@ def compute(ct_series, workdir, max_npairs=10):
         if max_npairs is not None and i>max_npairs:
             break # don't need too many pairs
         logger.info("working on pair %s, %s" % (a0, a180))
-        logging_dir=os.path.join(workdir, "log.tilt.%s"%i)
-        pc = phasecorrelation.PhaseCorrelation(logging_dir=logging_dir)
-        tilt, weight = pc(img(a0), img(a180))
-        open(os.path.join(logging_dir, 'tilt.out'), 'wt')\
-            .write("%s\t%s\n" % (tilt, weight))
+        logging_dir=os.path.join(workdir, "log.tilt.%s_vs_%s"%(a0, a180))
+        if not os.path.exists(logging_dir):
+            pc = phasecorrelation.PhaseCorrelation(logging_dir=logging_dir)
+            tilt, weight = pc(img(a0), img(a180))
+            open(os.path.join(logging_dir, 'tilt.out'), 'wt')\
+                .write("%s\t%s\n" % (tilt, weight))
+        else:
+            s = open(os.path.join(logging_dir, 'tilt.out'), 'rt').read()
+            s = s.strip()
+            tilt, weight = map(float, s.split())            
         tilts.append((tilt, weight))
         logger.info("calculated tilt: %s. weight: %s" % (tilt, weight))
         continue
     tilts = np.array(tilts)
     tilts, weights = tilts.T
-    tilt = (tilts * weights).sum() / weights.sum()
+    hist,edges = np.histogram(tilts, bins=np.arange(-5.1, 5.2, 0.2), weights=weights)
+    maxind = np.argmax(hist)
+    bracket = edges[maxind], edges[maxind+1]
+    condition = (tilts<bracket[1]+0.1) * (tilts>bracket[0]-0.1)
+    tilts2 = tilts[ condition ]
+    weights2 = weights[condition]
+    tilt = (tilts2 * weights2).sum() / weights2.sum()
+    logger.info("tilt was calculated from: %s samples out of total of %s" % (
+        weights2.sum(), weights.sum()))
     # save to cache
     open(tilt_out, 'wt').write(str(tilt))
     return tilt
