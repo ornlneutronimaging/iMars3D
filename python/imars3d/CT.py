@@ -9,7 +9,8 @@ from . import decorators as dec
 class CT:
 
     def __init__(self, path, CT_subdir=None, CT_identifier=None,
-                 workdir='work', outdir='out'):
+                 workdir='work', outdir='out', 
+                 parallel_preprocessing=True):
         self.path = path
         if CT_subdir is not None:
             # if ct is in a subdir, its name most likely the
@@ -37,6 +38,7 @@ class CT:
 
         self.workdir = workdir
         self.outdir = outdir
+        self.parallel_preprocessing = parallel_preprocessing
         return
 
 
@@ -104,13 +106,17 @@ class CT:
         bottom = bottom or Y
         box = left, right, top, bottom
         from . import crop
-        return crop(series, workdir=os.path.join(self.workdir, 'crop'), box=box)
+        return crop(
+            series, workdir=os.path.join(self.workdir, 'crop'), box=box,
+            parallel = self.parallel_preprocessing)
 
 
     @dec.timeit
     def smooth(self, series, size=None):
         from . import smooth
-        return smooth(series, workdir=os.path.join(self.workdir, 'smoothed'), size=size)
+        return smooth(
+            series, workdir=os.path.join(self.workdir, 'smoothed'), size=size,
+            parallel = self.parallel_preprocessing)
 
     @dec.timeit
     def preprocess(self, workdir=None, outdir=None):
@@ -122,9 +128,13 @@ class CT:
         theta = self.theta
         # preprocess
         import imars3d as i3
-        gamma_filtered = i3.gamma_filter(ct_series, workdir=os.path.join(workdir, 'gamma-filter'))
+        gamma_filtered = i3.gamma_filter(
+            ct_series, workdir=os.path.join(workdir, 'gamma-filter'),
+            parallel = self.parallel_preprocessing)
         normalized = i3.normalize(gamma_filtered, dfs, obs, workdir=os.path.join(workdir, 'normalization'))
-        tilt_corrected = i3.correct_tilt(normalized, workdir=os.path.join(workdir, 'tilt-correction'))
+        tilt_corrected = i3.correct_tilt(
+            normalized, workdir=os.path.join(workdir, 'tilt-correction'),
+            max_npairs=None)
         if_corrected = i3.correct_intensity_fluctuation(tilt_corrected, workdir=os.path.join(workdir, 'intensity-fluctuation-correction'))
         return if_corrected
 
@@ -136,7 +146,9 @@ class CT:
         theta = self.theta
         # preprocess
         import imars3d as i3
-        angles, sinograms = i3.build_sinograms(ct_series, workdir=os.path.join(workdir, 'sinogram'))
+        angles, sinograms = i3.build_sinograms(
+            ct_series, workdir=os.path.join(workdir, 'sinogram'),
+            parallel = self.parallel_preprocessing)
         # take the middle part to calculate the center of rotation
         NSINO = len(sinograms)
         sino = [s.data for s in sinograms[NSINO//3: NSINO*2//3]]

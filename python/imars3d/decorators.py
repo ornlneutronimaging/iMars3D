@@ -12,7 +12,7 @@ def timeit(method):
 
         print >> __timeit__logstream, '%r (%r, %r) %2.2f sec' % \
               (method.__name__, args, kw, te-ts)
-        __timeit__logstream.flush()
+        # __timeit__logstream.flush()
         return result
 
     return timed

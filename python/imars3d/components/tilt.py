@@ -7,14 +7,15 @@ from .AbstractComponent import AbstractComponent
 
 class TiltCalculation(AbstractComponent):
     
-    def __init__(self, workdir):
+    def __init__(self, workdir, max_npairs=10):
         self.workdir = workdir
+        self.max_npairs = max_npairs
         return
     
     def __call__(self, ct_series):
         workdir = self.workdir
         from ..tilt import compute
-        return compute(ct_series, workdir)
+        return compute(ct_series, workdir, max_npairs=self.max_npairs)
 
 
 class TiltCorrection(AbstractComponent):

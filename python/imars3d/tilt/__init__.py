@@ -3,7 +3,7 @@
 import os, numpy as np
 import logging
 
-def compute(ct_series, workdir):
+def compute(ct_series, workdir, max_npairs=10):
     logger = logging.getLogger("imars3d.tilt")
     tilt_out = os.path.join(workdir, "tilt.out")
     # cached value?
@@ -16,7 +16,8 @@ def compute(ct_series, workdir):
     pairs = _find180DegImgPairs(ct_series.identifiers)
     tilts = []
     for i, (a0, a180) in enumerate(pairs):
-        if i>10: break # don't need too many pairs
+        if max_npairs is not None and i>max_npairs:
+            break # don't need too many pairs
         logger.info("working on pair %s, %s" % (a0, a180))
         logging_dir=os.path.join(workdir, "log.tilt.%s"%i)
         pc = phasecorrelation.PhaseCorrelation(logging_dir=logging_dir)

@@ -18,8 +18,11 @@ class Smoothing(AbstractComponent):
         self.size = size
         return
     
-    def __call__(self, ct_series, output_series):
-        from ..filters.smoothing import filter_parallel as filter
+    def __call__(self, ct_series, output_series, parallel=True):
+        if parallel:
+            from ..filters.smoothing import filter_parallel as filter
+        else:
+            from ..filters.smoothing import filter
         filter(ct_series, output_series, size = self.size)
         return
 
@@ -30,8 +33,11 @@ class Cropping(AbstractComponent):
         self.box = box
         return
     
-    def __call__(self, ct_series, output_series):
-        from ..filters.cropping import filter
+    def __call__(self, ct_series, output_series, parallel=True):
+        if parallel:
+            from ..filters.cropping import filter_parallel as filter
+        else:
+            from ..filters.cropping import filter
         filter(ct_series, output_series, box = self.box)
         return
 
@@ -42,9 +48,12 @@ class GammaFiltering(AbstractComponent):
         self.boxsize = boxsize
         return
     
-    def __call__(self, ct_series, output_img_series):
+    def __call__(self, ct_series, output_img_series, parallel=True):
         boxsize = self.boxsize
-        from ..filters.gamma_filtering import filter_parallel as filter
+        if parallel:
+            from ..filters.gamma_filtering import filter_parallel as filter
+        else:
+            from ..filters.gamma_filtering import filter
         filter(ct_series, output_img_series, boxsize=boxsize)
         return
 
