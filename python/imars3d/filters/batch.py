@@ -44,6 +44,8 @@ def filter_parallel_onenode(
                     WAIT_COUNT*WAIT_SECONDS, dir))
     #
     prefix = "%s %s:" % (desc, ct_series.name or "")
+    if rank==0:
+        print "Running %s on %s" % (desc, ct_series.name)
     totalN = ct_series.nImages
     # number of images to process in this process
     N = int(np.ceil(totalN*1. / size))
