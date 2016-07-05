@@ -19,20 +19,16 @@ class Projection(AbstractComponent):
         import numpy as np
         data = np.zeros( (N, Y, X), dtype="float32")
         # read data
+        prefix = "Reading data from %r for sinogram building" % (
+            ct_series.name or "",)
+        bar = create_pbar(prefix, N-1)
         for i in range(N):
+            bar.update(i)
             data[i, :] = ct_series[i].data
             continue
         # 
         prefix = "Computing sinograms from %r" % (ct_series.name or "",)
-        bar = progressbar.ProgressBar(
-            widgets=[
-                prefix,
-                progressbar.Percentage(),
-                progressbar.Bar(),
-                ' [', progressbar.ETA(), '] ',
-            ],
-            max_value = Y - 1
-        )
+        bar = create_pbar(prefix, Y-1)
         from ..filters.smoothing import filter_one as smooth
         sinograms.identifiers = range(Y)
         for y in range(Y):
@@ -47,6 +43,16 @@ class Projection(AbstractComponent):
             bar.update(y)
             continue
         return
+
+create_pbar = lambda prefix, max: progressbar.ProgressBar(
+    widgets=[
+        prefix,
+        progressbar.Percentage(),
+        progressbar.Bar(),
+        ' [', progressbar.ETA(), '] ',
+    ],
+    max_value = max
+)
 
 
 class Projection_MP(AbstractComponent):
