@@ -8,6 +8,9 @@ to functions working for an image series
 
 import numpy as np, sys, os, time
 
+WAIT_COUNT = 10 # wait this many times for the master node to create the output dir
+WAIT_SECONDS = 1.0 # wait this many seconds every time
+
 def filter_parallel_onenode(
         ct_series, output_img_series, desc, filter_one, **kwds):
     """
@@ -21,14 +24,24 @@ def filter_parallel_onenode(
     comm = MPI.COMM_WORLD
     size = comm.Get_size()
     rank = comm.Get_rank()
+    # start processing at different time
+    time.sleep(rank*0.2)
     # create the output dir
     dir = os.path.dirname(output_img_series.filename_template)
     if not os.path.exists(dir):
         if rank == 0:
             os.makedirs(dir)
-        comm.Barrier()
-    # start processing at different time
-    time.sleep(rank*0.2)
+        else:
+            created = False
+            for i in range(WAIT_COUNT):
+                time.sleep(WAIT_SECONDS)
+                if os.path.exists(dir): 
+                    created = True
+                    break
+                continue
+            if not created:
+                raise IOError("Waited %s seconds, %s still not created" % (
+                    WAIT_COUNT*WAIT_SECONDS, dir))
     #
     prefix = "%s %s:" % (desc, ct_series.name or "")
     totalN = ct_series.nImages
