@@ -33,36 +33,20 @@ class TiltCorrection(AbstractComponent):
         inimgsize = max(inputimg(in_img_series.identifiers[0]).data.shape)
         border_pixels = _calc_border_pixels(tilt, inimgsize)
         # 
-        prefix = "Applying tilt to %r" % (in_img_series.name or "",)
-        N = in_img_series.nImages
-        bar = progressbar.ProgressBar(
-            widgets=[
-                prefix,
-                progressbar.Percentage(),
-                progressbar.Bar(),
-                ' [', progressbar.ETA(), '] ',
-            ],
-            max_value = N-1
-        )
-        from ..tilt import apply
-        for i,identifier in enumerate(in_img_series.identifiers):
-            # skip over existing result
-            if out_img_series.exists(identifier):
-                print("%s already existed" % out_img_series.getImage(identifier))
-                bar.update(i)
-                continue
-            # apply tilt
-            out = outputimg(identifier)
-            apply(tilt, inputimg(identifier), out, save=False)
-            # remove the border
-            out.data = out.data[border_pixels:-border_pixels, border_pixels:-border_pixels]
-            # save to disk
-            out.save()
-            # progress report
-            bar.update(i)
-            continue
-        print
-        return
+        from ..filters.batch import filter
+        DESC = "Applying tilt"
+        return filter(
+            in_img_series, out_img_series, DESC, apply_tilt_oneimg,
+            tilt=tilt, border=border_pixels)
+
+
+def apply_tilt_oneimg(img, tilt=None, border=None):
+    """apply tilt to the given image
+    """
+    from scipy import ndimage
+    import numpy as np
+    data = ndimage.rotate(img, -tilt)
+    return data[border:-border, border:-border]
 
 
 def _calc_border_pixels(angle, size):
