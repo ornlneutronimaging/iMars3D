@@ -7,7 +7,7 @@ def test():
     from imars3d import io
     dir = os.path.dirname(__file__)
     datadir = os.path.join(dir, "..", "..", 'iMars3D_data_set')
-    imgpath = os.path.join(datadir, 'injectorG_0.tiff')
+    imgpath = os.path.join(datadir, 'injectorG/normalized_000.000.tiff')
     img = io.ImageFile(imgpath).data
     edge = feature.canny(img, sigma=3)
     edge = np.array(edge, dtype="float32")
