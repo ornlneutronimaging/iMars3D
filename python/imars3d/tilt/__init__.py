@@ -34,17 +34,20 @@ def compute(ct_series, workdir, max_npairs=10):
         continue
     tilts = np.array(tilts)
     tilts, weights = tilts.T
+    tilt = (tilts * weights).sum() / weights.sum()
     hist,edges = np.histogram(tilts, bins=np.arange(-5.1, 5.2, 0.2), weights=weights)
     maxind = np.argmax(hist)
     bracket = edges[maxind], edges[maxind+1]
     condition = (tilts<bracket[1]+0.1) * (tilts>bracket[0]-0.1)
     tilts2 = tilts[ condition ]
     weights2 = weights[condition]
-    tilt = (tilts2 * weights2).sum() / weights2.sum()
-    logger.info("tilt was calculated from: %s samples out of total of %s" % (
+    tilt2 = (tilts2 * weights2).sum() / weights2.sum()
+    logger.info("tilt2 was calculated from: %s samples out of total of %s" % (
         weights2.sum(), weights.sum()))
     # save to cache
     open(tilt_out, 'wt').write(str(tilt))
+    tilt_out2 = os.path.join(workdir, "tilt.out2")
+    open(tilt_out2, 'wt').write(str(tilt2))
     return tilt
 
 
