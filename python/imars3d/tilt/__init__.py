@@ -3,14 +3,18 @@
 import os, numpy as np
 import logging
 
-def compute(ct_series, workdir, max_npairs=10):
+def compute(ct_series, workdir, max_npairs=10, calculator=None):
     logger = logging.getLogger("imars3d.tilt")
     tilt_out = os.path.join(workdir, "tilt.out")
     # cached value?
     if os.path.exists(tilt_out):
         return float(open(tilt_out).read())
     # computation
-    from . import phasecorrelation
+    if not calculator:
+        # from . import phasecorrelation
+        # calculator = phasecorrelation.PhaseCorrelation()
+        from . import use_centers
+        calculator = use_centers.Calculator(sigma=3, maxshift=200)
     img = lambda angle: ct_series.getImage(angle)
     # find opposite pairs
     pairs = _find180DegImgPairs(ct_series.identifiers)
@@ -21,8 +25,8 @@ def compute(ct_series, workdir, max_npairs=10):
         logger.info("working on pair %s, %s" % (a0, a180))
         logging_dir=os.path.join(workdir, "log.tilt.%s_vs_%s"%(a0, a180))
         if not os.path.exists(logging_dir):
-            pc = phasecorrelation.PhaseCorrelation(logging_dir=logging_dir)
-            tilt, weight = pc(img(a0), img(a180))
+            calculator.logging_dir=logging_dir
+            tilt, weight = calculator(img(a0), img(a180))
             open(os.path.join(logging_dir, 'tilt.out'), 'wt')\
                 .write("%s\t%s\n" % (tilt, weight))
         else:
