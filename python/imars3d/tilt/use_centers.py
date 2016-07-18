@@ -12,7 +12,8 @@ class Calculator:
         return
     
     def __call__(self, img0, img180):
-        return computeTilt(img0, img180, workdir=self.logging_dir, **self.opts), 1.0
+        slope, intercept = computeTilt(img0, img180, workdir=self.logging_dir, **self.opts)
+        return slope*180./np.pi, 1.0
 
 def computeTilt(img0, img180, workdir=None, **kwds):
     centers = np.array(
@@ -38,7 +39,7 @@ def computeTilt(img0, img180, workdir=None, **kwds):
     plt.savefig(os.path.join(workdir, "linefit.png"))
     plt.close()
     print(slope, intercept)
-    return
+    return slope, intercept
 
 
 def iterCenters(img0, img180, workdir=None, sigma=3, maxshift=20):
