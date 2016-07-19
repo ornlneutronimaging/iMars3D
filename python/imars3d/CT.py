@@ -3,6 +3,7 @@
 
 import os, glob
 import numpy as np
+import imars3d as i3
 import progressbar
 from . import decorators as dec
 
@@ -23,8 +24,16 @@ class CT:
             # the CT files are identified by string "CT"
             self.CT_subdir = '.'
             self.CT_identifier = CT_identifier or 'CT'
+        # workdir
+        if not os.path.exists(workdir):
+            os.makedirs(workdir)
+        self.workdir = workdir
+        # outdir
+        if not os.path.exists(outdir):
+            os.makedirs(outdir)
+        self.outdir = outdir
+        # find data paths
         self.sniff()
-
         from . import io
         # dark field
         self.dfs = io.imageCollection(self.DF_pattern, name="Dark Field")
@@ -36,8 +45,6 @@ class CT:
         pattern = self.CT_pattern
         self.ct_series = io.ImageFileSeries(pattern, identifiers = angles, name = "CT")
 
-        self.workdir = workdir
-        self.outdir = outdir
         self.parallel_preprocessing = parallel_preprocessing
         return
 
@@ -50,8 +57,12 @@ class CT:
         cropped = self.autoCrop(if_corrected)
         # smoothing
         smoothed = self.smooth(cropped, 5)
+        # correct tilt
+        tilt_corrected = i3.correct_tilt(
+            smoothed, workdir=os.path.join(workdir, 'tilt-correction'),
+            max_npairs=None, parallel=self.parallel_preprocessing)
         # reconstruct
-        self.reconstruct(smoothed, workdir=workdir, outdir=outdir, **kwds)
+        self.reconstruct(tilt_corrected, workdir=workdir, outdir=outdir, **kwds)
         return
 
 
@@ -127,15 +138,11 @@ class CT:
         ct_series = self.ct_series
         theta = self.theta
         # preprocess
-        import imars3d as i3
         gamma_filtered = i3.gamma_filter(
             ct_series, workdir=os.path.join(workdir, 'gamma-filter'),
             parallel = self.parallel_preprocessing)
         normalized = i3.normalize(gamma_filtered, dfs, obs, workdir=os.path.join(workdir, 'normalization'))
-        tilt_corrected = i3.correct_tilt(
-            normalized, workdir=os.path.join(workdir, 'tilt-correction'),
-            max_npairs=None, parallel=self.parallel_preprocessing)
-        if_corrected = i3.correct_intensity_fluctuation(tilt_corrected, workdir=os.path.join(workdir, 'intensity-fluctuation-correction'))
+        if_corrected = i3.correct_intensity_fluctuation(normalized, workdir=os.path.join(workdir, 'intensity-fluctuation-correction'))
         return if_corrected
 
 
@@ -145,7 +152,6 @@ class CT:
         outdir = outdir or self.outdir
         theta = self.theta
         # preprocess
-        import imars3d as i3
         angles, sinograms = i3.build_sinograms(
             ct_series, workdir=os.path.join(workdir, 'sinogram'),
             parallel = self.parallel_preprocessing)
@@ -158,24 +164,20 @@ class CT:
         import tomopy
         X = proj.shape[-1]
         DEVIATION = 40 # max deviation of rot center from center of image
-        print("* Exploring rotation center...")
+        print("* Exploring rotation center using tomopy...")
         tomopy.write_center(
             proj.copy(), theta, cen_range=[X//2-DEVIATION, X//2+DEVIATION, 1.],
             dpath=os.path.join(workdir, 'tomopy-findcenter'), emission=False)
         if rot_center is None:
-            print("* Finding rotation center...")
-            rot_center = tomopy.find_center(proj, theta, emission=False, init=X//2, tol=0.5)
-            rot_center = rot_center[0]
-            if rot_center < X//2 - DEVIATION or rot_center > X//2+DEVIATION:
-                raise RuntimeError(
-                    "Rotation center %s deviates a lot from the image center %s" \
-                    % (rot_center, X//2))
+            print("* Computing rotation center using 180deg pairs...")
+            from .tilt import find_rot_center
+            rot_center = find_rot_center.find(
+                ct_series, workdir=os.path.join(workdir, 'find-rot-center'))
         print('* Rotation center: %s' % rot_center)
         open(os.path.join(workdir, 'rot_center'), 'wt').write(str(rot_center))
         # reconstruct 
         recon = i3.reconstruct(angles, sinograms, workdir=outdir, center=rot_center)
         return
-        
 
 
     def sniff(self):
@@ -187,8 +189,12 @@ class CT:
         print(" * found CT pattern: %s" % self.CT_pattern)
         return
         
-        
+    CT_pattern_cache = "CT_PATTERN"
     def find_CT(self):
+        cache_path = os.path.join(self.workdir, self.CT_pattern_cache)
+        if os.path.exists(cache_path):
+            self.CT_pattern = open(cache_path, 'rt').read().strip()
+            return
         CT_identifier = self.CT_identifier
         subdir = os.path.join(self.path, self.CT_subdir)
         patterns = [
@@ -272,6 +278,7 @@ class CT:
             raise RuntimeError("Failed to find printf pattern. Filename: %s" %(
                 fns[0]))
         self.CT_pattern = found
+        open(cache_path, 'wt').write(found)
         return
 
     
