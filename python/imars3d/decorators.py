@@ -53,9 +53,15 @@ method(*args, **kwds)
         # shell cmd
         cmd = 'mpirun -np %(nodes)s python %(pyfile)s' % locals()
         print("* running %s" % cmd)
+        print("  - args: %s" % (args,))
+        print("  - kwds:")
+        for k,v in kwds.iteritems():
+            print("    - %s: %s" % (k,v))
+            continue
         import subprocess as sp, shlex
         args = shlex.split(cmd)
         logfile = os.path.join(dir, 'log.run')
+        print("  - logging in %s" % os.path.abspath(logfile))
         outstream = open(logfile, 'wt')
         outstream.write('%s\n\n' % cmd)
         if sp.call(args, stdout=outstream, stderr=outstream, shell=False):
