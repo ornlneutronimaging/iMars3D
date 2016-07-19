@@ -48,6 +48,7 @@ def iterCenters(img0, img180, workdir=None, sigma=3, maxshift=20):
     edge180 = edge180[:, ::-1]
     for i, (line0, line180) in enumerate(zip(edge0, edge180)):
         c = _computeCenterOfRot(line0, line180, maxshift=maxshift)
+        # print i,c
         if c>(line0.size-maxshift)/2.+maxshift//40.: # remove edge cases
             yield i, c
         continue
