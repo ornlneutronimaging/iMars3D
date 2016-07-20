@@ -36,11 +36,13 @@ install:
 #  - conda install -n testenv -c scikit-xray xraylib lmfit=0.8.3 netcdf4 # install from scikit-xray channel
   - source activate testenv
   - pip install progressbar2
+  - pip install awscli
   - python setup.py install
 #  - pip install coveralls
 #  - pip install codecov
 
 script:
+   - python builders/setup-aws-testconfig.py
    - python tests/getdata.py
    - python tests/imars3d/signon.py
    - py.test
