@@ -10,8 +10,10 @@ def timeit(method):
         result = method(*args, **kw)
         te = time.time()
 
-        print >> __timeit__logstream, '%r (%r, %r) %2.2f sec' % \
-              (method.__name__, args, kw, te-ts)
+        print(
+            '%r (%r, %r) %2.2f sec' % (method.__name__, args, kw, te-ts),
+            file=__timeit__logstream
+        )
         # __timeit__logstream.flush()
         return result
 
