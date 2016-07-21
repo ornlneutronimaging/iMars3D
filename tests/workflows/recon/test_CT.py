@@ -9,7 +9,7 @@ print(dir)
 
 def test():
     from imars3d.CT import CT
-    ct = CT(dir)
+    ct = CT(dir, clean_on_the_fly=True)
     ct.recon()
     return
 

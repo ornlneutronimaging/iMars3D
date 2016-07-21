@@ -103,6 +103,16 @@ class ImageFileSeries(base):
         return
 
 
+    def removeAll(self):
+        """remove all image files"""
+        for identifier in self.identifiers:
+            p = self.getFilename(identifier)
+            if os.path.exists(p):
+                os.remove(p)
+            continue
+        return
+
+
     def _getPathpattern(self, identifier):
         path_pattern = self.filename_template % (identifier,)
         dir = os.path.dirname(path_pattern)

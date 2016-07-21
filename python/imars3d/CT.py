@@ -11,7 +11,7 @@ class CT:
 
     def __init__(self, path, CT_subdir=None, CT_identifier=None,
                  workdir='work', outdir='out', 
-                 parallel_preprocessing=True):
+                 parallel_preprocessing=True, clean_on_the_fly=False):
         self.path = path
         if CT_subdir is not None:
             # if ct is in a subdir, its name most likely the
@@ -46,6 +46,7 @@ class CT:
         self.ct_series = io.ImageFileSeries(pattern, identifiers = angles, name = "CT")
 
         self.parallel_preprocessing = parallel_preprocessing
+        self.clean_on_the_fly = clean_on_the_fly
         return
 
 
@@ -55,13 +56,19 @@ class CT:
         if_corrected = self.preprocess(workdir=workdir, outdir=outdir)
         # auto-cropping
         cropped = self.autoCrop(if_corrected)
+        if self.clean_on_the_fly:
+            if_corrected.removeAll()
         # smoothing
         pre = smoothed = self.smooth(cropped, 5)
+        if self.clean_on_the_fly:
+            cropped.removeAll()
         # correct tilt
         for i in range(3):
             tilt_corrected, tilt = i3.correct_tilt(
                 pre, workdir=os.path.join(workdir, 'tilt-correction-%s' % i),
                 max_npairs=None, parallel=self.parallel_preprocessing)
+            if self.clean_on_the_fly:
+                pre.removeAll()
             if abs(tilt) < .5: break
             pre = tilt_corrected
             continue
@@ -148,7 +155,11 @@ class CT:
             ct_series, workdir=os.path.join(workdir, 'gamma-filter'),
             parallel = self.parallel_preprocessing)
         normalized = i3.normalize(gamma_filtered, dfs, obs, workdir=os.path.join(workdir, 'normalization'))
+        if self.clean_on_the_fly:
+            gamma_filtered.removeAll()
         if_corrected = i3.correct_intensity_fluctuation(normalized, workdir=os.path.join(workdir, 'intensity-fluctuation-correction'))
+        if self.clean_on_the_fly:
+            normalized.removeAll()
         return if_corrected
 
 
