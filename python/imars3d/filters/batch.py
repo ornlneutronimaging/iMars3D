@@ -45,7 +45,7 @@ def filter_parallel_onenode(
     #
     prefix = "%s %s:" % (desc, ct_series.name or "")
     if rank==0:
-        print "Running %s on %s" % (desc, ct_series.name)
+        print( "Running %s on %s" % (desc, ct_series.name) )
     totalN = ct_series.nImages
     # number of images to process in this process
     N = int(np.ceil(totalN*1. / size))
@@ -53,7 +53,7 @@ def filter_parallel_onenode(
     start, stop = rank*N, min(totalN, (rank+1)*N)
     # 
     for angle in ct_series.identifiers[start: stop]:
-        print>>sys.stderr, "%s: %s" % (prefix, angle)
+        print("%s: %s" % (prefix, angle), file=sys.stderr)
         # skip over existing results
         if not output_img_series.exists(angle):
             data = ct_series.getData(angle)
@@ -91,7 +91,7 @@ def filter(ct_series, output_img_series, desc, filter_one, **kwds):
             output_img_series.putImage(angle, filter_one(data, **kwds))
         bar.update(i)
         continue
-    print
+    print()
     return
 
 # End of file
