@@ -9,9 +9,13 @@ from . import decorators as dec
 
 class CT:
 
-    def __init__(self, path, CT_subdir=None, CT_identifier=None,
-                 workdir='work', outdir='out', 
-                 parallel_preprocessing=True):
+    def __init__(
+            self, path, CT_subdir=None, CT_identifier=None,
+            workdir='work', outdir='out', 
+            parallel_preprocessing=True, parallel_nodes=None,
+            clean_on_the_fly=False,
+            vertical_range=None
+    ):
         self.path = path
         if CT_subdir is not None:
             # if ct is in a subdir, its name most likely the
@@ -46,6 +50,9 @@ class CT:
         self.ct_series = io.ImageFileSeries(pattern, identifiers = angles, name = "CT")
 
         self.parallel_preprocessing = parallel_preprocessing
+        self.parallel_nodes = parallel_nodes
+        self.clean_on_the_fly = clean_on_the_fly
+        self.vertical_range = vertical_range
         return
 
 
@@ -55,12 +62,24 @@ class CT:
         if_corrected = self.preprocess(workdir=workdir, outdir=outdir)
         # auto-cropping
         cropped = self.autoCrop(if_corrected)
+        if self.clean_on_the_fly:
+            if_corrected.removeAll()
         # smoothing
-        smoothed = self.smooth(cropped, 5)
+        pre = smoothed = self.smooth(cropped, 5)
+        if self.clean_on_the_fly:
+            cropped.removeAll()
         # correct tilt
-        tilt_corrected = i3.correct_tilt(
-            smoothed, workdir=os.path.join(workdir, 'tilt-correction'),
-            max_npairs=None, parallel=self.parallel_preprocessing)
+        for i in range(3):
+            tilt_corrected, tilt = i3.correct_tilt(
+                pre, workdir=os.path.join(workdir, 'tilt-correction-%s' % i),
+                max_npairs=None, parallel=self.parallel_preprocessing)
+            if self.clean_on_the_fly:
+                pre.removeAll()
+            if abs(tilt) < .5: break
+            pre = tilt_corrected
+            continue
+        if abs(tilt) >= .5:
+            raise RuntimeError("failed to bring tilt down to less than .5 degrees in 3 rounds")
         # reconstruct
         self.reconstruct(tilt_corrected, workdir=workdir, outdir=outdir, **kwds)
         return
@@ -142,7 +161,11 @@ class CT:
             ct_series, workdir=os.path.join(workdir, 'gamma-filter'),
             parallel = self.parallel_preprocessing)
         normalized = i3.normalize(gamma_filtered, dfs, obs, workdir=os.path.join(workdir, 'normalization'))
+        if self.clean_on_the_fly:
+            gamma_filtered.removeAll()
         if_corrected = i3.correct_intensity_fluctuation(normalized, workdir=os.path.join(workdir, 'intensity-fluctuation-correction'))
+        if self.clean_on_the_fly:
+            normalized.removeAll()
         return if_corrected
 
 
@@ -165,9 +188,9 @@ class CT:
         X = proj.shape[-1]
         DEVIATION = 40 # max deviation of rot center from center of image
         print("* Exploring rotation center using tomopy...")
-        tomopy.write_center(
-            proj.copy(), theta, cen_range=[X//2-DEVIATION, X//2+DEVIATION, 1.],
-            dpath=os.path.join(workdir, 'tomopy-findcenter'), emission=False)
+        # tomopy.write_center(
+        #    proj.copy(), theta, cen_range=[X//2-DEVIATION, X//2+DEVIATION, 1.],
+        #    dpath=os.path.join(workdir, 'tomopy-findcenter'), emission=False)
         if rot_center is None:
             print("* Computing rotation center using 180deg pairs...")
             from .tilt import find_rot_center
@@ -176,7 +199,12 @@ class CT:
         print('* Rotation center: %s' % rot_center)
         open(os.path.join(workdir, 'rot_center'), 'wt').write(str(rot_center))
         # reconstruct 
-        recon = i3.reconstruct(angles, sinograms, workdir=outdir, center=rot_center)
+        if self.vertical_range:
+            sinograms = sinograms[self.vertical_range]
+        recon = i3.reconstruct(
+            angles, sinograms, 
+            workdir=outdir, center=rot_center,
+            nodes=self.parallel_nodes)
         return
 
 
@@ -190,10 +218,13 @@ class CT:
         return
         
     CT_pattern_cache = "CT_PATTERN"
+    CT_angles_cache = "CT_ANGLES"
     def find_CT(self):
-        cache_path = os.path.join(self.workdir, self.CT_pattern_cache)
-        if os.path.exists(cache_path):
-            self.CT_pattern = open(cache_path, 'rt').read().strip()
+        pattern_cache_path = os.path.join(self.workdir, self.CT_pattern_cache)
+        angles_cache_path = os.path.join(self.workdir, self.CT_angles_cache)
+        if os.path.exists(pattern_cache_path) and os.path.exists(angles_cache_path):
+            self.CT_pattern = open(pattern_cache_path, 'rt').read().strip()
+            self.angles = np.load(angles_cache_path)
             return
         CT_identifier = self.CT_identifier
         subdir = os.path.join(self.path, self.CT_subdir)
@@ -278,7 +309,8 @@ class CT:
             raise RuntimeError("Failed to find printf pattern. Filename: %s" %(
                 fns[0]))
         self.CT_pattern = found
-        open(cache_path, 'wt').write(found)
+        open(pattern_cache_path, 'wt').write(found)
+        np.save(angles_cache_path, self.angles)
         return
 
     

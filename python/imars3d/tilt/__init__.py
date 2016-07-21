@@ -14,7 +14,7 @@ def compute(ct_series, workdir, max_npairs=10, calculator=None):
         # from . import phasecorrelation
         # calculator = phasecorrelation.PhaseCorrelation()
         from . import use_centers
-        calculator = use_centers.Calculator(sigma=3, maxshift=200)
+        calculator = use_centers.Calculator(sigma=10, maxshift=200)
     img = lambda angle: ct_series.getImage(angle)
     # find opposite pairs
     pairs = _find180DegImgPairs(ct_series.identifiers)

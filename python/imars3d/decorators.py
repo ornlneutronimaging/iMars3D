@@ -10,8 +10,9 @@ def timeit(method):
         result = method(*args, **kw)
         te = time.time()
 
-        print >> __timeit__logstream, '%r (%r, %r) %2.2f sec' % \
-              (method.__name__, args, kw, te-ts)
+        __timeit__logstream.write(
+            '%r (%r, %r) %2.2f sec\n' % (method.__name__, args, kw, te-ts)
+        )
         # __timeit__logstream.flush()
         return result
 
@@ -55,7 +56,7 @@ method(*args, **kwds)
         print("* running %s" % cmd)
         print("  - args: %s" % (args,))
         print("  - kwds:")
-        for k,v in kwds.iteritems():
+        for k,v in kwds.items():
             print("    - %s: %s" % (k,v))
             continue
         import subprocess as sp, shlex

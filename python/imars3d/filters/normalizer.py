@@ -26,7 +26,7 @@ def average(image_collection):
             res += data
         bar.update(i)
         continue
-    print
+    print()
     return res/N
 
 
@@ -74,7 +74,7 @@ def normalize(ct_series, df_images, ob_images, workdir, output_img_series):
             output_img_series.putImage(angle, data)
         bar.update(i)
         continue
-    print
+    print()
     return
 
 # End of file

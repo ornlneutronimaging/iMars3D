@@ -71,7 +71,7 @@ class PhaseCorrelation:
             tilt = tilt-360
         # tilt is the rotation angle divided by 2
         self._updateProgress()
-        print
+        print()
         return tilt/2, weight
         
     
