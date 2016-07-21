@@ -186,9 +186,9 @@ class CT:
         X = proj.shape[-1]
         DEVIATION = 40 # max deviation of rot center from center of image
         print("* Exploring rotation center using tomopy...")
-        tomopy.write_center(
-            proj.copy(), theta, cen_range=[X//2-DEVIATION, X//2+DEVIATION, 1.],
-            dpath=os.path.join(workdir, 'tomopy-findcenter'), emission=False)
+        # tomopy.write_center(
+        #    proj.copy(), theta, cen_range=[X//2-DEVIATION, X//2+DEVIATION, 1.],
+        #    dpath=os.path.join(workdir, 'tomopy-findcenter'), emission=False)
         if rot_center is None:
             print("* Computing rotation center using 180deg pairs...")
             from .tilt import find_rot_center
