@@ -79,7 +79,7 @@ def correct_tilt(ct_series, workdir='work', max_npairs=10, parallel=True):
     )
     tiltcorr = components.TiltCorrection(tilt=tilt)
     tiltcorr(ct_series, tiltcorrected_series, parallel=parallel)
-    return tiltcorrected_series
+    return tiltcorrected_series, tilt
     
 @dec.timeit
 def correct_intensity_fluctuation(ct_series, workdir='work'):

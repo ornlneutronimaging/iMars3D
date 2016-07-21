@@ -56,11 +56,17 @@ class CT:
         # auto-cropping
         cropped = self.autoCrop(if_corrected)
         # smoothing
-        smoothed = self.smooth(cropped, 5)
+        pre = smoothed = self.smooth(cropped, 5)
         # correct tilt
-        tilt_corrected = i3.correct_tilt(
-            smoothed, workdir=os.path.join(workdir, 'tilt-correction'),
-            max_npairs=None, parallel=self.parallel_preprocessing)
+        for i in range(3):
+            tilt_corrected, tilt = i3.correct_tilt(
+                pre, workdir=os.path.join(workdir, 'tilt-correction-%s' % i),
+                max_npairs=None, parallel=self.parallel_preprocessing)
+            if abs(tilt) < .5: break
+            pre = tilt_corrected
+            continue
+        if abs(tilt) >= .5:
+            raise RuntimeError("failed to bring tilt down to less than .5 degrees in 3 rounds")
         # reconstruct
         self.reconstruct(tilt_corrected, workdir=workdir, outdir=outdir, **kwds)
         return
@@ -190,10 +196,13 @@ class CT:
         return
         
     CT_pattern_cache = "CT_PATTERN"
+    CT_angles_cache = "CT_ANGLES"
     def find_CT(self):
-        cache_path = os.path.join(self.workdir, self.CT_pattern_cache)
-        if os.path.exists(cache_path):
-            self.CT_pattern = open(cache_path, 'rt').read().strip()
+        pattern_cache_path = os.path.join(self.workdir, self.CT_pattern_cache)
+        angles_cache_path = os.path.join(self.workdir, self.CT_angles_cache)
+        if os.path.exists(pattern_cache_path) and os.path.exists(angles_cache_path):
+            self.CT_pattern = open(pattern_cache_path, 'rt').read().strip()
+            self.angles = np.load(angles_cache_path)
             return
         CT_identifier = self.CT_identifier
         subdir = os.path.join(self.path, self.CT_subdir)
@@ -278,7 +287,8 @@ class CT:
             raise RuntimeError("Failed to find printf pattern. Filename: %s" %(
                 fns[0]))
         self.CT_pattern = found
-        open(cache_path, 'wt').write(found)
+        open(pattern_cache_path, 'wt').write(found)
+        np.save(angles_cache_path, self.angles)
         return
 
     
