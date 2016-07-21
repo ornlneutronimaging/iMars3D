@@ -15,6 +15,7 @@ class Calculator:
         slope, intercept = computeTilt(img0, img180, workdir=self.logging_dir, **self.opts)
         return slope*180./np.pi, 1.0
 
+
 def computeTilt(img0, img180, workdir=None, **kwds):
     centers = np.array(
         [item for item 
