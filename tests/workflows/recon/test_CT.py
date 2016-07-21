@@ -12,11 +12,17 @@ dir = os.path.abspath(dir)
 print(dir)
 
 def test():
+    nodes = os.environ.get('NODES')
+    if nodes:
+        nodes = int(nodes)
+    print("Processing using %s nodes" % nodes)
+    
     from imars3d.CT import CT
     ct = CT(
         dir,
         clean_on_the_fly=True, 
-        vertical_range=slice(900, 1000)
+        vertical_range=slice(900, 1000),
+        parallel_nodes=nodes,
     )
     ct.recon()
     return

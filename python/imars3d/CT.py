@@ -12,7 +12,8 @@ class CT:
     def __init__(
             self, path, CT_subdir=None, CT_identifier=None,
             workdir='work', outdir='out', 
-            parallel_preprocessing=True, clean_on_the_fly=False,
+            parallel_preprocessing=True, parallel_nodes=None,
+            clean_on_the_fly=False,
             vertical_range=None
     ):
         self.path = path
@@ -49,6 +50,7 @@ class CT:
         self.ct_series = io.ImageFileSeries(pattern, identifiers = angles, name = "CT")
 
         self.parallel_preprocessing = parallel_preprocessing
+        self.parallel_nodes = parallel_nodes
         self.clean_on_the_fly = clean_on_the_fly
         self.vertical_range = vertical_range
         return
@@ -199,7 +201,10 @@ class CT:
         # reconstruct 
         if self.vertical_range:
             sinograms = sinograms[self.vertical_range]
-        recon = i3.reconstruct(angles, sinograms, workdir=outdir, center=rot_center)
+        recon = i3.reconstruct(
+            angles, sinograms, 
+            workdir=outdir, center=rot_center,
+            nodes=self.parallel_nodes)
         return
 
 
