@@ -53,7 +53,7 @@ def filter_parallel_onenode(
     start, stop = rank*N, min(totalN, (rank+1)*N)
     # 
     for angle in ct_series.identifiers[start: stop]:
-        print("%s: %s" % (prefix, angle), file=sys.stderr)
+        sys.stderr.write("%s: %s\n" % (prefix, angle))
         # skip over existing results
         if not output_img_series.exists(angle):
             data = ct_series.getData(angle)
