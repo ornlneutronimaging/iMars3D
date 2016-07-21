@@ -15,7 +15,7 @@ def test():
     nodes = os.environ.get('NODES')
     if nodes:
         nodes = int(nodes)
-    print("Processing using %s nodes" % nodes)
+    print("Processing using %s nodes" % (nodes or 'all'))
     
     from imars3d.CT import CT
     ct = CT(
