@@ -1,7 +1,7 @@
 # -*- python -*-
 # -*- coding: utf-8 -*-
 
-import multiprocessing as mp, numpy as np, pickle
+import multiprocessing as mp, numpy as np, pickle, os
 
 # global array
 data = None
@@ -10,6 +10,10 @@ sinograms_pkl = None
 #
 def launch_jobs(ct_series, sinograms, num_workers=None):
     global data, sinograms_pkl
+    # create output dir
+    dir = os.path.dirname(sinograms.filename_template)
+    if not os.path.exists(dir):
+        os.makedirs(dir)
     # worker?
     if num_workers is None:
         num_workers = max(mp.cpu_count() - 1, 1)
