@@ -56,7 +56,7 @@ method(*args, **kwds)
         print("* running %s" % cmd)
         print("  - args: %s" % (args,))
         print("  - kwds:")
-        for k,v in kwds.iteritems():
+        for k,v in kwds.items():
             print("    - %s: %s" % (k,v))
             continue
         import subprocess as sp, shlex
