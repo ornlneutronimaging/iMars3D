@@ -9,9 +9,12 @@ from . import decorators as dec
 
 class CT:
 
-    def __init__(self, path, CT_subdir=None, CT_identifier=None,
-                 workdir='work', outdir='out', 
-                 parallel_preprocessing=True, clean_on_the_fly=False):
+    def __init__(
+            self, path, CT_subdir=None, CT_identifier=None,
+            workdir='work', outdir='out', 
+            parallel_preprocessing=True, clean_on_the_fly=False,
+            vertical_range=None
+    ):
         self.path = path
         if CT_subdir is not None:
             # if ct is in a subdir, its name most likely the
@@ -47,6 +50,7 @@ class CT:
 
         self.parallel_preprocessing = parallel_preprocessing
         self.clean_on_the_fly = clean_on_the_fly
+        self.vertical_range = vertical_range
         return
 
 
@@ -193,6 +197,8 @@ class CT:
         print('* Rotation center: %s' % rot_center)
         open(os.path.join(workdir, 'rot_center'), 'wt').write(str(rot_center))
         # reconstruct 
+        if self.vertical_range:
+            sinograms = sinograms[self.vertical_range]
         recon = i3.reconstruct(angles, sinograms, workdir=outdir, center=rot_center)
         return
 

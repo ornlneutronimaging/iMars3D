@@ -49,6 +49,7 @@ script:
    - python tests/getdata.py
    - python tests/imars3d/signon.py
    - py.test
+   - python tests/workflows/recon/test_CT.py
 
 notifications:
   email:
