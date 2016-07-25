@@ -15,7 +15,7 @@ def test_getBoundary():
     return
 
 def test_getBG():
-    print ifc.getBG(img.data, sigma=3, debug=True)
+    print(ifc.getBG(img.data, sigma=3, debug=True))
     return
 
 def test_filter_one():
