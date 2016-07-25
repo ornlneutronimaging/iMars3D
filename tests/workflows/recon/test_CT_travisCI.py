@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+This test is to be run by travis CI.
+"""
+
 # tell pytest to skip this test
 import pytest
 pytestmark = pytest.mark.skipif(True, reason="will run standalone")

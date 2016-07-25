@@ -14,8 +14,7 @@ class CT:
             workdir='work', outdir='out', 
             parallel_preprocessing=True, parallel_nodes=None,
             clean_on_the_fly=False,
-            vertical_range=None
-    ):
+            vertical_range=None):
         self.path = path
         if CT_subdir is not None:
             # if ct is in a subdir, its name most likely the

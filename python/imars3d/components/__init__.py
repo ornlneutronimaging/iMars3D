@@ -81,7 +81,15 @@ class IntensityFluctuationCorrection(AbstractComponent):
 using the white beam measurements is not enough. This component
 should normalize the intensity using the intensities near the edges"""
 
-    def __call__allsametime(self, input_ct_series, output_ct_series):
+    def __call__(self, ct_series, output_series, parallel=True):
+        if parallel:
+            from ..filters.ifc import filter_parallel as filter
+        else:
+            from ..filters.ifc import filter
+        filter(ct_series, output_series, sigma=3)
+        return
+
+    def __call__usingtomopy(self, input_ct_series, output_ct_series):
         print("Intensity fluctuation correction...")
         import tomopy, numpy as np
         data = [img.data for img in input_ct_series]
@@ -99,38 +107,6 @@ should normalize the intensity using the intensities near the edges"""
             continue
         print("done")
         return
-
-
-    def __call__(self, input_ct_series, output_ct_series):
-        import tomopy, numpy as np
-        prefix = "Perform intensity fluctuation correction on %r" % (input_ct_series.name or "",)
-        bar = progressbar.ProgressBar(
-            widgets=[
-                prefix,
-                progressbar.Percentage(),
-                progressbar.Bar(),
-                ' [', progressbar.ETA(), '] ',
-            ],
-            max_value = len(input_ct_series) - 1
-        )
-        for i, identifier in enumerate(output_ct_series.identifiers):
-            img = output_ct_series.getImage(identifier)
-            # skip over existing result
-            if output_ct_series.exists(identifier):
-                print("%s already existed" % img)
-                bar.update(i)
-                continue
-            inimg = input_ct_series[i]
-            data = np.array([inimg.data])
-            data2 = tomopy.normalize_bg(data)[0]
-            data2[data2<0] = 0
-            img.data = data2
-            img.save()
-            bar.update(i)
-            continue
-        print()
-        return
-        
 
 
 # End of file
