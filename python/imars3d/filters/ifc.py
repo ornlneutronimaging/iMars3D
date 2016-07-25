@@ -2,20 +2,38 @@
 
 import numpy as np
 
+DESC = 'Intensity Fluctuation Correction'
+def filter_parallel(ct_series, output_img_series, **kwds):
+    from .batch import filter_parallel
+    return filter_parallel(
+        ct_series, output_img_series, DESC, filter_one, **kwds)
+
+
+def filter(ct_series, output_img_series, **kwds):
+    from .batch import filter
+    return filter(
+        ct_series, output_img_series, DESC, filter_one, **kwds)
+
+def filter_one(img, sigma=3):
+    """correct intensity fluctuation
+    - img: image npy array
+    - sigma: sigma for edge detection
+    """
+    bg = getBG(img, sigma=sigma)
+    return img/bg
 
 def getBG(img, debug=False, **kwds):
     # get boundary
     start_row, stop_row, start_cols, stop_cols = getBoundary(img, **kwds)
     # expand
-    NROWS, NCOLS = img.data.shape
+    NROWS, NCOLS = img.shape
     # start_row = max(0, start_row-5)
     # stop_row = min(NROWS-1, stop_row+5)
     start_cols = start_cols // 2
     stop_cols = (stop_cols + NCOLS)//2
     # compute bg
-    data = img.data
     left = None; right = None
-    for i, row in enumerate(data):
+    for i, row in enumerate(img):
         l = row[:start_cols[i]]
         r = row[stop_cols[i]:]
         if left is None: 
@@ -41,7 +59,7 @@ def getBG(img, debug=False, **kwds):
 
 def getBoundary(img, debug=False, **kwds):
     from skimage import feature
-    edge = feature.canny(img.data, **kwds)
+    edge = feature.canny(img, **kwds)
     start_row = None
     middle_col = (edge.shape[1]-1)//2
     start_cols = np.ones(edge.shape[0], dtype=int)*middle_col
