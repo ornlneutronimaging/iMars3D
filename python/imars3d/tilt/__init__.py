@@ -1,15 +1,22 @@
 # imars3d.tilt
 
-import os, numpy as np
+import os, numpy as np, warnings
 import logging
 from . import use_centers, phasecorrelation
 
 def compute(ct_series, workdir, max_npairs=10):
     from . import use_centers
-    calculator = use_centers.Calculator(sigma=10, maxshift=200)
-    tilt = _compute(
-        ct_series, os.path.join(workdir, 'testrun'), max_npairs=10,
-        calculator=calculator)
+    calculator = use_centers.Calculator(sigma=9, maxshift=200)
+    try:
+        tilt = _compute(
+            ct_series, os.path.join(workdir, 'testrun'), max_npairs=10,
+            calculator=calculator)
+    except:
+        warnings.warn("Failed to use centers to determine tilt. Now try phase correlation method")
+        calculator = phasecorrelation.PhaseCorrelation()
+        return _compute(
+            ct_series, workdir, max_npairs=max_npairs,
+            calculator=calculator)
     if abs(tilt) > 0.8:
         calculator = phasecorrelation.PhaseCorrelation()
         tilt = _compute(

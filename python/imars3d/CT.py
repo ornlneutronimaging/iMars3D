@@ -55,7 +55,7 @@ class CT:
         return
 
 
-    def recon(self, workdir=None, outdir=None, **kwds):
+    def recon(self, workdir=None, outdir=None, tilt=None, **kwds):
         workdir = workdir or self.workdir;  outdir = outdir or self.outdir
         # preprocess
         if_corrected = self.preprocess(workdir=workdir, outdir=outdir)
@@ -64,9 +64,23 @@ class CT:
         if self.clean_on_the_fly:
             if_corrected.removeAll()
         # smoothing
-        pre = smoothed = self.smooth(cropped, 5)
+        # pre = smoothed = self.smooth(cropped, 5)
+        pre = cropped
+        if tilt is None:
+            tilt_corrected, tilt = self.correctTilt_loop(
+                pre, workdir=workdir)
+        else:
+            tilt_corrected, tilt = i3.correct_tilt(
+                pre, tilt=tilt, 
+                workdir=os.path.join(workdir, 'tilt-correction' ),
+                max_npairs=None, parallel=self.parallel_preprocessing)
         if self.clean_on_the_fly:
             cropped.removeAll()
+        # reconstruct
+        self.reconstruct(tilt_corrected, workdir=workdir, outdir=outdir, **kwds)
+        return
+
+    def correctTilt_loop(self, pre, workdir):
         # correct tilt
         MAX_TILT_ALLOWED = 0.05
         NROUNDS = 3
@@ -80,11 +94,11 @@ class CT:
             pre = tilt_corrected
             continue
         if abs(tilt) >= MAX_TILT_ALLOWED:
-            raise RuntimeError("failed to bring tilt down to less than %s degrees in %s rounds" % (MAX_TILT_ALLOWED, NROUNDS))
-        # reconstruct
-        self.reconstruct(tilt_corrected, workdir=workdir, outdir=outdir, **kwds)
-        return
-
+            msg = "failed to bring tilt down to less than %s degrees in %s rounds" % (MAX_TILT_ALLOWED, NROUNDS)
+            # raise RuntimeError(msg)
+            import warnings
+            warnings.warn(msg)
+        return tilt_corrected, tilt
 
     @dec.timeit
     def autoCrop(self, series):
@@ -189,9 +203,9 @@ class CT:
         X = proj.shape[-1]
         DEVIATION = 40 # max deviation of rot center from center of image
         print("* Exploring rotation center using tomopy...")
-        # tomopy.write_center(
-        #    proj.copy(), theta, cen_range=[X//2-DEVIATION, X//2+DEVIATION, 1.],
-        #    dpath=os.path.join(workdir, 'tomopy-findcenter'), emission=False)
+        tomopy.write_center(
+            proj.copy(), theta, cen_range=[X//2-DEVIATION, X//2+DEVIATION, 1.],
+            dpath=os.path.join(workdir, 'tomopy-findcenter'), emission=False)
         if rot_center is None:
             print("* Computing rotation center using 180deg pairs...")
             from .tilt import find_rot_center

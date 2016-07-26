@@ -68,9 +68,10 @@ def normalize(ct_series,  dfs, obs, workdir='work'):
     return normalized_ct
 
 @dec.timeit
-def correct_tilt(ct_series, workdir='work', max_npairs=10, parallel=True):
-    tiltcalc = components.TiltCalculation(workdir=workdir, max_npairs=max_npairs)
-    tilt = tiltcalc(ct_series)
+def correct_tilt(ct_series, tilt=None, workdir='work', max_npairs=10, parallel=True):
+    if tilt is None:
+        tiltcalc = components.TiltCalculation(workdir=workdir, max_npairs=max_npairs)
+        tilt = tiltcalc(ct_series)
     
     # only correct if the tilt is large
     if abs(tilt)>0.002:
