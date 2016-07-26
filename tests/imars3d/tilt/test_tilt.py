@@ -17,7 +17,7 @@ def test_tilt():
     )
     from imars3d.tilt.phasecorrelation import PhaseCorrelation
     calculator = PhaseCorrelation()
-    t = tilt.compute(ct_series, "_tmp/test_tilt/work", calculator=calculator)
+    t = tilt._compute(ct_series, "_tmp/test_tilt/work", calculator=calculator)
     assert t>-2 and t<-1
     return
     
@@ -35,7 +35,7 @@ def test_tilt2():
     )
     from imars3d.tilt.use_centers import Calculator
     calculator = Calculator(sigma=3, maxshift=200)
-    t = tilt.compute(ct_series, "_tmp/test_tilt2/work", calculator=calculator)
+    t = tilt._compute(ct_series, "_tmp/test_tilt2/work", calculator=calculator)
     assert t>-1 and t<-.5
     return
     
