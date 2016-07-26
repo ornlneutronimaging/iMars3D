@@ -72,14 +72,18 @@ def correct_tilt(ct_series, workdir='work', max_npairs=10, parallel=True):
     tiltcalc = components.TiltCalculation(workdir=workdir, max_npairs=max_npairs)
     tilt = tiltcalc(ct_series)
     
-    tiltcorrected_series = io.ImageFileSeries(
-        os.path.join(workdir, "tiltcorrected_%07.3f.tiff"),
-        identifiers = ct_series.identifiers,
-        name = "Tilt corrected CT", mode = 'w',
-    )
-    tiltcorr = components.TiltCorrection(tilt=tilt)
-    tiltcorr(ct_series, tiltcorrected_series, parallel=parallel)
-    return tiltcorrected_series, tilt
+    # only correct if the tilt is large
+    if abs(tilt)>0.002:
+        tiltcorrected_series = io.ImageFileSeries(
+            os.path.join(workdir, "tiltcorrected_%07.3f.tiff"),
+            identifiers = ct_series.identifiers,
+            name = "Tilt corrected CT", mode = 'w',
+        )
+        tiltcorr = components.TiltCorrection(tilt=tilt)
+        tiltcorr(ct_series, tiltcorrected_series, parallel=parallel)
+        return tiltcorrected_series, tilt
+    return ct_series, tilt
+
     
 @dec.timeit
 def correct_intensity_fluctuation(ct_series, workdir='work'):

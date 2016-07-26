@@ -68,17 +68,19 @@ class CT:
         if self.clean_on_the_fly:
             cropped.removeAll()
         # correct tilt
-        for i in range(3):
+        MAX_TILT_ALLOWED = 0.05
+        NROUNDS = 3
+        for i in range(NROUNDS):
             tilt_corrected, tilt = i3.correct_tilt(
                 pre, workdir=os.path.join(workdir, 'tilt-correction-%s' % i),
                 max_npairs=None, parallel=self.parallel_preprocessing)
             if self.clean_on_the_fly:
                 pre.removeAll()
-            if abs(tilt) < .5: break
+            if abs(tilt) < MAX_TILT_ALLOWED: break
             pre = tilt_corrected
             continue
-        if abs(tilt) >= .5:
-            raise RuntimeError("failed to bring tilt down to less than .5 degrees in 3 rounds")
+        if abs(tilt) >= MAX_TILT_ALLOWED:
+            raise RuntimeError("failed to bring tilt down to less than %s degrees in %s rounds" % (MAX_TILT_ALLOWED, NROUNDS))
         # reconstruct
         self.reconstruct(tilt_corrected, workdir=workdir, outdir=outdir, **kwds)
         return
@@ -217,7 +219,7 @@ class CT:
         return
         
     CT_pattern_cache = "CT_PATTERN"
-    CT_angles_cache = "CT_ANGLES"
+    CT_angles_cache = "CT_ANGLES.npy"
     def find_CT(self):
         pattern_cache_path = os.path.join(self.workdir, self.CT_pattern_cache)
         angles_cache_path = os.path.join(self.workdir, self.CT_angles_cache)

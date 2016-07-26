@@ -14,7 +14,7 @@ class Calculator:
     def __call__(self, img0, img180):
         slope, intercept = computeTilt(img0, img180, workdir=self.logging_dir, **self.opts)
         # print (slope, np.arctan(slope))
-        return np.arctan(slope)*180./np.pi, 1.0
+        return .7 * np.arctan(slope)*180./np.pi, 1.0
 
 
 def computeTilt(img0, img180, workdir=None, **kwds):

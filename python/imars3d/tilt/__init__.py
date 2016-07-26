@@ -2,8 +2,22 @@
 
 import os, numpy as np
 import logging
+from . import use_centers, phasecorrelation
 
-def compute(ct_series, workdir, max_npairs=10, calculator=None):
+def compute(ct_series, workdir, max_npairs=10):
+    from . import use_centers
+    calculator = use_centers.Calculator(sigma=10, maxshift=200)
+    tilt = _compute(
+        ct_series, os.path.join(workdir, 'testrun'), max_npairs=10,
+        calculator=calculator)
+    if abs(tilt) > 0.8:
+        calculator = phasecorrelation.PhaseCorrelation()
+        tilt = _compute(
+            ct_series, workdir, max_npairs=max_npairs,
+            calculator=calculator)
+    return tilt
+
+def _compute(ct_series, workdir, max_npairs=10, calculator=None):
     logger = logging.getLogger("imars3d.tilt")
     tilt_out = os.path.join(workdir, "tilt.out")
     # cached value?
@@ -13,7 +27,6 @@ def compute(ct_series, workdir, max_npairs=10, calculator=None):
     if not calculator:
         # from . import phasecorrelation
         # calculator = phasecorrelation.PhaseCorrelation()
-        from . import use_centers
         calculator = use_centers.Calculator(sigma=10, maxshift=200)
     img = lambda angle: ct_series.getImage(angle)
     # find opposite pairs
@@ -67,11 +80,13 @@ def check(tilt, img0, img180):
 def apply(tilt, img, outimg, save=True):
     """apply tilt to the given image
     """
-    from scipy import ndimage
+    # from scipy import ndimage
+    from skimage.transform import rotate
     import numpy as np
     
     data = img.getData()
-    data = ndimage.rotate(data, -tilt)
+    # data = ndimage.rotate(data, -tilt)
+    data = rotate(data, -tilt)
     outimg.data = data
     if save:
         outimg.save()
