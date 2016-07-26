@@ -98,13 +98,15 @@ def correct_intensity_fluctuation(ct_series, workdir='work'):
     return intfluct_corrected_series
 
 @dec.timeit
-def build_sinograms(ct_series, workdir='work', parallel=True):
+def build_sinograms(
+        ct_series, workdir='work', 
+        parallel=True, parallel_nodes=None):
     sinograms = io.ImageFileSeries(
         os.path.join(workdir, "sinogram_%i.tiff"),
         name = "Sinogram", mode = 'w',
     )
     if parallel:
-        proj = components.Projection_MP()
+        proj = components.Projection_MP(num_workers=parallel_nodes)
     else:
         proj = components.Projection()
     proj(ct_series, sinograms)

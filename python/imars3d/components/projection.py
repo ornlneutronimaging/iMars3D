@@ -38,7 +38,7 @@ class Projection(AbstractComponent):
                 bar.update(y)
                 continue
             sino.data = data[:, y, :]
-            sino.data = smooth(sino.data, 5)
+            sino.data = smooth(sino.data, 3)
             sino.save()
             bar.update(y)
             continue
@@ -57,7 +57,11 @@ create_pbar = lambda prefix, max: progressbar.ProgressBar(
 
 class Projection_MP(AbstractComponent):
 
-    def __call__(self, ct_series, sinograms, **kwds):
+    def __init__(self, num_workers=None):
+        self.num_workers = num_workers
+        return
+
+    def __call__(self, ct_series, sinograms):
         """convert ct image series to sinogram series"""
         # get metadata for sinograms
         data0 = ct_series[0].data
@@ -72,7 +76,7 @@ class Projection_MP(AbstractComponent):
         dir = tempfile.mkdtemp(dir=tmpdir)
         # save params
         args_pkl = os.path.join(dir, "args.pkl")
-        allargs = args, kwds
+        allargs = args, dict(num_workers=self.num_workers)
         pickle.dump(allargs, open(args_pkl, 'wb'))
         # 
         script = os.path.join(os.path.dirname(__file__), 'projection_mp.py')

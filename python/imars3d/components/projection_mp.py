@@ -43,7 +43,7 @@ def job_handler(y):
         return y
     sino.data = data[:, y, :]
     from imars3d.filters.smoothing import filter_one as smooth
-    sino.data = smooth(sino.data, 5)
+    sino.data = smooth(sino.data, 3)
     sino.save()
     return y
 

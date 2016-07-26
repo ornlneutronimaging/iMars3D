@@ -192,7 +192,8 @@ class CT:
         # preprocess
         angles, sinograms = i3.build_sinograms(
             ct_series, workdir=os.path.join(workdir, 'sinogram'),
-            parallel = self.parallel_preprocessing)
+            parallel = self.parallel_preprocessing,
+            parallel_nodes = self.parallel_nodes)
         # take the middle part to calculate the center of rotation
         NSINO = len(sinograms)
         sino = [s.data for s in sinograms[NSINO//3: NSINO*2//3]]
