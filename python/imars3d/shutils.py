@@ -8,7 +8,7 @@ def exec_withlog(cmd, logfile):
     print("* Running %s" % cmd)
     if sp.call(args, stdout=outstream, stderr=outstream, shell=False):
         outstream.close()
-        log = open(logfile).read()
-        raise RuntimeError("%s failed. See log file %s\n%s" % (cmd, logfile, log))
+        # log = open(logfile).read()
+        raise RuntimeError("%s failed. See log file %s\n" % (cmd, logfile))
     print(" - Done.")
     return
