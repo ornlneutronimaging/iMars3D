@@ -49,7 +49,7 @@ def job_handler(y):
 
 def main():
     import sys
-    args, kwds = pickle.load(open(sys.argv[1]))
+    args, kwds = pickle.load(open(sys.argv[1], 'rb'))
     for y in launch_jobs(*args, **kwds):
         continue
     return
