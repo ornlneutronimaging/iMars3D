@@ -28,7 +28,7 @@ def test():
         vertical_range=slice(900, 1000),
         parallel_nodes=nodes,
     )
-    ct.recon()
+    ct.recon(tilt=-1.40)
     return
 
 if __name__ == '__main__': test()
