@@ -27,9 +27,8 @@ def test():
         clean_on_the_fly=True, 
         vertical_range=slice(900, 1000),
         parallel_nodes=nodes,
-        explore_rot_center=False,
     )
-    ct.recon(tilt=-1.40)
+    ct.recon(tilt=-1.40, explore_rot_center=False)
     return
 
 if __name__ == '__main__': test()
