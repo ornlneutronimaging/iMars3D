@@ -185,7 +185,10 @@ class CT:
 
 
     @dec.timeit
-    def reconstruct(self, ct_series, workdir=None, outdir=None, rot_center=None):
+    def reconstruct(
+            self, 
+            ct_series, workdir=None, outdir=None,
+            rot_center=None, explore_rot_center=True):
         workdir = workdir or self.workdir;  
         outdir = outdir or self.outdir
         theta = self.theta
@@ -203,10 +206,13 @@ class CT:
         import tomopy
         X = proj.shape[-1]
         DEVIATION = 40 # max deviation of rot center from center of image
-        print("* Exploring rotation center using tomopy...")
-        tomopy.write_center(
-            proj.copy(), theta, cen_range=[X//2-DEVIATION, X//2+DEVIATION, 1.],
-            dpath=os.path.join(workdir, 'tomopy-findcenter'), emission=False)
+        if explore_rot_center:
+            print("* Exploring rotation center using tomopy...")
+            tomopy.write_center(
+                proj.copy(), theta,
+                cen_range=[X//2-DEVIATION, X//2+DEVIATION, 1.],
+                dpath=os.path.join(workdir, 'tomopy-findcenter'),
+                emission=False)
         if rot_center is None:
             print("* Computing rotation center using 180deg pairs...")
             from .tilt import find_rot_center
