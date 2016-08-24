@@ -19,21 +19,21 @@ def test_Calculator():
     )
     calculator = direct.DirectMinimization()
     t = tilt._compute(ct_series, "_tmp/test_direct/work", calculator=calculator)
-    print t
+    # print t
     return
 
 
 def test_computeTilt():
     img0 = io.ImageFile(os.path.join(datadir, "cropped_000.000.tiff")).data
     img180 = io.ImageFile(os.path.join(datadir, "cropped_180.000.tiff")).data
-    print direct.computeTilt(img0, img180)
+    # print direct.computeTilt(img0, img180)
     return
 
 def test_shift():
     img0 = io.ImageFile(os.path.join(datadir, "cropped_000.000.tiff")).data
     img180 = io.ImageFile(os.path.join(datadir, "cropped_180.000.tiff")).data
     flipped_180 = np.fliplr(img180)
-    print direct.findShift(img0, flipped_180)
+    # print direct.findShift(img0, flipped_180)
     return
 
 def main():
