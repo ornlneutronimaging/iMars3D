@@ -11,9 +11,9 @@ def find(ct_series, workdir=None):
         workdir1=os.path.join(workdir, "%s_vs_%s"%(a0, a180))
         slope, intercept = computeTilt(
             img(a0), img(a180), workdir=workdir1, 
-            sigma=10, maxshift=200)
+            sigma=15, maxshift=200)
         center = intercept + slope * img(a0).data.shape[0]
         print(i, center)
         centers.append(center)
         continue
-    return np.mean(centers)
+    return np.median(centers)

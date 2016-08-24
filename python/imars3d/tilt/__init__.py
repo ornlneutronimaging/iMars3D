@@ -6,7 +6,7 @@ from . import use_centers, phasecorrelation
 
 def compute(ct_series, workdir, max_npairs=10):
     from . import use_centers
-    calculator = use_centers.Calculator(sigma=9, maxshift=200)
+    calculator = use_centers.Calculator(sigma=15, maxshift=200)
     try:
         tilt = _compute(
             ct_series, os.path.join(workdir, 'testrun'), max_npairs=10,
