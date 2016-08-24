@@ -14,7 +14,8 @@ class CT:
             workdir='work', outdir='out', 
             parallel_preprocessing=True, parallel_nodes=None,
             clean_on_the_fly=False,
-            vertical_range=None):
+            vertical_range=None,
+            ob_identifier=None, df_identifier=None):
         self.path = path
         if CT_subdir is not None:
             # if ct is in a subdir, its name most likely the
@@ -27,6 +28,8 @@ class CT:
             # the CT files are identified by string "CT"
             self.CT_subdir = '.'
             self.CT_identifier = CT_identifier or 'CT'
+        self.ob_identifier = ob_identifier
+        self.df_identifier = df_identifier
         # workdir
         if not os.path.exists(workdir):
             os.makedirs(workdir)
@@ -55,12 +58,19 @@ class CT:
         return
 
 
-    def recon(self, workdir=None, outdir=None, tilt=None, **kwds):
+    def recon(self, workdir=None, outdir=None, tilt=None, crop_window=None,
+              **kwds):
         workdir = workdir or self.workdir;  outdir = outdir or self.outdir
         # preprocess
         if_corrected = self.preprocess(workdir=workdir, outdir=outdir)
-        # auto-cropping
-        cropped = self.autoCrop(if_corrected)
+        if crop_window is None:
+            # auto-cropping
+            cropped = self.autoCrop(if_corrected)
+        else:
+            xmin, ymin, xmax, ymax = crop_window
+            cropped = self.crop(
+                if_corrected, 
+                left=xmin, right=xmax, top=ymin, bottom=ymax)
         if self.clean_on_the_fly:
             if_corrected.removeAll()
         # smoothing
@@ -251,8 +261,8 @@ class CT:
         CT_identifier = self.CT_identifier
         subdir = os.path.join(self.path, self.CT_subdir)
         patterns = [
-            '*%s*_*_*.fits' % CT_identifier,
-            '*_*_*.fits',
+            '*%s*_*_*.*' % CT_identifier,
+            '*_*_*.*',
             ]
         found = None
         for pattern in patterns:
@@ -266,7 +276,7 @@ class CT:
                 "failed to find CT images. directory: %s, patterns tried: %s"%(
                     subdir, patterns)
                 )
-        re_pattern = '(\S+)_(\d+)_(\d+)_(\d+).fits'
+        re_pattern = '(\S+)_(\d+)_(\d+)_(\d+).(\S+)'
         def fn2angle(fn):
             import re
             m = re.match(re_pattern, fn)
@@ -294,8 +304,8 @@ class CT:
             assert condition, "angles not spaced correctly: %s" % (angles,)
         self.angles = np.array(angles) # in degrees
         printf_pattern_candidates = [
-            "*%s" % CT_identifier + "*_%07.3f_*.fits",
-            "*%s" % CT_identifier + "*_%.3f_*.fits",
+            "*%s" % CT_identifier + "*_%07.3f_*.*",
+            "*%s" % CT_identifier + "*_%.3f_*.*",
             ]
         found = None
         for c in printf_pattern_candidates:
@@ -337,17 +347,25 @@ class CT:
 
     
     def find_OB(self):
+        if self.ob_identifier:
+            fnp = ['*%s*' % self.ob_identifier]
+        else:
+            fnp = ['*ob*', '*OB*']
         return self._find_pattern(
             'OB',
             subdir_candidates = ['ob', 'OB'],
-            filenamepattern_candidates = ['*ob*', '*OB*'],
+            filenamepattern_candidates = fnp,
             )
 
     def find_DF(self):
+        if self.df_identifier:
+            fnp = ['*%s*' % self.df_identifier]
+        else:
+            fnp = ['*df*', '*DF*']
         return self._find_pattern(
             'DF',
             subdir_candidates = ['df', 'DF'],
-            filenamepattern_candidates = ['*df*', '*DF*'],
+            filenamepattern_candidates = fnp,
             )
 
 
@@ -382,7 +400,7 @@ class CT:
 
 
 def get_ct_scan_info(files):
-    re_pattern = '(\S+)_(\S+)_(\d+)_(\d+)_(\d+).fits'
+    re_pattern = '(\S+)_(\S+)_(\d+)_(\d+)_(\d+).(\S+)'
     def _(fn):
         import re
         m = re.match(re_pattern, fn)
