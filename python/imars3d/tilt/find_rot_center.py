@@ -4,6 +4,22 @@ import os, numpy as np
 def find(ct_series, workdir=None):
     img = lambda angle: ct_series.getImage(angle)
     from . import _find180DegImgPairs
+    from .direct import findShift
+    pairs = _find180DegImgPairs(ct_series.identifiers)
+    centers = []
+    for i, (a0, a180) in enumerate(pairs):
+        workdir1=os.path.join(workdir, "%s_vs_%s"%(a0, a180))
+        shift = findShift(img(a0).data, np.fliplr(img(a180).data))
+        center = -shift/2. + img(a0).data.shape[1]/2.
+        # print shift, center, img(a0).data.shape[1]/2.
+        centers.append(center)
+        continue
+    return np.median(centers)
+
+
+def find_using_edges(ct_series, workdir=None):
+    img = lambda angle: ct_series.getImage(angle)
+    from . import _find180DegImgPairs
     from .use_centers import computeTilt
     pairs = _find180DegImgPairs(ct_series.identifiers)
     centers = []

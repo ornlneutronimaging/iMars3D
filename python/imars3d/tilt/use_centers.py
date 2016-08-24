@@ -4,7 +4,7 @@ import os, numpy as np
 from imars3d import io
 from matplotlib import pyplot as plt
 
-class Calculator:
+class UseCenters:
 
     def __init__(self, logging_dir=None, **opts):
         self.logging_dir = logging_dir
@@ -15,7 +15,7 @@ class Calculator:
         slope, intercept = computeTilt(img0, img180, workdir=self.logging_dir, **self.opts)
         # print (slope, np.arctan(slope))
         return .7 * np.arctan(slope)*180./np.pi, 1.0
-
+Calculator = UseCenters
 
 def computeTilt(img0, img180, workdir=None, **kwds):
     centers = np.array(

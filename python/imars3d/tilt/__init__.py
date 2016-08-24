@@ -2,26 +2,31 @@
 
 import os, numpy as np, warnings
 import logging
-from . import use_centers, phasecorrelation
+from . import use_centers, phasecorrelation, direct
 
 def compute(ct_series, workdir, max_npairs=10):
     from . import use_centers
-    calculator = use_centers.Calculator(sigma=15, maxshift=200)
-    try:
-        tilt = _compute(
-            ct_series, os.path.join(workdir, 'testrun'), max_npairs=10,
-            calculator=calculator)
-    except:
-        warnings.warn("Failed to use centers to determine tilt. Now try phase correlation method")
-        calculator = phasecorrelation.PhaseCorrelation()
-        return _compute(
-            ct_series, workdir, max_npairs=max_npairs,
-            calculator=calculator)
-    if abs(tilt) > 0.8:
-        calculator = phasecorrelation.PhaseCorrelation()
-        tilt = _compute(
-            ct_series, workdir, max_npairs=max_npairs,
-            calculator=calculator)
+    calculators = [
+        use_centers.UseCenters(sigma=15, maxshift=200),
+        phasecorrelation.PhaseCorrelation(),
+        direct.DirectMinimization(),
+        ]
+    tilt = None
+    for calculator in calculators:
+        kind = calculator.__class__.__name__
+        # print kind
+        try:
+            tilt = _compute(
+                ct_series, os.path.join(workdir, kind),
+                max_npairs=10,
+                calculator=calculator)
+            # print tilt
+            break
+        except:
+            warnings.warn("Failed to use %s to determine tilt" % kind)
+        continue
+    if tilt is None:
+        raise RuntimeError("Failed to compute tilt")
     return tilt
 
 def _compute(ct_series, workdir, max_npairs=10, calculator=None):
@@ -45,6 +50,7 @@ def _compute(ct_series, workdir, max_npairs=10, calculator=None):
         logger.info("working on pair %s, %s" % (a0, a180))
         logging_dir=os.path.join(workdir, "log.tilt.%s_vs_%s"%(a0, a180))
         if not os.path.exists(logging_dir):
+            os.makedirs(logging_dir)
             calculator.logging_dir=logging_dir
             tilt, weight = calculator(img(a0), img(a180))
             open(os.path.join(logging_dir, 'tilt.out'), 'wt')\
