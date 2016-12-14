@@ -8,7 +8,7 @@ def test(interactive=False):
     dir = os.path.dirname(__file__)
     path = os.path.join(dir, "..", "..", "iMars3D_data_set", "20120618_TURBINECT_0180_46_750_0055.fits")
     img = io.ImageFile(path).getData()
-
+    assert img.dtype == np.dtype('uint16')
     # filter
     orig_max = np.max(img)
     img = filters.gamma_filtering.filter_one(img)
