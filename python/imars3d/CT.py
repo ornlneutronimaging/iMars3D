@@ -283,6 +283,7 @@ class CT:
             return float('%s.%s' % (m.group(2), m.group(3)))
         fns = map(os.path.basename, files)
         angles = map(fn2angle, fns)
+        angles = set(angles)
         angles = sorted(angles)
         assert len(angles) > 2, "too few angles"
         delta = angles[1] - angles[0]
