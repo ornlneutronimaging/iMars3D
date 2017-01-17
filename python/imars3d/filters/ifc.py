@@ -60,7 +60,7 @@ def getBG(img, debug=False, **kwds):
 def getBoundary(img, debug=False, **kwds):
     from skimage import feature
     edge = feature.canny(img, **kwds)
-    start_row = None
+    start_row = stop_row = None
     middle_col = (edge.shape[1]-1)//2
     start_cols = np.ones(edge.shape[0], dtype=int)*middle_col
     stop_cols = np.ones(edge.shape[0], dtype=int)*middle_col
