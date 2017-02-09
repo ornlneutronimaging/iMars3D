@@ -102,6 +102,7 @@ class TomopyImageIO(AbstractImageFileIO):
     @classmethod
     def dump(cls, data, path):
         ext = os.path.splitext(path)[-1][1:]
+        if ext == 'tif': ext = 'tiff'
         name = 'write_%s' % ext
         h = getattr(cls.writer, name)
         return h(data, path, overwrite=True)
@@ -109,6 +110,7 @@ class TomopyImageIO(AbstractImageFileIO):
     @classmethod
     def load(cls, path):
         ext = os.path.splitext(path)[-1][1:]
+        if ext == 'tif': ext = 'tiff'
         name = 'read_%s' % ext
         h = getattr(cls.reader, name)
         return h(path)
