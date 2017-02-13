@@ -47,9 +47,9 @@ recon_mpi(**kargs)
 
 
 def recon_mpi(
-    sinograms, theta, recon_series,
-    stepsize=10, center=None,
-    recon=None):
+        sinograms, theta, recon_series,
+        stepsize=10, center=None,
+        recon=None, **kwds):
     """reconstruction using mpi.
 This method needs to be run on several mpi nodes to achieve
 parallalization. sth similar to $ mpirun -np NODES python "code to call this method"
@@ -80,7 +80,7 @@ parallalization. sth similar to $ mpirun -np NODES python "code to call this met
         if not len(sinograms): continue
         recon_series1 = recon_series[start:stop1]
         try:
-            recon(sinograms1, theta, recon_series1, center=center)
+            recon(sinograms1, theta, recon_series1, center=center, **kwds)
         except:
             print("node %s of %s: recon %s:%s failed" % (rank, size, start, stop1))
         start = stop1

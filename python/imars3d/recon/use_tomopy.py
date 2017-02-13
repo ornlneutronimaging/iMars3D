@@ -6,7 +6,8 @@ import os, sys, numpy as np
 
 
 def recon_batch_singlenode(
-        sinograms, theta, recon_series, center=None, algorithm=None):
+        sinograms, theta, recon_series, center=None,
+        algorithm='gridrec', emission=False, **kwds):
     """reconstruct from a bunch of sinograms.
 This is intended to be run on just one node.
 
@@ -26,8 +27,8 @@ This is intended to be run on just one node.
     rec = tomopy.recon(
         proj,
         theta=theta, center=center,
-        algorithm=algorithm, emission=False,
-        ncore = 1,
+        algorithm=algorithm, emission=emission,
+        ncore = 1, **kwds
     )
     # output
     for i, img in enumerate(recon_series):
@@ -37,10 +38,11 @@ This is intended to be run on just one node.
     return
 
 
-def recon(sinogram, theta, outpath, center=None):
+def recon(sinogram, theta, outpath, center=None,
+          algorithm='gridrec', emission=False, ncore=1, **kwds):
     """Use tomopy to reconstruct from one sinogram
     
-    theta: sample rotation angle in radian
+    theta: sample rotation angles in radian
     """
     import tomopy, imars3d.io
     proj = [sinogram.data]
@@ -55,9 +57,10 @@ def recon(sinogram, theta, outpath, center=None):
     rec = tomopy.recon(
         proj,
         theta=theta, center=center,
-        algorithm='gridrec',
-        emission=False,
-        ncore = 1,
+        algorithm=algorithm,
+        emission=emission,
+        ncore = ncore,
+        **kwds
     )
     rec = rec[0] # there is only one layer
     # output

@@ -198,7 +198,8 @@ class CT:
     def reconstruct(
             self, 
             ct_series, workdir=None, outdir=None,
-            rot_center=None, explore_rot_center=True):
+            rot_center=None, explore_rot_center=True,
+            **kwds):
         workdir = workdir or self.workdir;  
         outdir = outdir or self.outdir
         theta = self.theta
@@ -236,7 +237,8 @@ class CT:
         recon = i3.reconstruct(
             angles, sinograms, 
             workdir=outdir, center=rot_center,
-            nodes=self.parallel_nodes)
+            nodes=self.parallel_nodes,
+            **kwds)
         return
 
 
