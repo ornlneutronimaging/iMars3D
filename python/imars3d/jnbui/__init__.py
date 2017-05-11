@@ -17,6 +17,7 @@ def js_alert(m):
 class Panel:
     
     layout = ipyw.Layout(border="1px lightgray solid", margin='5px', padding='15px')
+    button_layout = ipyw.Layout(margin='10px 5px 5px 5px')
     
     def show(self):
         display(self.panel)
@@ -31,7 +32,7 @@ class Panel:
 
 class WizardPanel:
     
-    label_layout = ipyw.Layout(height='40px', padding='5px')
+    label_layout = ipyw.Layout(height='25px', padding='8px')
     
     def __init__(self, start_panel):
         display(ipyw.Label("Tomography reconstruction wizard", layout=self.label_layout))
@@ -45,7 +46,7 @@ class IPTSpanel(Panel):
         self.config = config
         explanation = ipyw.Label("Please input your experiment IPTS number")
         self.text = ipyw.Text(value="", description="IPTS-", placeholder="IPTS number")
-        self.ok = ipyw.Button(description='OK')
+        self.ok = ipyw.Button(description='OK', layout=self.button_layout)
         self.widgets = [explanation, self.text, self.ok]
         self.ok.on_click(self.validate_IPTS)
         self.panel = ipyw.VBox(children=self.widgets, layout=self.layout)
@@ -79,7 +80,7 @@ class ScanPanel(Panel):
         self.config = config
         explanation = ipyw.Label("Please give your neutron CT scan a name:")
         self.text = ipyw.Text(value="", description="Scan: ", placeholder="name of scan")
-        self.ok = ipyw.Button(description='OK')
+        self.ok = ipyw.Button(description='OK', layout=self.button_layout)
         self.widgets = [explanation, self.text, self.ok]
         self.ok.on_click(self.validate)
         self.panel = ipyw.VBox(children=self.widgets, layout=self.layout)
@@ -105,7 +106,7 @@ class SelectDirPanel(Panel):
         # panel for soliciting work dir name
         explanation_label = ipyw.Label(explanation)
         self.path_field = ipyw.Text(value=initial_guess)
-        ok = ipyw.Button(description='OK')
+        ok = ipyw.Button(description='OK', layout=self.button_layout)
         widgets = [explanation_label, self.path_field, ok]
         ok.on_click(self.validate)
         self.selectdir_panel = ipyw.VBox(children=widgets, layout=self.layout)
@@ -216,7 +217,7 @@ class CTDirPanel(Panel):
         self.select = ipyw.Select(
             options=config.ct_scan_subdirs, value=config.ct_scan_subdirs[0], 
             description="CT scans")
-        self.ok = ipyw.Button(description='Select')
+        self.ok = ipyw.Button(description='Select', layout=self.button_layout)
         self.widgets = [explanation, self.select, self.ok]
         self.ok.on_click(self.validate)
         self.panel = ipyw.VBox(children=self.widgets, layout=self.layout)
@@ -249,7 +250,7 @@ class CTSigPanel(Panel):
             layout=ipyw.Layout(padding="20px", height='120px', width='600px', overflow_x='auto', overflow_y='auto')
         )
         self.text = ipyw.Text(value=ct_sig, description="CT signature", layout=ipyw.Layout(margin="20px"))
-        self.ok = ipyw.Button(description='OK', layout=ipyw.Layout(margin="20px"))
+        self.ok = ipyw.Button(description='OK', layout=self.button_layout)
         self.widgets = [explanation1, self.text, explanation2, sample_panel, self.ok]
         self.ok.on_click(self.validate)
         self.panel = ipyw.VBox(children=self.widgets, layout=self.layout)
@@ -294,7 +295,7 @@ class OBPanel(Panel):
             value=[], options=all_obs,
             description="OB files", 
             layout=ipyw.Layout(margin="20px", width="600px"))
-        self.ok = ipyw.Button(description='OK', layout=ipyw.Layout(margin="20px"))
+        self.ok = ipyw.Button(description='OK', layout=self.button_layout)
         self.widgets = [explanation1, self.select, self.ok]
         self.ok.on_click(self.validate)
         self.panel = ipyw.VBox(children=self.widgets, layout=self.layout)
