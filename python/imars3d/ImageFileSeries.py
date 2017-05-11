@@ -125,7 +125,7 @@ class ImageFileSeries(base):
     
     
 
-def imageCollection(glob_pattern, name=None):
+def imageCollection(glob_pattern=None, name=None, files=None):
     """create an ImageFileSeries instance from a collection of image files
     
     This is intended for a bunch of images that cannot otherwise be identified.
@@ -133,9 +133,11 @@ def imageCollection(glob_pattern, name=None):
     which really do not need individual access but rather a way to iterate
     over all images in the collection.
 
-    * glob_pattern: glob pattern for image filenames
+    * files: the list of image files in the collection
+    * glob_pattern: glob pattern for image filenames. only used if "files" is not given.
 
     """
-    import glob
-    files = glob.glob(glob_pattern)
+    if not files:
+        import glob
+        files = glob.glob(glob_pattern)
     return ImageFileSeries("%s", files, decimal_mark_replacement=".", mode='r', name=name)
