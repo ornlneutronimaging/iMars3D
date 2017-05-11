@@ -43,9 +43,10 @@ class IPTSpanel(Panel):
     
     def __init__(self, config):
         self.config = config
+        explanation = ipyw.Label("Please input your experiment IPTS number")
         self.text = ipyw.Text(value="", description="IPTS-", placeholder="IPTS number")
         self.ok = ipyw.Button(description='OK')
-        self.widgets = [self.text, self.ok]
+        self.widgets = [explanation, self.text, self.ok]
         self.ok.on_click(self.validate_IPTS)
         self.panel = ipyw.VBox(children=self.widgets, layout=self.layout)
         
@@ -76,9 +77,10 @@ class IPTSpanel(Panel):
 class ScanPanel(Panel):
     def __init__(self, config):
         self.config = config
-        self.text = ipyw.Text(value="", description="Scan: ", placeholder="A unique name for your tomography scan")
+        explanation = ipyw.Label("Please give your neutron CT scan a name:")
+        self.text = ipyw.Text(value="", description="Scan: ", placeholder="name of scan")
         self.ok = ipyw.Button(description='OK')
-        self.widgets = [self.text, self.ok]
+        self.widgets = [explanation, self.text, self.ok]
         self.ok.on_click(self.validate)
         self.panel = ipyw.VBox(children=self.widgets, layout=self.layout)
         
@@ -95,15 +97,16 @@ class ScanPanel(Panel):
         return
 
 class SelectDirPanel(Panel):
-    def __init__(self, initial_guess):
-        self.createSelectDirPanel(initial_guess)
+    def __init__(self, initial_guess, explanation=""):
+        self.createSelectDirPanel(initial_guess, explanation)
         self.createRemovalAlertPanel()
         
-    def createSelectDirPanel(self, initial_guess):
+    def createSelectDirPanel(self, initial_guess, explanation):
         # panel for soliciting work dir name
+        explanation_label = ipyw.Label(explanation)
         self.path_field = ipyw.Text(value=initial_guess)
         ok = ipyw.Button(description='OK')
-        widgets = [self.path_field, ok]
+        widgets = [explanation_label, self.path_field, ok]
         ok.on_click(self.validate)
         self.selectdir_panel = ipyw.VBox(children=widgets, layout=self.layout)
         
@@ -171,7 +174,8 @@ class WorkDirPanel(SelectDirPanel):
         import getpass
         username = getpass.getuser()
         self.root = "/SNSlocal2/%s" % username
-        SelectDirPanel.__init__(self, initial_guess)
+        explanation = "Please pick a name for your temporary working directory. Usually it is the same as the name of your CT scan. But you can use a different one if you want to. The directory will be created under %s" % self.root
+        SelectDirPanel.__init__(self, initial_guess, explanation)
         self.path_field.description = 'Workdir: '
         self.path_field.placeholder = 'under %s' % self.root
 
@@ -189,7 +193,8 @@ class OutputDirPanel(SelectDirPanel):
     def __init__(self, config, initial_guess):
         self.config = config
         self.root = os.path.join(config.iptsdir, "shared/processed_data/")
-        SelectDirPanel.__init__(self, initial_guess)
+        explanation = "Please pick a name for reconstruction output directory. Usually it is the same as the name of your CT scan. But you can use a different one if you want to. The directory will be created under %s" % self.root
+        SelectDirPanel.__init__(self, initial_guess, explanation)
         self.path_field.description = 'Output dir: '
         self.path_field.placeholder = 'under %s' % self.root
 
@@ -207,11 +212,12 @@ class OutputDirPanel(SelectDirPanel):
 class CTDirPanel(Panel):
     def __init__(self, config):
         self.config = config
+        explanation = ipyw.Label("Please choose the sub-directory that contains the image files for your CT scan")
         self.select = ipyw.Select(
             options=config.ct_scan_subdirs, value=config.ct_scan_subdirs[0], 
             description="CT scans")
         self.ok = ipyw.Button(description='Select')
-        self.widgets = [self.select, self.ok]
+        self.widgets = [explanation, self.select, self.ok]
         self.ok.on_click(self.validate)
         self.panel = ipyw.VBox(children=self.widgets, layout=self.layout)
         
