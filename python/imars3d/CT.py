@@ -15,7 +15,8 @@ class CT:
             parallel_preprocessing=True, parallel_nodes=None,
             clean_on_the_fly=False,
             vertical_range=None,
-            ob_identifier=None, df_identifier=None):
+            ob_identifier=None, df_identifier=None,
+            ob_files=None, df_files=None):
         self.path = path
         if CT_subdir is not None:
             # if ct is in a subdir, its name most likely the
@@ -30,6 +31,8 @@ class CT:
             self.CT_identifier = CT_identifier or 'CT'
         self.ob_identifier = ob_identifier
         self.df_identifier = df_identifier
+        self.ob_files = ob_files
+        self.df_files = df_files
         # workdir
         if not os.path.exists(workdir):
             os.makedirs(workdir)
@@ -42,9 +45,9 @@ class CT:
         self.sniff()
         from . import io
         # dark field
-        self.dfs = io.imageCollection(self.DF_pattern, name="Dark Field")
+        self.dfs = io.imageCollection(glob_pattern=self.DF_pattern, files=self.df_files, name="Dark Field")
         # open beam
-        self.obs = io.imageCollection(self.OB_pattern, name="Open Beam")
+        self.obs = io.imageCollection(glob_pattern=self.OB_pattern, files=self.ob_files, name="Open Beam")
         # ct
         angles = self.angles
         self.theta = angles * np.pi / 180.
@@ -86,6 +89,8 @@ class CT:
                 max_npairs=None, parallel=self.parallel_preprocessing)
         if self.clean_on_the_fly:
             cropped.removeAll()
+        self.cropped = cropped
+        self.tilt_corrected = tilt_corrected
         # reconstruct
         self.reconstruct(tilt_corrected, workdir=workdir, outdir=outdir, **kwds)
         return
@@ -243,10 +248,16 @@ class CT:
 
 
     def sniff(self):
-        self.find_OB()
-        print(" * found OB pattern: %s" % self.OB_pattern)
-        self.find_DF()
-        print(" * found DF pattern: %s" % self.DF_pattern)
+        if not self.ob_files:
+            self.find_OB()
+            print(" * found OB pattern: %s" % self.OB_pattern)
+        else:
+            self.OB_pattern = None
+        if not self.df_files:
+            self.find_DF()
+            print(" * found DF pattern: %s" % self.DF_pattern)
+        else:
+            self.DF_pattern = None
         self.find_CT()
         print(" * found CT pattern: %s" % self.CT_pattern)
         return
