@@ -86,6 +86,10 @@ class CT:
                 max_npairs=None, parallel=self.parallel_preprocessing)
         if self.clean_on_the_fly:
             cropped.removeAll()
+        #
+        self.if_corrected = if_corrected
+        self.cropped = cropped
+        self.tilt_corrected = tilt_corrected
         # reconstruct
         self.reconstruct(tilt_corrected, workdir=workdir, outdir=outdir, **kwds)
         return
