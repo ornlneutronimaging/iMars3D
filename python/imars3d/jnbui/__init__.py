@@ -297,7 +297,7 @@ class OBPanel(Panel):
         config = self.config
         # all files
         config.ob_dir = ob_dir = os.path.join(config.datadir, 'ob')
-        exts = ['.cif', '.tif', '.tiff']
+        exts = ['.fits', '.tif', '.tiff']
         files = []
         for f in os.listdir(ob_dir):
             b, ext = os.path.splitext(f)
@@ -345,7 +345,7 @@ class DFPanel(Panel):
         config = self.config
         # all files
         config.df_dir = df_dir = os.path.join(config.datadir, 'df')
-        exts = ['.cif', '.tif', '.tiff']
+        exts = ['.fits', '.tif', '.tiff']
         files = []
         for f in os.listdir(df_dir):
             b, ext = os.path.splitext(f)
