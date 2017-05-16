@@ -275,7 +275,11 @@ class CTSigPanel(Panel):
     def calculate(self):
         config = self.config
         # all files
-        ct_dir = os.path.join(config.ct_scan_root, config.ct_subdir)
+        if os.path.isabs(config.ct_subdir):
+            ct_dir = config.ct_subdir
+        else:
+            ct_dir = os.path.join(config.ct_scan_root, config.ct_subdir)
+        config.ct_dir = ct_dir
         ct_files = os.listdir(ct_dir)
         # assume all files start with date like 20160918
         files_without_dates = [f[9:] for f in ct_files]
