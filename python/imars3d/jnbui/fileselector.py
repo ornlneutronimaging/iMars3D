@@ -28,7 +28,8 @@ class FileSelectorPanel:
     def createPanel(self, curdir):
         self.curdir = curdir
         explanation = ipyw.Label(self.instruction)
-        entries = ['.', '..', ] + os.listdir(curdir)
+        entries = sorted(os.listdir(curdir))
+        entries = ['.', '..', ] + entries
         if self.multiple:
             widget = ipyw.SelectMultiple
             value = []
