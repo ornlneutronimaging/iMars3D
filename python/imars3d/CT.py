@@ -148,6 +148,38 @@ class CT:
         return tilt._compute(image_series, workdir, calculator=calculator, **kwds)
 
 
+    def removeRings(self, reconned=None, outfilename_template=None, **kwds):
+        import tomopy
+        # input
+        if reconned is None: reconned = self.reconstructed
+        # output
+        outfilename_template = outfilename_template or "RAR_%i.tiff"
+        from . import io
+        corrected_ifs = io.ImageFileSeries(
+            os.path.join(self.outdir, outfilename_template),
+            identifiers = reconned.identifiers,
+            name = "Ring-artifact-removed reconstruction", mode = 'w',
+        )
+        # process in chunks
+        N = len(reconned)
+        step = 100
+        for istep in range(N//step+1):
+            start = step*istep; end = step*(istep+1)
+            if end > N: end = N
+            if end <=start: continue
+            # build array
+            stack = np.array([im.data for im in reconned[start:end]])
+            corrected = tomopy.remove_ring(stack, **kwds)
+            for i in range(corrected.shape[0]):
+                img = corrected_ifs[istep*step+i]
+                img.data = corrected[i]
+                img.save()
+                continue
+            continue
+        self.recon_RAR = corrected_ifs
+        return self.recon_RAR
+            
+
     def correctTilt_loop(self, pre, workdir):
         # correct tilt
         MAX_TILT_ALLOWED = 0.05
@@ -237,6 +269,7 @@ class CT:
             self, 
             ct_series, workdir=None, outdir=None,
             rot_center=None, explore_rot_center=True,
+            outfilename_template=None,
             **kwds):
         workdir = workdir or self.workdir;  
         outdir = outdir or self.outdir
@@ -274,7 +307,8 @@ class CT:
             sinograms = sinograms[self.vertical_range]
         recon = i3.reconstruct(
             angles, sinograms, 
-            workdir=outdir, center=rot_center,
+            workdir=outdir, filename_template=outfilename_template,
+            center=rot_center,
             nodes=self.parallel_nodes,
             **kwds)
         self.reconstructed = recon
