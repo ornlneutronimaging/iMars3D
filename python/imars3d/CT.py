@@ -62,6 +62,7 @@ class CT:
 
 
     def recon(self, workdir=None, outdir=None, tilt=None, crop_window=None,
+              smooth_projection=None,
               **kwds):
         workdir = workdir or self.workdir;  outdir = outdir or self.outdir
         # preprocess
@@ -77,13 +78,17 @@ class CT:
                 left=xmin, right=xmax, top=ymin, bottom=ymax)
         if self.clean_on_the_fly:
             pre.removeAll()
-        # smooth -- seems not necessary now
-        # pre = smoothed = self.smooth(cropped, 5)
+        # median filter
+        if smooth_projection:
+            pre = smoothed = self.smooth(cropped, 3)
+            self.smoothed_projection = smoothed
+        else:
+            pre = cropped
         # correct intensity fluctuation
         if_corrected = i3.correct_intensity_fluctuation(
-            cropped, workdir=os.path.join(workdir, 'intensity-fluctuation-correction'))
+            pre, workdir=os.path.join(workdir, 'intensity-fluctuation-correction'))
         if self.clean_on_the_fly:
-            cropped.removeAll()
+            pre.removeAll()
         # correct tilt
         pre = if_corrected
         if tilt is None:
@@ -253,7 +258,8 @@ class CT:
             workdir=outdir, center=rot_center,
             nodes=self.parallel_nodes,
             **kwds)
-        return
+        self.reconstructed = recon
+        return recon
 
 
     def calculateTilt(self, workdir, calculator=None, image_series=None, **kwds):
