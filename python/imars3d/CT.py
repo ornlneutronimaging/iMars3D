@@ -65,20 +65,27 @@ class CT:
               **kwds):
         workdir = workdir or self.workdir;  outdir = outdir or self.outdir
         # preprocess
-        if_corrected = self.preprocess(workdir=workdir, outdir=outdir)
+        pre = self.preprocess(workdir=workdir, outdir=outdir)
+        # crop
         if crop_window is None:
             # auto-cropping
-            cropped = self.autoCrop(if_corrected)
+            cropped = self.autoCrop(pre)
         else:
             xmin, ymin, xmax, ymax = crop_window
             cropped = self.crop(
-                if_corrected, 
+                pre, 
                 left=xmin, right=xmax, top=ymin, bottom=ymax)
         if self.clean_on_the_fly:
-            if_corrected.removeAll()
-        # smoothing
+            pre.removeAll()
+        # smooth -- seems not necessary now
         # pre = smoothed = self.smooth(cropped, 5)
-        pre = cropped
+        # correct intensity fluctuation
+        if_corrected = i3.correct_intensity_fluctuation(
+            cropped, workdir=os.path.join(workdir, 'intensity-fluctuation-correction'))
+        if self.clean_on_the_fly:
+            cropped.removeAll()
+        # correct tilt
+        pre = if_corrected
         if tilt is None:
             tilt_corrected, tilt = self.correctTilt_loop(
                 pre, workdir=workdir)
@@ -88,10 +95,10 @@ class CT:
                 workdir=os.path.join(workdir, 'tilt-correction' ),
                 max_npairs=None, parallel=self.parallel_preprocessing)
         if self.clean_on_the_fly:
-            cropped.removeAll()
+            pre.removeAll()
         #
-        self.if_corrected = if_corrected
         self.cropped = cropped
+        self.if_corrected = if_corrected
         self.tilt_corrected = tilt_corrected
         # reconstruct
         self.reconstruct(tilt_corrected, workdir=workdir, outdir=outdir, **kwds)
@@ -195,10 +202,10 @@ class CT:
         normalized = i3.normalize(gamma_filtered, dfs, obs, workdir=os.path.join(workdir, 'normalization'))
         if self.clean_on_the_fly:
             gamma_filtered.removeAll()
-        if_corrected = i3.correct_intensity_fluctuation(normalized, workdir=os.path.join(workdir, 'intensity-fluctuation-correction'))
-        if self.clean_on_the_fly:
-            normalized.removeAll()
-        return if_corrected
+        # save references
+        self.gamma_filtered = gamma_filtered
+        self.normalized = normalized
+        return normalized
 
 
     @dec.timeit
