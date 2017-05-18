@@ -52,6 +52,8 @@ def _argmin_tilt(tilts, img0, flipped_img180, differ):
     
         
 def shift_diff(x, img1, img2):
+    # shift positive means img2 was shifted to the left,
+    # or img1 was shifted to the right.
     x = int(x)
     if x>0:
         left = img1[:, :-x]
@@ -64,7 +66,7 @@ def shift_diff(x, img1, img2):
         right = img2
     return ((left-right)**2).sum()/left.size
 
-MAX_SHIFT = 100
+MAX_SHIFT = 400
 def findShift(img0, flipped_img180):
     """find the shift in number of pixels
     
