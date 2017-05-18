@@ -7,9 +7,9 @@ from . import use_centers, phasecorrelation, direct
 def compute(ct_series, workdir, max_npairs=10):
     from . import use_centers
     calculators = [
+        direct.DirectMinimization(),
         use_centers.UseCenters(sigma=15, maxshift=200),
         phasecorrelation.PhaseCorrelation(),
-        direct.DirectMinimization(),
         ]
     tilt = None
     for calculator in calculators:
