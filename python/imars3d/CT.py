@@ -249,6 +249,23 @@ class CT:
         return
 
 
+    def calculateTilt(self, workdir, calculator=None, image_series=None, **kwds):
+        """calculate tilt
+
+* workdir: working directory
+* calculator: "direct" or "phasecorrelation"
+* image_series: by default self.cropped
+"""
+        from . import tilt
+        if calculator == 'direct':
+            calculator = tilt.direct.DirectMinimization()
+        elif calculator == 'phasecorrelation':
+            calculator = tilt.phasecorrelation.PhaseCorrelation()
+        if image_series is None:
+            image_series = self.cropped
+        return _compute(image_series, workdir, calculator=calculator, **kwds)
+
+
     def sniff(self):
         if not self.ob_files:
             self.find_OB()
