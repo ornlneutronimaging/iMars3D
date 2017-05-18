@@ -15,8 +15,22 @@ def filter(ct_series, output_img_series, **kwds):
         ct_series, output_img_series, DESC, filter_one, **kwds)
 
 
+def filter_one_use_tomopy(img, maxdiff=500, **kwds):
+    """does gamma filtering on the given image
+    This algorithm uses tomopy.  maxdiff is the max diff between a pixel
+    value and median value to be considered normal (not an outlier)
+    - img: image npy array. must be of integer data type
+    - kwds: additional kwd args to pass to remove_outliers_bymedian
+    """
+    import tomopy
+    return tomopy.remove_outlier(img, maxdiff)
+
+
 def filter_one(img, **kwds):
     """does gamma filtering on the given image
+    this algorithm only detects outliers as bright spots with values
+    more than half of the maximum integer value of the integer type.
+
     - img: image npy array. must be of integer data type
     - kwds: additional kwd args to pass to remove_outliers_bymedian
     """
