@@ -61,6 +61,27 @@ class CT:
         return
 
 
+    @dec.timeit
+    def preprocess(self, workdir=None, outdir=None):
+        workdir = workdir or self.workdir
+        outdir = outdir or self.outdir
+        # get image objs
+        dfs = self.dfs; obs = self.obs
+        ct_series = self.ct_series
+        theta = self.theta
+        # preprocess
+        gamma_filtered = i3.gamma_filter(
+            ct_series, workdir=os.path.join(workdir, 'gamma-filter'),
+            parallel = self.parallel_preprocessing)
+        normalized = i3.normalize(gamma_filtered, dfs, obs, workdir=os.path.join(workdir, 'normalization'))
+        if self.clean_on_the_fly:
+            gamma_filtered.removeAll()
+        # save references
+        self.gamma_filtered = gamma_filtered
+        self.normalized = normalized
+        return normalized
+
+
     def recon(self, workdir=None, outdir=None, tilt=None, crop_window=None,
               smooth_projection=None,
               **kwds):
@@ -108,6 +129,24 @@ class CT:
         # reconstruct
         self.reconstruct(tilt_corrected, workdir=workdir, outdir=outdir, **kwds)
         return
+
+
+    def calculateTilt(self, workdir, calculator=None, image_series=None, **kwds):
+        """calculate tilt
+
+* workdir: working directory
+* calculator: "direct" or "phasecorrelation"
+* image_series: by default self.cropped
+"""
+        from . import tilt
+        if calculator == 'direct':
+            calculator = tilt.direct.DirectMinimization()
+        elif calculator == 'phasecorrelation':
+            calculator = tilt.phasecorrelation.PhaseCorrelation()
+        if image_series is None:
+            image_series = self.cropped
+        return tilt._compute(image_series, workdir, calculator=calculator, **kwds)
+
 
     def correctTilt_loop(self, pre, workdir):
         # correct tilt
@@ -192,26 +231,6 @@ class CT:
             series, workdir=os.path.join(self.workdir, 'smoothed'), size=size,
             parallel = self.parallel_preprocessing)
 
-    @dec.timeit
-    def preprocess(self, workdir=None, outdir=None):
-        workdir = workdir or self.workdir
-        outdir = outdir or self.outdir
-        # get image objs
-        dfs = self.dfs; obs = self.obs
-        ct_series = self.ct_series
-        theta = self.theta
-        # preprocess
-        gamma_filtered = i3.gamma_filter(
-            ct_series, workdir=os.path.join(workdir, 'gamma-filter'),
-            parallel = self.parallel_preprocessing)
-        normalized = i3.normalize(gamma_filtered, dfs, obs, workdir=os.path.join(workdir, 'normalization'))
-        if self.clean_on_the_fly:
-            gamma_filtered.removeAll()
-        # save references
-        self.gamma_filtered = gamma_filtered
-        self.normalized = normalized
-        return normalized
-
 
     @dec.timeit
     def reconstruct(
@@ -260,23 +279,6 @@ class CT:
             **kwds)
         self.reconstructed = recon
         return recon
-
-
-    def calculateTilt(self, workdir, calculator=None, image_series=None, **kwds):
-        """calculate tilt
-
-* workdir: working directory
-* calculator: "direct" or "phasecorrelation"
-* image_series: by default self.cropped
-"""
-        from . import tilt
-        if calculator == 'direct':
-            calculator = tilt.direct.DirectMinimization()
-        elif calculator == 'phasecorrelation':
-            calculator = tilt.phasecorrelation.PhaseCorrelation()
-        if image_series is None:
-            image_series = self.cropped
-        return tilt._compute(image_series, workdir, calculator=calculator, **kwds)
 
 
     def sniff(self):
