@@ -113,13 +113,14 @@ def build_sinograms(
     return ct_series.identifiers, sinograms
 
 
-def reconstruct(angles, sinograms, workdir="work", **kwds):
+def reconstruct(angles, sinograms, workdir="work", filename_template = None, **kwds):
     """reconstruct
 
  * angles: ct scan angles in degrees
     """
+    filename_template = filename_template or  "recon_%i.tiff"
     recon_series = io.ImageFileSeries(
-        os.path.join(workdir, "recon_%i.tiff"),
+        os.path.join(workdir, filename_template),
         identifiers = sinograms.identifiers,
         name = "Reconstructed", mode = 'w',
     )
