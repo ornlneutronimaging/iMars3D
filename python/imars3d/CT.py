@@ -270,7 +270,7 @@ class CT:
             calculator = tilt.phasecorrelation.PhaseCorrelation()
         if image_series is None:
             image_series = self.cropped
-        return _compute(image_series, workdir, calculator=calculator, **kwds)
+        return tilt._compute(image_series, workdir, calculator=calculator, **kwds)
 
 
     def sniff(self):
