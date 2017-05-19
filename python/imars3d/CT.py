@@ -9,6 +9,27 @@ from . import decorators as dec
 
 class CT:
 
+    """CT reconstruction
+    
+>>> ct = CT(...)
+>>> ct.preprocess()
+>>> ct.recon()
+
+Intermediate results are saved as object variables
+
+* gamma_filtered
+* normalized
+* cropped
+* if_corrected
+* tilt_corrected
+* sigogram
+
+Reults:
+
+* reconstructed
+* recon_RAR
+"""
+
     def __init__(
             self, path, CT_subdir=None, CT_identifier=None,
             workdir='work', outdir='out', 
@@ -305,6 +326,7 @@ class CT:
         # reconstruct 
         if self.vertical_range:
             sinograms = sinograms[self.vertical_range]
+        self.sinograms = sinograms
         recon = i3.reconstruct(
             angles, sinograms, 
             workdir=outdir, filename_template=outfilename_template,
