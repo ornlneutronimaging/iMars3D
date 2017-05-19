@@ -20,8 +20,9 @@ import PIL
 
 class ImageSlider:
 
-    viewer_layout = ipyw.Layout()
     layout = ipyw.Layout()
+    viewer_layout = ipyw.Layout(padding="10px")
+    c_range_slider_layout = ipyw.Layout(margin="20px 0 0 5px")
     fmt='png'
 
     store = dict()
@@ -37,6 +38,8 @@ class ImageSlider:
         self.height = height
         self.image_series = image_series
         self.current_img = image_series[0]
+        arr = self.current_img.data
+        self.c_range = np.min(arr), np.max(arr)
         self.createPanel()
         return
     
@@ -54,32 +57,28 @@ class ImageSlider:
             readout=True,
             readout_format='i',
             slider_color='white',
-            layout = ipyw.Layout(width="%spx" % self.width),
-        )
-        self.img_widget = ipyw.Image(
-                value=self.getimg_bytes(),
-                format=self.fmt,
-                width=self.width,
-                height=self.height
+            layout = ipyw.Layout(width="%spx" % int(self.width*1.2)),
             )
+        self.img_widget = ipyw.Image(
+            value=self.getimg_bytes(),
+            format=self.fmt,
+            width=self.width,
+            height=self.height,
+        )
         self.slider.observe(self.update_image, names='value')
-        side = self.createSideWidget()
+        # put together
         self.widgets = [
             self.img_widget,
             self.slider,
         ]
-        self.panel = ipyw.HBox(
-            children=[
-                ipyw.VBox(children=self.widgets, layout=self.viewer_layout),
-                ],
-            layout = self.layout
-            )
+        main_panel = ipyw.VBox(self.widgets, layout=self.viewer_layout)
+        side = self.createSidePanel()
+        self.panel = ipyw.HBox([main_panel, side], layout = self.layout)
         return
 
 
     def show(self):
         display(self.panel)
-        display(self.createSideWidget())
         time.sleep(1)
         js = self.createJS()
         display(js)
@@ -87,8 +86,10 @@ class ImageSlider:
 
     
     def getimg_bytes(self):
-        arr = self.current_img.data
-        min = np.min(arr); max = np.max(arr)
+        arr = self.current_img.data.copy()
+        min, max = self.c_range
+        arr[arr<min] = 0
+        arr[arr>max] = max
         img = ((arr-min)/(max-min)*(2**15-1)).astype('int16')
         f = StringIO()
         PIL.Image.fromarray(img).save(f, self.fmt)
@@ -110,13 +111,31 @@ class ImageSlider:
         return arr[row, col]
 
     
-    def createSideWidget(self):
+    def createSidePanel(self):
         html = '''
         <div>X,Y:&nbsp; <span id="img_coords"></span></div>
         <div>Value:&nbsp;<span id="img_value"></span></div>
         '''
-        self.side_widget = HTML(html)
-        return self.side_widget
+        self.side_widget = ipyw.HTML(html)
+        arr = self.current_img.data
+        min = np.min(arr); max = np.max(arr)
+        self.c_range_slider = ipyw.FloatRangeSlider(
+            value = (min, max),
+            min=min, max=max, step = (max-min)/100.,
+            description="Z range", orientation='vertical',
+            readout=False,
+            continuous_update=False,
+            layout = self.c_range_slider_layout,
+            )
+        self.c_range_slider.observe(self.update_c_range, names='value')
+        self.side_panel = ipyw.VBox([self.side_widget, self.c_range_slider])
+        return self.side_panel
+
+
+    def update_c_range(self, s):
+        self.c_range = self.c_range_slider.value
+        self.update_image(s)
+        return
 
 
     def createJS(self):
@@ -144,7 +163,7 @@ class ImageSlider:
         );
         </script>
         ''' % locals()
-        return HTML(js)
+        return ipyw.HTML(js)
     
 
 js_handle_remote_exec_output = """
