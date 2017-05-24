@@ -3,7 +3,10 @@
 import os, glob, time
 import ipywidgets as ipyw
 from IPython.display import display, HTML, clear_output
-from ._utils import js_alert
+try:
+    from ._utils import js_alert
+except ValueError:
+    from _utils import js_alert
 
 class FileSelectorPanel:
 
