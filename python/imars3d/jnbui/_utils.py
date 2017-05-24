@@ -1,6 +1,5 @@
 # coding: utf-8
 
-import os, imars3d, numpy as np, glob, time
 import ipywidgets as ipyw
 from IPython.display import display, HTML, clear_output
 
