@@ -171,6 +171,7 @@ class WorkDirPanel(SelectDirPanel):
         # fast disk
         import getpass
         username = getpass.getuser()
+        self._check_space()
         self.root = "/SNSlocal2/%s" % username
         explanation = "Please pick a name for your temporary working directory. Usually it is the same as the name of your CT scan. But you can use a different one if you want to. The directory will be created under %s" % self.root
         SelectDirPanel.__init__(self, initial_guess, explanation)
@@ -185,7 +186,16 @@ class WorkDirPanel(SelectDirPanel):
         self.config.workdir = self.selected
         output_panel = OutputDirPanel(self.config, self.config.scan)
         output_panel.show()
-        
+
+    def _check_space(self):
+        import subprocess as sp
+        df = sp.Popen(["df", "/SNSlocal2"], stdout=sp.PIPE)
+        output = df.communicate()[0]
+        device, size, used, available, percent, mountpoint = \
+                output.split("\n")[1].split()
+        free_in_G = float(available)/1e6
+        if free_in_G < 200:
+            js_alert("/SNSlocal2 only has %s GB left. Reconstruction may encounter problems." % (int(free_in_G), ))
         
 class OutputDirPanel(SelectDirPanel):
     def __init__(self, config, initial_guess):
