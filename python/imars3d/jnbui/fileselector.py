@@ -5,7 +5,7 @@ import ipywidgets as ipyw
 from IPython.display import display, HTML, clear_output
 try:
     from ._utils import js_alert
-except ValueError:
+except Exception:
     from _utils import js_alert
 
 class FileSelectorPanel:
@@ -13,7 +13,10 @@ class FileSelectorPanel:
     """Files and directories selector
     """
     
-    select_layout = ipyw.Layout()
+    #If ipywidgets version 5.3 or higher is used, the "width="
+    #statement should change the width of the file selector. "width="
+    #doesn't appear to work in earlier versions.
+    select_layout = ipyw.Layout(width="750px")
     button_layout = ipyw.Layout(margin="5px 40px")
     layout = ipyw.Layout()
     
@@ -32,6 +35,12 @@ class FileSelectorPanel:
         self.curdir = curdir
         explanation = ipyw.Label(self.instruction)
         entries = sorted(os.listdir(curdir))
+        entries_fname = [""]
+        for f in entries:
+            ftime_num = os.stat(f).st_mtime
+            ftime = self.time_convert(ftime_num)
+            entries_fname.append(ftime)
+        entries_fname = [""] + entries
         entries = ['.', '..', ] + entries
         if self.multiple:
             widget = ipyw.SelectMultiple
@@ -49,12 +58,61 @@ class FileSelectorPanel:
         # select button
         self.ok = ipyw.Button(description='Select', layout=self.button_layout)
         self.ok.on_click(self.validate)
+        # file creation time 
         #
         buttons = ipyw.HBox(children=[self.enterdir, self.ok])
         self.widgets = [explanation, self.select, buttons]
         self.panel = ipyw.VBox(children=self.widgets, layout=self.layout)
         return
     
+    def time_convert(self,ftime):
+        fyear = int(ftime)/((60**2) * 24 * 366) + 1970
+        fdy = (int(ftime) / ((60 ** 2) * 24)) - ((fyear - 1970) * 366)
+        if 0 <= fdy <= 31:
+           fmonth = "Jan"
+           fday = fdy
+        elif 32 <= fdy <= 59:
+           fmonth = "Feb"
+           fday = fdy - 32
+        elif 60 <= fdy <= 90:
+           fmonth = "Mar"
+           fday = fdy - 60
+        elif 91 <= fdy <= 120:
+           fmonth = "Apr"
+           fday = fdy - 91
+        elif 121 <= fdy <= 151:
+           fmonth = "May"
+           fday = fdy - 121
+        elif 152 <= fdy <= 181:
+           fmonth = "June"
+           fday = fdy - 152
+        elif 182 <= fdy <= 212:
+           fmonth = "July"
+           fday = fdy - 182
+        elif 213 <= fdy <= 243:
+           fmonth = "Aug"
+           fday = fdy - 213
+        elif 244 <= fdy <= 273:
+           fmonth = "Sept"
+           fday = fdy - 244
+        elif 274 <= fdy <= 304:
+           fmonth = "Oct"
+           fday = fdy - 274
+        elif 305 <= fdy <= 334:
+           fmonth = "Nov"
+           fday = fdy - 305
+        else:
+           fmonth = "Dec"
+           fday = fdy - 335
+        fhr_exact = ((ftime / ((60 ** 2) * 24)) - ((fyear - 1970) * 366) - fdy) * 24
+        fhr = int(fhr_exact)
+        fmin = int((fhr_exact - fhr) * 60)
+        if fmin < 10:
+           fmin = "0" + str(fmin)
+        else:
+           fmin = str(fmin)
+        ftime = "Time of last modification: " + fmonth + " " + str(fday) + ", " + str(fyear) + "  " + str(fhr) + ":" + fmin
+        return (ftime)
     
     def handle_enterdir(self, s):
         v = self.select.value
