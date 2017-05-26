@@ -1,5 +1,10 @@
 # coding: utf-8
 
+
+def wizard(config):
+    WizardPanel(InstrumentPanel(config))
+    return
+
 import os, imars3d, numpy as np, glob, time
 import ipywidgets as ipyw
 from IPython.display import display, HTML, clear_output
@@ -36,6 +41,36 @@ class WizardPanel:
         return
 
     
+class InstrumentPanel(Panel):
+
+    instruments = dict(
+        vulcan = 'sns',
+        snap = 'sns',
+        cg1d = 'hfir',
+        )
+    
+    def __init__(self, config):
+        self.config = config
+        explanation = ipyw.Label("Please chose the instrument")
+        self.text = ipyw.Text(value="CG1D", description="", placeholder="instrument name")
+        self.ok = ipyw.Button(description='OK', layout=self.button_layout)
+        self.widgets = [explanation, self.text, self.ok]
+        self.ok.on_click(self.validate)
+        self.panel = ipyw.VBox(children=self.widgets, layout=self.layout)
+        
+    def validate(self, s):
+        instrument = self.text.value.encode()
+        if instrument.lower() not in self.instruments.keys():
+            s = "instrument %s not supported!" % instrument
+            js_alert(s)
+        else:
+            self.config.instrument = instrument.upper()
+            self.config.facility = self.instruments[instrument.lower()].upper()
+            self.remove()
+            ipts_panel = IPTSpanel(self.config)
+            ipts_panel.show()
+        return
+
 class IPTSpanel(Panel):
     
     def __init__(self, config):
@@ -48,15 +83,17 @@ class IPTSpanel(Panel):
         self.panel = ipyw.VBox(children=self.widgets, layout=self.layout)
         
     def validate_IPTS(self, s):
-        ipts1 = self.text.value
-        p = os.path.join('/HFIR/CG1D/IPTS-%s' % ipts1)
-        if not os.path.exists(p):
-            s = "Cannot open directory %s ! Please check IPTS number" % p
+        ipts1 = self.text.value.encode()
+        facility = self.config.facility
+        instrument = self.config.instrument
+        path = os.path.abspath('/%s/%s/IPTS-%s' % (facility, instrument, ipts1))
+        if not os.path.exists(path):
+            s = "Cannot open directory %s ! Please check IPTS number" % path
             js_alert(s)
         else:
-            self.config.ipts = ipts = ipts1.encode()
+            self.config.ipts = ipts = ipts1
             # use your experiment IPTS number
-            self.config.iptsdir = iptsdir = "/HFIR/CG1DImaging/IPTS-%s/" % ipts
+            self.config.iptsdir = iptsdir = path
             # path to the directory with ct, ob, and df data files or subdirs
             datadir = self.config.datadir = os.path.join(iptsdir,"raw/")
             self.remove()
