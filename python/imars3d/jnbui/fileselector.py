@@ -114,6 +114,7 @@ class FileSelectorPanel:
 
     def create_nametime_labels(self, entries, spacing, ftime):
         label_list = [""]
+        max_len = 0
         for f in entries:
             ind = entries.index(f)
             file_label = entries[ind] + spacing[ind] + ftime[ind]
@@ -122,24 +123,22 @@ class FileSelectorPanel:
         return(label_list)
 
     def del_ftime(self, file_label):
-        if file_label == "." or file_label == "..":
-           return(file_label)
-        elif os.path.isdir(file_label):
-           return(file_label)
-        else:
+        file_label_new = file_label
+        if not os.path.isdir(file_label):
            for char in file_label:
                ind = file_label.index(char)
                if file_label[ind] == " " and file_label[ind + 1] == " ":
                   file_label_new = file_label[:ind]
                   break
-           return(file_label_new)
+        return(file_label_new)
 
     def createPanel(self, curdir):
         self.curdir = curdir
         explanation = ipyw.Label(self.instruction)
         entries_files = sorted(os.listdir(curdir))
         entries_spacing = self.add_ftime_spacing(entries_files)
-        entries_ftime = self.create_file_time(entries_files)
+	entries_paths = [os.path.join(curdir, e) for e in entries_files]
+        entries_ftime = self.create_file_time(entries_paths)
         entries = self.create_nametime_labels(entries_files, entries_spacing, entries_ftime)
         entries = ['.', '..', ] + entries
         if self.multiple:
@@ -161,7 +160,7 @@ class FileSelectorPanel:
         buttons = ipyw.HBox(children=[self.enterdir, self.ok])
         self.widgets = [explanation, self.select, buttons]
         self.panel = ipyw.VBox(children=self.widgets, layout=self.layout)
-        return
+        return	
     
     def handle_enterdir(self, s):
         v = self.select.value
@@ -220,6 +219,17 @@ class FileSelectorPanel:
         self.panel.close()
 
 
+def test1():
+    panel = FileSelectorPanel("instruction", start_dir=".")
+    panel.createPanel(".")
+    return
+
+
+def main():
+    test1()
+    return
+
+if __name__ == '__main__': main()
 
 
 
