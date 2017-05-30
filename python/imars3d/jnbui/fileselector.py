@@ -29,43 +29,8 @@ class FileSelectorPanel:
         self.createPanel(os.path.abspath(start_dir))
         self.next = next
         return
-    
-    
-    def createPanel(self, curdir):
-        self.curdir = curdir
-        explanation = ipyw.Label(self.instruction)
-        entries = sorted(os.listdir(curdir))
-        entries_fname = [""]
-        for f in entries:
-            ftime_num = os.stat(f).st_mtime
-            ftime = self.time_convert(ftime_num)
-            entries_fname.append(ftime)
-        entries_fname = [""] + entries
-        entries = ['.', '..', ] + entries
-        if self.multiple:
-            widget = ipyw.SelectMultiple
-            value = []
-        else:
-            widget = ipyw.Select
-            value = entries[0]
-        self.select = widget(
-            value=value, options=entries,
-            description="Select",
-            layout = self.select_layout)
-        # enter directory button
-        self.enterdir = ipyw.Button(description='Enter directory', layout=self.button_layout)
-        self.enterdir.on_click(self.handle_enterdir)
-        # select button
-        self.ok = ipyw.Button(description='Select', layout=self.button_layout)
-        self.ok.on_click(self.validate)
-        # file creation time 
-        #
-        buttons = ipyw.HBox(children=[self.enterdir, self.ok])
-        self.widgets = [explanation, self.select, buttons]
-        self.panel = ipyw.VBox(children=self.widgets, layout=self.layout)
-        return
-    
-    def time_convert(self,ftime):
+
+    def format_file_time(self,ftime):
         fyear = int(ftime)/((60**2) * 24 * 366) + 1970
         fdy = (int(ftime) / ((60 ** 2) * 24)) - ((fyear - 1970) * 366)
         if 0 <= fdy <= 31:
@@ -90,7 +55,7 @@ class FileSelectorPanel:
            fmonth = "July"
            fday = fdy - 182
         elif 213 <= fdy <= 243:
-           fmonth = "Aug"
+           fmonth = "August"
            fday = fdy - 213
         elif 244 <= fdy <= 273:
            fmonth = "Sept"
@@ -111,11 +76,96 @@ class FileSelectorPanel:
            fmin = "0" + str(fmin)
         else:
            fmin = str(fmin)
-        ftime = "Time of last modification: " + fmonth + " " + str(fday) + ", " + str(fyear) + "  " + str(fhr) + ":" + fmin
+        ftime = fmonth + " " + str(fday) + ", " + str(fyear) + "  " + str(fhr) + ":" + fmin
         return (ftime)
+
+    def create_file_time(self, entries):
+        entries_ftime = [""]
+        for f in entries:
+            if os.path.isdir(f):
+               entries_ftime.append("")
+            else:
+               ftime_sec = os.stat(f).st_mtime
+               ftime = self.format_file_time(ftime_sec)
+               entries_ftime.append(ftime)
+        del entries_ftime[0]
+        return(entries_ftime)
+    
+    def add_ftime_spacing(self, entries):
+        max_len = 0
+        for f in entries:
+            if not os.path.isdir(f):
+               if len(f) >= max_len:
+                  max_len = len(f)
+        base = "    |    "
+        spacing = [""]
+        dif = 0
+        for f in entries:
+            space = base
+            if os.path.isdir(f):
+               spacing.append("")
+            else:
+               dif = max_len - len(f)
+               for i in range(0, dif):
+                   space = " " + space
+               spacing.append(space)
+        del spacing[0]
+        return(spacing)
+
+    def create_nametime_labels(self, entries, spacing, ftime):
+        label_list = [""]
+        for f in entries:
+            ind = entries.index(f)
+            file_label = entries[ind] + spacing[ind] + ftime[ind]
+            label_list.append(file_label)
+        del label_list[0]
+        return(label_list)
+
+    def del_ftime(self, file_label):
+        if file_label == "." or file_label == "..":
+           return(file_label)
+        elif os.path.isdir(file_label):
+           return(file_label)
+        else:
+           for char in file_label:
+               ind = file_label.index(char)
+               if file_label[ind] == " " and file_label[ind + 1] == " ":
+                  file_label_new = file_label[:ind]
+                  break
+           return(file_label_new)
+
+    def createPanel(self, curdir):
+        self.curdir = curdir
+        explanation = ipyw.Label(self.instruction)
+        entries_files = sorted(os.listdir(curdir))
+        entries_spacing = self.add_ftime_spacing(entries_files)
+        entries_ftime = self.create_file_time(entries_files)
+        entries = self.create_nametime_labels(entries_files, entries_spacing, entries_ftime)
+        entries = ['.', '..', ] + entries
+        if self.multiple:
+            widget = ipyw.SelectMultiple
+            value = []
+        else:
+            widget = ipyw.Select
+            value = entries[0]
+        self.select = widget(
+            value=value, options=entries,
+            description="Select",
+            layout = self.select_layout)
+        # enter directory button
+        self.enterdir = ipyw.Button(description='Enter directory', layout=self.button_layout)
+        self.enterdir.on_click(self.handle_enterdir)
+        # select button
+        self.ok = ipyw.Button(description='Select', layout=self.button_layout)
+        self.ok.on_click(self.validate)
+        buttons = ipyw.HBox(children=[self.enterdir, self.ok])
+        self.widgets = [explanation, self.select, buttons]
+        self.panel = ipyw.VBox(children=self.widgets, layout=self.layout)
+        return
     
     def handle_enterdir(self, s):
         v = self.select.value
+        v = self.del_ftime(v)
         if self.multiple:
             if len(v)!=1:
                 js_alert("Please select on directory")
@@ -130,6 +180,7 @@ class FileSelectorPanel:
     
     def validate(self, s):
         v = self.select.value
+        v = self.del_ftime(v)
         # build paths
         if self.multiple:
             vs = v
