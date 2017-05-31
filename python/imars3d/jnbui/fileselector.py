@@ -34,48 +34,48 @@ class FileSelectorPanel:
         fyear = int(ftime)/((60**2) * 24 * 366) + 1970
         fdy = (int(ftime) / ((60 ** 2) * 24)) - ((fyear - 1970) * 366)
         if 0 <= fdy <= 31:
-           fmonth = "Jan"
-           fday = fdy
+            fmonth = "Jan"
+            fday = fdy
         elif 32 <= fdy <= 59:
-           fmonth = "Feb"
-           fday = fdy - 32
+            fmonth = "Feb"
+            fday = fdy - 32
         elif 60 <= fdy <= 90:
-           fmonth = "Mar"
-           fday = fdy - 60
+            fmonth = "Mar"
+            fday = fdy - 60
         elif 91 <= fdy <= 120:
-           fmonth = "Apr"
-           fday = fdy - 91
+            fmonth = "Apr"
+            fday = fdy - 91
         elif 121 <= fdy <= 151:
-           fmonth = "May"
-           fday = fdy - 121
+            fmonth = "May"
+            fday = fdy - 121
         elif 152 <= fdy <= 181:
-           fmonth = "June"
-           fday = fdy - 152
+            fmonth = "June"
+            fday = fdy - 152
         elif 182 <= fdy <= 212:
-           fmonth = "July"
-           fday = fdy - 182
+            fmonth = "July"
+            fday = fdy - 182
         elif 213 <= fdy <= 243:
-           fmonth = "August"
-           fday = fdy - 213
+            fmonth = "August"
+            fday = fdy - 213
         elif 244 <= fdy <= 273:
-           fmonth = "Sept"
-           fday = fdy - 244
+            fmonth = "Sept"
+            fday = fdy - 244
         elif 274 <= fdy <= 304:
-           fmonth = "Oct"
-           fday = fdy - 274
+            fmonth = "Oct"
+            fday = fdy - 274
         elif 305 <= fdy <= 334:
-           fmonth = "Nov"
-           fday = fdy - 305
+            fmonth = "Nov"
+            fday = fdy - 305
         else:
-           fmonth = "Dec"
-           fday = fdy - 335
+            fmonth = "Dec"
+            fday = fdy - 335
         fhr_exact = ((ftime / ((60 ** 2) * 24)) - ((fyear - 1970) * 366) - fdy) * 24
         fhr = int(fhr_exact)
         fmin = int((fhr_exact - fhr) * 60)
         if fmin < 10:
-           fmin = "0" + str(fmin)
+            fmin = "0" + str(fmin)
         else:
-           fmin = str(fmin)
+            fmin = str(fmin)
         ftime = fmonth + " " + str(fday) + ", " + str(fyear) + "  " + str(fhr) + ":" + fmin
         return (ftime)
 
@@ -83,11 +83,11 @@ class FileSelectorPanel:
         entries_ftime = [""]
         for f in entries:
             if os.path.isdir(f):
-               entries_ftime.append("")
+                entries_ftime.append("")
             else:
-               ftime_sec = os.stat(f).st_mtime
-               ftime = self.format_file_time(ftime_sec)
-               entries_ftime.append(ftime)
+                ftime_sec = os.stat(f).st_mtime
+                ftime = self.format_file_time(ftime_sec)
+                entries_ftime.append(ftime)
         del entries_ftime[0]
         return(entries_ftime)
     
@@ -95,26 +95,25 @@ class FileSelectorPanel:
         max_len = 0
         for f in entries:
             if not os.path.isdir(f):
-               if len(f) >= max_len:
-                  max_len = len(f)
+                if len(f) >= max_len:
+                    max_len = len(f)
         base = "    |    "
         spacing = [""]
         dif = 0
         for f in entries:
             space = base
             if os.path.isdir(f):
-               spacing.append("")
+                spacing.append("")
             else:
-               dif = max_len - len(f)
-               for i in range(0, dif):
-                   space = " " + space
-               spacing.append(space)
+                dif = max_len - len(f)
+                for i in range(0, dif):
+                    space = " " + space
+                spacing.append(space)
         del spacing[0]
         return(spacing)
 
     def create_nametime_labels(self, entries, spacing, ftime):
         label_list = [""]
-        max_len = 0
         for f in entries:
             ind = entries.index(f)
             file_label = entries[ind] + spacing[ind] + ftime[ind]
@@ -125,11 +124,11 @@ class FileSelectorPanel:
     def del_ftime(self, file_label):
         file_label_new = file_label
         if not os.path.isdir(file_label):
-           for char in file_label:
-               ind = file_label.index(char)
-               if file_label[ind] == " " and file_label[ind + 1] == " ":
-                  file_label_new = file_label[:ind]
-                  break
+            for char in file_label:
+                ind = file_label.index(char)
+                if file_label[ind] == " " and file_label[ind + 1] == " ":
+                    file_label_new = file_label[:ind]
+                    break
         return(file_label_new)
 
     def createPanel(self, curdir):
@@ -137,7 +136,7 @@ class FileSelectorPanel:
         explanation = ipyw.Label(self.instruction)
         entries_files = sorted(os.listdir(curdir))
         entries_spacing = self.add_ftime_spacing(entries_files)
-	entries_paths = [os.path.join(curdir, e) for e in entries_files]
+        entries_paths = [os.path.join(curdir, e) for e in entries_files]
         entries_ftime = self.create_file_time(entries_paths)
         entries = self.create_nametime_labels(entries_files, entries_spacing, entries_ftime)
         entries = ['.', '..', ] + entries
@@ -150,7 +149,7 @@ class FileSelectorPanel:
         self.select = widget(
             value=value, options=entries,
             description="Select",
-            layout = self.select_layout)
+            layout=self.select_layout)
         # enter directory button
         self.enterdir = ipyw.Button(description='Enter directory', layout=self.button_layout)
         self.enterdir.on_click(self.handle_enterdir)
@@ -219,17 +218,17 @@ class FileSelectorPanel:
         self.panel.close()
 
 
-def test1():
-    panel = FileSelectorPanel("instruction", start_dir=".")
-    panel.createPanel(".")
-    return
+#def test1():
+    #panel = FileSelectorPanel("instruction", start_dir=".")
+    #panel.createPanel(".")
+    #return
 
 
-def main():
-    test1()
-    return
+#def main():
+    #test1()
+    #return
 
-if __name__ == '__main__': main()
+#if __name__ == '__main__': main()
 
 
 
