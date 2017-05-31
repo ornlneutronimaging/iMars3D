@@ -1,24 +1,28 @@
 # iMars3D python package
 
 from __future__ import absolute_import, division, print_function
-
 import matplotlib as mpl; mpl.use("Agg")
 
+
+
+# config file
+# see tests/imars3d/tilt/imars3d.conf for an example
 import yaml, os
 conf_path = "imars3d.conf"
 config = dict()
 if os.path.exists(conf_path):
     config = yaml.load(open(conf_path))
-
+# logging config
 import logging.config
 logging_conf = config.get("logging")
 if logging_conf:
     logging.config.dictConfig(logging_conf)
 
 
+
+# top level methods
 from . import io, components, decorators as dec
 from . import detector_correction
-
 
 def smooth(ct_series, workdir='work', parallel=True, filename_template=None, **kwds):
     if filename_template is None:
