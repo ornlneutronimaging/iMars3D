@@ -20,9 +20,11 @@ from . import io, components, decorators as dec
 from . import detector_correction
 
 
-def smooth(ct_series, workdir='work', parallel=True, **kwds):
+def smooth(ct_series, workdir='work', parallel=True, filename_template=None, **kwds):
+    if filename_template is None:
+        filename_template = "smoothed_%07.3f.tiff"
     smoothed_ct = io.ImageFileSeries(
-        os.path.join(workdir, "smoothed_%07.3f.tiff"), 
+        os.path.join(workdir, filename_template), 
         identifiers=ct_series.identifiers, 
         decimal_mark_replacement=".",
         name="Smoothed", mode="w"
