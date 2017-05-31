@@ -5,7 +5,7 @@ import ipywidgets as ipyw
 import platform
 from IPython.display import display, HTML, clear_output
 try:
-    from ._utils import js_alert
+    from _utils import js_alert
 except Exception:
     from _utils import js_alert
 
@@ -58,9 +58,8 @@ class FileSelectorPanel:
     def add_ftime_spacing(self, entries):
         max_len = 0
         for f in entries:
-            if not os.path.isdir(f):
-                if len(f) >= max_len:
-                    max_len = len(f)
+            if len(f) >= max_len:
+                max_len = len(f)
         base = "    |    "
         spacing = [""]
         dif = 0
