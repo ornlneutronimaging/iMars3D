@@ -29,7 +29,7 @@ class Projection(AbstractComponent):
         # 
         prefix = "Computing sinograms from %r" % (ct_series.name or "",)
         bar = create_pbar(prefix, Y-1)
-        from ..filters.smoothing import filter_one as smooth
+        from ..filters.smoothing import filter_one_median as smooth
         sinograms.identifiers = range(Y)
         for y in range(Y):
             sino = sinograms[y]

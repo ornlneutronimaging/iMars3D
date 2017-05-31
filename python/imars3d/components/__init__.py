@@ -14,8 +14,8 @@ from .AbstractComponent import AbstractComponent
 
 class Smoothing(AbstractComponent):
 
-    def __init__(self, size):
-        self.size = size
+    def __init__(self, **kwds):
+        self.kargs = kwds
         return
     
     def __call__(self, ct_series, output_series, parallel=True):
@@ -23,7 +23,7 @@ class Smoothing(AbstractComponent):
             from ..filters.smoothing import filter_parallel as filter
         else:
             from ..filters.smoothing import filter
-        filter(ct_series, output_series, size = self.size)
+        filter(ct_series, output_series, **self.kargs)
         return
 
 

@@ -106,6 +106,31 @@ Reults:
     def recon(self, workdir=None, outdir=None, tilt=None, crop_window=None,
               smooth_projection=None,
               **kwds):
+        """Run CT reconstruction
+
+    Parameters:
+        * workdir: fast work dir
+        * outdir: output dir. can be at a slower disk
+        * crop_window: (xmin, ymin, xmax, ymax)
+        * smooth_projection: extra smoothing of projection
+          - if ==False, no smoothing
+          - if is True, smoothing with default parameters
+          - if is a dictionary, will be used as kwd arguments for smoothing component
+
+    Default processing chain:
+        * preprocess
+          - gamma filtering
+          - normalization
+        * crop
+        * median-filter (size 3)
+        * (optional) smooth: by default, use bilateral filter
+        * intensity fluctuation correction
+        * tilt correction
+        * sinogram
+        * find center of rotation
+        * reconstruction
+        * (optional) ring artifact removal
+        """
         workdir = workdir or self.workdir;  outdir = outdir or self.outdir
         # preprocess
         pre = self.preprocess(workdir=workdir, outdir=outdir)
@@ -121,11 +146,15 @@ Reults:
         if self.clean_on_the_fly:
             pre.removeAll()
         # median filter
+        median_filtered = self.smooth(cropped, outname='median_filtered', algorithm='median', size=3)
         if smooth_projection:
-            pre = smoothed = self.smooth(cropped, 3)
+            if smooth_projection is True:
+                # default smooth
+                smooth_projection = dict(algorithm='bilateral', sigma_color=0.02, sigma_spatial=5)
+            pre = smoothed = self.smooth(median_filtered, outname='smoothed', **smooth_projection)
             self.smoothed_projection = smoothed
         else:
-            pre = cropped
+            pre = median_filtered
         # correct intensity fluctuation
         if_corrected = i3.correct_intensity_fluctuation(
             pre, workdir=os.path.join(workdir, 'intensity-fluctuation-correction'))
@@ -278,11 +307,12 @@ Reults:
 
 
     @dec.timeit
-    def smooth(self, series, size=None):
+    def smooth(self, series, outname='smoothed', **kwds):
         from . import smooth
         return smooth(
-            series, workdir=os.path.join(self.workdir, 'smoothed'), size=size,
-            parallel = self.parallel_preprocessing)
+            series, workdir=os.path.join(self.workdir, outname),
+            parallel = self.parallel_preprocessing,
+            **kwds)
 
 
     @dec.timeit

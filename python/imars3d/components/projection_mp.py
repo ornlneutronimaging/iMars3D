@@ -42,7 +42,7 @@ def job_handler(y):
         print("%s already existed" % sino)
         return y
     sino.data = data[:, y, :]
-    from imars3d.filters.smoothing import filter_one as smooth
+    from imars3d.filters.smoothing import filter_one_median as smooth
     sino.data = smooth(sino.data, 3)
     sino.save()
     return y
