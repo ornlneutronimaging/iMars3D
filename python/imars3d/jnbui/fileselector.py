@@ -211,6 +211,14 @@ class FileSelectorPanel:
         return
 
     def show(self):
+        display(HTML("""
+        <html>
+        <style type="text/css">
+        div#notebook{
+            font-family: "Lucida Console", Monaco, monospace;
+        }
+        </style>
+        </html>"""))
         display(self.panel)
 
     def remove(self):
