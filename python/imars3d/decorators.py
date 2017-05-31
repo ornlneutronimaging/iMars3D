@@ -1,4 +1,4 @@
-import os
+import os, imars3d
 
 __timeit__logfile = "log.timeit"
 __timeit__logstream = open(__timeit__logfile, 'wt')
@@ -34,6 +34,9 @@ method(*args, **kwds)
     if not os.path.exists(tmpdir):
         os.makedirs(tmpdir)
     def _(*args, **kwds):
+        # nodes kwd
+        nodes = kwds.pop('nodes') if 'nodes' in kwds else None
+        #
         import tempfile, pickle
         dir = tempfile.mkdtemp(dir=tmpdir)
         # save params
@@ -44,13 +47,12 @@ method(*args, **kwds)
         pycode = py_code_template % locals()
         pyfile = os.path.join(dir, "run.py")
         open(pyfile, 'wt').write(pycode)
-        # cpus
-        nodes = kwds.get('nodes', None)
+        # number of cpus
         if not nodes:
             import psutil
             nodes = psutil.cpu_count() - 1
         nodes = max(nodes, 1)
-        nodes = min(nodes, 10)
+        nodes = min(nodes, imars3d.configuration['parallelization']['max_nodes'])
         # shell cmd
         cmd = 'mpirun -np %(nodes)s python %(pyfile)s' % locals()
         print("* running %s" % cmd)

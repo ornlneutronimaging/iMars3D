@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import progressbar
-import os, sys, numpy as np
+import os, sys, numpy as np, imars3d
 
 
 def recon(sinograms, theta, recon_series, nodes=None, **kwds):
@@ -38,7 +38,7 @@ recon_mpi(**kargs)
         import psutil
         nodes = psutil.cpu_count() - 1
     nodes = max(nodes, 1)
-    nodes = min(nodes, 10)
+    nodes = min(nodes, imars3d.configuration['parallelization']['max_nodes'])
     # shell cmd
     cmd = 'mpirun -np %(nodes)s python %(pyfile)s' % locals()
     if os.system(cmd):

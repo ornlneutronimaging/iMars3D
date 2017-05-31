@@ -6,7 +6,9 @@ import matplotlib as mpl; mpl.use("Agg")
 
 
 # config file
-# see tests/imars3d/tilt/imars3d.conf for an example
+# Examples
+#   * tests/imars3d/tilt/imars3d.conf
+#   * tests/imars3d/parallel/imars3d.conf
 import yaml, os
 conf_path = "imars3d.conf"
 config = dict()
@@ -17,8 +19,12 @@ import logging.config
 logging_conf = config.get("logging")
 if logging_conf:
     logging.config.dictConfig(logging_conf)
-
-
+# parallelization cofnig
+parallel = config.get('parallelization')
+if not parallel:
+    config['parallelization'] = dict(max_nodes=20)
+# have to rename. config is a subpackage
+configuration = config
 
 # top level methods
 from . import io, components, decorators as dec
