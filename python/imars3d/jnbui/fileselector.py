@@ -2,6 +2,7 @@
 
 import os, glob, time
 import ipywidgets as ipyw
+import platform
 from IPython.display import display, HTML, clear_output
 try:
     from ._utils import js_alert
@@ -18,6 +19,7 @@ class FileSelectorPanel:
     #doesn't appear to work in earlier versions.
     select_layout = ipyw.Layout(width="750px")
     button_layout = ipyw.Layout(margin="5px 40px")
+    label_layout = ipyw.Layout(width="250px")
     layout = ipyw.Layout()
     
     def __init__(self, instruction, start_dir=".", type='file', next=None, multiple=False):
@@ -30,63 +32,25 @@ class FileSelectorPanel:
         self.next = next
         return
 
-    def format_file_time(self,ftime):
-        fyear = int(ftime)/((60**2) * 24 * 366) + 1970
-        fdy = (int(ftime) / ((60 ** 2) * 24)) - ((fyear - 1970) * 366)
-        if 0 <= fdy <= 31:
-            fmonth = "Jan"
-            fday = fdy
-        elif 32 <= fdy <= 59:
-            fmonth = "Feb"
-            fday = fdy - 32
-        elif 60 <= fdy <= 90:
-            fmonth = "Mar"
-            fday = fdy - 60
-        elif 91 <= fdy <= 120:
-            fmonth = "Apr"
-            fday = fdy - 91
-        elif 121 <= fdy <= 151:
-            fmonth = "May"
-            fday = fdy - 121
-        elif 152 <= fdy <= 181:
-            fmonth = "June"
-            fday = fdy - 152
-        elif 182 <= fdy <= 212:
-            fmonth = "July"
-            fday = fdy - 182
-        elif 213 <= fdy <= 243:
-            fmonth = "August"
-            fday = fdy - 213
-        elif 244 <= fdy <= 273:
-            fmonth = "Sept"
-            fday = fdy - 244
-        elif 274 <= fdy <= 304:
-            fmonth = "Oct"
-            fday = fdy - 274
-        elif 305 <= fdy <= 334:
-            fmonth = "Nov"
-            fday = fdy - 305
-        else:
-            fmonth = "Dec"
-            fday = fdy - 335
-        fhr_exact = ((ftime / ((60 ** 2) * 24)) - ((fyear - 1970) * 366) - fdy) * 24
-        fhr = int(fhr_exact)
-        fmin = int((fhr_exact - fhr) * 60)
-        if fmin < 10:
-            fmin = "0" + str(fmin)
-        else:
-            fmin = str(fmin)
-        ftime = fmonth + " " + str(fday) + ", " + str(fyear) + "  " + str(fhr) + ":" + fmin
-        return (ftime)
+    #def format_file_time(self,ftime):
 
     def create_file_time(self, entries):
         entries_ftime = [""]
+        ops = platform.system()
         for f in entries:
             if os.path.isdir(f):
                 entries_ftime.append("")
             else:
-                ftime_sec = os.stat(f).st_mtime
-                ftime = self.format_file_time(ftime_sec)
+                #Need to decide if it would be better to have creation date or last
+                #modification date for Windows and macOS
+                if (ops == "Windows"):
+                    ftime_sec = os.path.getctime(f)
+                elif (ops == "Darwin"):
+                    ftime_sec = os.stat(f).st_birthtime
+                else:
+                    ftime_sec = os.path.getmtime(f)
+                ftime_tuple = time.localtime(ftime_sec)
+                ftime = time.asctime(ftime_tuple)
                 entries_ftime.append(ftime)
         del entries_ftime[0]
         return(entries_ftime)
@@ -102,13 +66,10 @@ class FileSelectorPanel:
         dif = 0
         for f in entries:
             space = base
-            if os.path.isdir(f):
-                spacing.append("")
-            else:
-                dif = max_len - len(f)
-                for i in range(0, dif):
-                    space = " " + space
-                spacing.append(space)
+            dif = max_len - len(f)
+            for i in range(0, dif):
+                space = " " + space
+            spacing.append(space)
         del spacing[0]
         return(spacing)
 
@@ -133,7 +94,7 @@ class FileSelectorPanel:
 
     def createPanel(self, curdir):
         self.curdir = curdir
-        explanation = ipyw.Label(self.instruction)
+        explanation = ipyw.Label(self.instruction,layout=self.label_layout)
         entries_files = sorted(os.listdir(curdir))
         entries_spacing = self.add_ftime_spacing(entries_files)
         entries_paths = [os.path.join(curdir, e) for e in entries_files]
