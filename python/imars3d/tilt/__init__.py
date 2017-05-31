@@ -1,5 +1,18 @@
 # imars3d.tilt
 
+"""
+Algorithms to compute tilt.
+
+Methods
+* compute: method that try different algorithms
+* apply: apply tilt to an image
+
+Algorithms (details see submodules)
+* direct: most stable
+* phasecorrelation: can be more accurate. but sometimes does not work
+* use_centers
+"""
+
 import os, numpy as np, warnings
 import logging
 from . import use_centers, phasecorrelation, direct
