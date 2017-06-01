@@ -18,6 +18,7 @@ class FileSelectorPanel:
     #statement should change the width of the file selector. "width="
     #doesn't appear to work in earlier versions.
     select_layout = ipyw.Layout(width="750px")
+    select_multiple_layout = ipyw.Layout(width="750px", display="flex", flex_flow="column")
     button_layout = ipyw.Layout(margin="5px 40px")
     label_layout = ipyw.Layout(width="250px")
     layout = ipyw.Layout()
@@ -82,13 +83,27 @@ class FileSelectorPanel:
         return(label_list)
 
     def del_ftime(self, file_label):
-        file_label_new = file_label
-        if not os.path.isdir(file_label):
-            for char in file_label:
-                ind = file_label.index(char)
-                if file_label[ind] == " " and file_label[ind + 1] == " ":
-                    file_label_new = file_label[:ind]
-                    break
+        if isinstance(file_label, tuple):
+            file_label_list = list(file_label)
+            file_name_list = []
+            for l in file_label_list:
+                if l == "." or l == "..":
+                    file_name_list.append(l)
+                else:
+                    for c in l:
+                        ind = l.index(c)
+                        if l[ind] == " " and l[ind + 1] == " ":
+                            file_name_list.append(l[:ind])
+                            break
+            file_label_new = tuple(file_name_list)
+        else:    
+            file_label_new = file_label
+            if file_label != "." and file_label != "..":
+                for char in file_label:
+                    ind = file_label.index(char)
+                    if file_label[ind] == " " and file_label[ind + 1] == " ":
+                        file_label_new = file_label[:ind]
+                        break
         return(file_label_new)
 
     def createPanel(self, curdir):
@@ -101,15 +116,27 @@ class FileSelectorPanel:
         entries = self.create_nametime_labels(entries_files, entries_spacing, entries_ftime)
         entries = ['.', '..', ] + entries
         if self.multiple:
-            widget = ipyw.SelectMultiple
             value = []
+            self.select = ipyw.SelectMultiple(
+                value=value, options=entries,
+                description="Select",
+                layout=self.select_multiple_layout)
         else:
-            widget = ipyw.Select
             value = entries[0]
+            self.select = ipyw.Select(
+                value=value, options=entries,
+                description="Select",
+                layout=self.select_layout)
+        """When ipywidgets 7.0 is released, the old way that the select or select multiple 
+           widget was set up (see below) should work so long as self.select_layout is changed
+           to include the display="flex" and flex_flow="column" statements. In ipywidgets 6.0,
+           this doesn't work because the styles of the select and select multiple widgets are
+           not the same.
+        
         self.select = widget(
             value=value, options=entries,
             description="Select",
-            layout=self.select_layout)
+            layout=self.select_layout) """
         # enter directory button
         self.enterdir = ipyw.Button(description='Enter directory', layout=self.button_layout)
         self.enterdir.on_click(self.handle_enterdir)
@@ -122,11 +149,12 @@ class FileSelectorPanel:
         return	
     
     def handle_enterdir(self, s):
+        #When multiple=True, self.select.value is a tuple. NEED TO FIX. String when multiple=False.
         v = self.select.value
         v = self.del_ftime(v)
         if self.multiple:
             if len(v)!=1:
-                js_alert("Please select on directory")
+                js_alert("Please select a directory")
                 return
             v = v[0]
         p = os.path.abspath(os.path.join(self.curdir, v))
@@ -137,6 +165,7 @@ class FileSelectorPanel:
         return
     
     def validate(self, s):
+        #Same issue as with handle_enterdir
         v = self.select.value
         v = self.del_ftime(v)
         # build paths
@@ -188,10 +217,10 @@ class FileSelectorPanel:
 
 #def test1():
     #panel = FileSelectorPanel("instruction", start_dir=".")
-    #panel.createPanel(".")
+    #panel.validate(".")
     #return
 
-
+#test1()
 #def main():
     #test1()
     #return
