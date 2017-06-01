@@ -36,24 +36,15 @@ class FileSelectorPanel:
     #def format_file_time(self,ftime):
 
     def create_file_time(self, entries):
-        entries_ftime = [""]
-        ops = platform.system()
+        entries_ftime = []
         for f in entries:
             if os.path.isdir(f):
                 entries_ftime.append("")
             else:
-                #Need to decide if it would be better to have creation date or last
-                #modification date for Windows and macOS
-                if (ops == "Windows"):
-                    ftime_sec = os.path.getctime(f)
-                elif (ops == "Darwin"):
-                    ftime_sec = os.stat(f).st_birthtime
-                else:
-                    ftime_sec = os.path.getmtime(f)
+                ftime_sec = os.path.getmtime(f)
                 ftime_tuple = time.localtime(ftime_sec)
                 ftime = time.asctime(ftime_tuple)
                 entries_ftime.append(ftime)
-        del entries_ftime[0]
         return(entries_ftime)
     
     def add_ftime_spacing(self, entries):
@@ -62,7 +53,7 @@ class FileSelectorPanel:
             if len(f) >= max_len:
                 max_len = len(f)
         base = "    |    "
-        spacing = [""]
+        spacing = []
         dif = 0
         for f in entries:
             space = base
@@ -70,16 +61,14 @@ class FileSelectorPanel:
             for i in range(0, dif):
                 space = " " + space
             spacing.append(space)
-        del spacing[0]
         return(spacing)
 
     def create_nametime_labels(self, entries, spacing, ftime):
-        label_list = [""]
+        label_list = []
         for f in entries:
             ind = entries.index(f)
-            file_label = entries[ind] + spacing[ind] + ftime[ind]
+            file_label = " " + entries[ind] + spacing[ind] + ftime[ind] + " "
             label_list.append(file_label)
-        del label_list[0]
         return(label_list)
 
     def del_ftime(self, file_label):
@@ -87,22 +76,23 @@ class FileSelectorPanel:
             file_label_list = list(file_label)
             file_name_list = []
             for l in file_label_list:
-                if l == "." or l == "..":
-                    file_name_list.append(l)
+                l_sub = l[1:]
+                if l_sub == "." or l_sub == "..":
+                    file_name_list.append(l_sub)
                 else:
-                    for c in l:
-                        ind = l.index(c)
-                        if l[ind] == " " and l[ind + 1] == " ":
-                            file_name_list.append(l[:ind])
+                    for c in l_sub:
+                        ind = l_sub.index(c)
+                        if l_sub[ind] == " " and l_sub[ind + 1] == " ":
+                            file_name_list.append(l_sub[:ind])
                             break
             file_label_new = tuple(file_name_list)
         else:    
-            file_label_new = file_label
-            if file_label != "." and file_label != "..":
-                for char in file_label:
-                    ind = file_label.index(char)
-                    if file_label[ind] == " " and file_label[ind + 1] == " ":
-                        file_label_new = file_label[:ind]
+            file_label_new = file_label[1:]
+            if file_label_new != "." and file_label_new != "..":
+                for char in file_label_new:
+                    ind = file_label_new.index(char)
+                    if file_label_new[ind] == " " and file_label_new[ind + 1] == " ":
+                        file_label_new = file_label_new[:ind]
                         break
         return(file_label_new)
 
@@ -114,7 +104,7 @@ class FileSelectorPanel:
         entries_paths = [os.path.join(curdir, e) for e in entries_files]
         entries_ftime = self.create_file_time(entries_paths)
         entries = self.create_nametime_labels(entries_files, entries_spacing, entries_ftime)
-        entries = ['.', '..', ] + entries
+        entries = [' .', ' ..', ] + entries
         if self.multiple:
             value = []
             self.select = ipyw.SelectMultiple(
@@ -149,7 +139,6 @@ class FileSelectorPanel:
         return	
     
     def handle_enterdir(self, s):
-        #When multiple=True, self.select.value is a tuple. NEED TO FIX. String when multiple=False.
         v = self.select.value
         v = self.del_ftime(v)
         if self.multiple:
@@ -165,7 +154,6 @@ class FileSelectorPanel:
         return
     
     def validate(self, s):
-        #Same issue as with handle_enterdir
         v = self.select.value
         v = self.del_ftime(v)
         # build paths
@@ -217,7 +205,7 @@ class FileSelectorPanel:
 
 #def test1():
     #panel = FileSelectorPanel("instruction", start_dir=".")
-    #panel.validate(".")
+    #panel.handle_enterdir(".")
     #return
 
 #test1()
