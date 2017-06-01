@@ -33,13 +33,11 @@ class FileSelectorPanel:
         self.next = next
         return
 
-    #def format_file_time(self,ftime):
-
     def create_file_time(self, entries):
         entries_ftime = []
         for f in entries:
             if os.path.isdir(f):
-                entries_ftime.append("")
+                entries_ftime.append("Directory")
             else:
                 ftime_sec = os.path.getmtime(f)
                 ftime_tuple = time.localtime(ftime_sec)
@@ -53,13 +51,12 @@ class FileSelectorPanel:
             if len(f) >= max_len:
                 max_len = len(f)
         base = "    |    "
+        blen = len(base)
         spacing = []
         dif = 0
         for f in entries:
-            space = base
             dif = max_len - len(f)
-            for i in range(0, dif):
-                space = " " + space
+            space = "%*s" % ((dif + blen), base)
             spacing.append(space)
         return(spacing)
 
