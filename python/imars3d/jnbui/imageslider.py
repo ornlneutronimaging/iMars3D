@@ -29,8 +29,8 @@ class ImageSlider:
 
     def __init__(self, name, image_series, width, height):
         # register
-        if name in self.store:
-            raise RuntimeError("%s already exists" % name)
+        #if name in self.store:
+        #    raise RuntimeError("%s already exists" % name)
         self.name = name
         self.store[name] = self
         #
@@ -163,7 +163,7 @@ class ImageSlider:
         );
         </script>
         ''' % locals()
-        return ipyw.HTML(js)
+        return HTML(js)
     
 
 js_handle_remote_exec_output = """
