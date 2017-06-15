@@ -19,6 +19,7 @@ class Panel:
     
     layout = ipyw.Layout(border="1px lightgray solid", margin='5px', padding='15px')
     button_layout = ipyw.Layout(margin='10px 5px 5px 5px')
+    label_layout = ipyw.Layout(height='32px', padding='2px', width='300px')    
     
     def show(self):
         display(self.panel)
@@ -33,7 +34,7 @@ class Panel:
 
 class WizardPanel:
     
-    label_layout = ipyw.Layout(height='25px', padding='8px')
+    label_layout = ipyw.Layout(height='35px', padding='8px', width='300px')
     
     def __init__(self, start_panel):
         display(ipyw.Label("Tomography reconstruction wizard", layout=self.label_layout))
@@ -51,7 +52,7 @@ class InstrumentPanel(Panel):
     
     def __init__(self, config):
         self.config = config
-        explanation = ipyw.Label("Please chose the instrument")
+        explanation = ipyw.Label("Please chose the instrument", layout=self.label_layout)
         self.text = ipyw.Text(value="CG1D", description="", placeholder="instrument name")
         self.ok = ipyw.Button(description='OK', layout=self.button_layout)
         self.widgets = [explanation, self.text, self.ok]
@@ -75,7 +76,7 @@ class IPTSpanel(Panel):
     
     def __init__(self, config):
         self.config = config
-        explanation = ipyw.Label("Please input your experiment IPTS number")
+        explanation = ipyw.Label("Please input your experiment IPTS number", layout=self.label_layout)
         self.text = ipyw.Text(value="", description="IPTS-", placeholder="IPTS number")
         self.ok = ipyw.Button(description='OK', layout=self.button_layout)
         self.widgets = [explanation, self.text, self.ok]
@@ -108,7 +109,7 @@ class IPTSpanel(Panel):
 class ScanNamePanel(Panel):
     def __init__(self, config):
         self.config = config
-        explanation = ipyw.Label("Please give your neutron CT scan a name:")
+        explanation = ipyw.Label("Please give your neutron CT scan a name:", layout=self.label_layout)
         self.text = ipyw.Text(value="", description="Scan: ", placeholder="name of scan")
         self.ok = ipyw.Button(description='OK', layout=self.button_layout)
         self.widgets = [explanation, self.text, self.ok]
@@ -134,7 +135,7 @@ class SelectDirPanel(Panel):
         
     def createSelectDirPanel(self, initial_guess, explanation):
         # panel for soliciting work dir name
-        explanation_label = ipyw.Label(explanation)
+        explanation_label = ipyw.HTML('<p>'+explanation+'</p>')
         self.path_field = ipyw.Text(value=initial_guess)
         ok = ipyw.Button(description='OK', layout=self.button_layout)
         widgets = [explanation_label, self.path_field, ok]
@@ -143,7 +144,7 @@ class SelectDirPanel(Panel):
         
     def createRemovalAlertPanel(self):
         # panel for remove old dir
-        alert = self.alert = ipyw.Label("** Warning: We are about to remove directory")
+        alert = self.alert = ipyw.Label("** Warning: We are about to remove directory", layout=self.label_layout)
         self.pathtext = ipyw.Label("")
         self.alert_banner = ipyw.HBox(children=[self.alert, self.pathtext])
         layout=ipyw.Layout(width='240px', padding='10px')
@@ -262,7 +263,7 @@ class CTDirPanel(Panel):
         if not config.ct_scan_subdirs:
             return self.createDirSelector()
         # standard case
-        explanation = ipyw.Label("Please choose the sub-directory that contains the image files for your CT scan")
+        explanation = ipyw.HTML("Please choose the sub-directory that contains the image files for your CT scan")
         self.select = ipyw.Select(
             options=config.ct_scan_subdirs, value=config.ct_scan_subdirs[0], 
             description="CT scans")
@@ -302,13 +303,13 @@ class CTSigPanel(Panel):
     def __init__(self, config):
         self.config = config
         ct_sig, sample = self.calculate()
-        explanation1 = ipyw.Label(
-            "A signature word for filenames of the CT scan is needed.\n"
-            +"The following is our best guess.\n")
-        explanation2 = ipyw.Label(
-            "If it does not work, please try to come up with a string that is common in all files of the CT scan of interests.\n"
-            +"Here are some random samples of CT filenames:")
-        samples = [ipyw.Label(s) for s in sample]
+        explanation1 = ipyw.HTML(
+            "<p>A signature word for filenames of the CT scan is needed.</p>"
+            +"<p>The following is our best guess.</p>")
+        explanation2 = ipyw.HTML(
+            "<p>If it does not work, please try to come up with a string that is common in all files of the CT scan of interests.</p>"
+            +"<p>Here are some random samples of CT filenames:</p>")
+        samples = [ipyw.HTML(s) for s in sample]
         sample_panel = ipyw.VBox(
             children=samples, 
             layout=ipyw.Layout(padding="20px", height='120px', width='600px', overflow_x='auto', overflow_y='auto')
@@ -359,7 +360,7 @@ class OBPanel(Panel):
         if not all_obs:
             return self.createOBFilesSelector()
         # standard case
-        explanation1 = ipyw.Label(
+        explanation1 = ipyw.HTML(
             "Open beam (OB) measurements are needed for normalization. "
             "Please select the OB files from below."
             "Use Shift-click or Ctrl-click to select multiple files"
@@ -427,7 +428,7 @@ class DFPanel(Panel):
         if not all_dfs:
             return self.createDFFilesSelector()
         # standard case
-        explanation1 = ipyw.Label(
+        explanation1 = ipyw.HTML(
             "Dark field (DF) measurements are needed for background correction. "
             "Please select the DF files from below. "
             "Use Shift-click or Ctrl-click to select multiple files"
