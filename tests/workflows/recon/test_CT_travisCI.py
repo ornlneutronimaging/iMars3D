@@ -15,6 +15,9 @@ dir = os.path.join(dir, "..", "..", "iMars3D_data_set", "turbine", "full")
 dir = os.path.abspath(dir)
 print(dir)
 
+import imars3d
+imars3d.configuration['parallelization']['max_nodes'] = 2
+
 def test():
     nodes = os.environ.get('NODES')
     if nodes:
