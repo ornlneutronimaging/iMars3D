@@ -24,6 +24,7 @@ def filter_one(img, average_window_size=20, Nsubsets=10, correction_range=(0.99,
     - average_window_size: 
     - Nsubsets: 
     """
+    import numpy as np
     N = average_window_size
     corrections = []
     Nangles = img.shape[0]

@@ -104,7 +104,8 @@ Reults:
 
 
     def recon(self, workdir=None, outdir=None, tilt=None, crop_window=None,
-              smooth_projection=None,
+              smooth_projection=None, remove_rings_at_sinograms=None,
+              smooth_recon=None, remove_rings=None,
               **kwds):
         """Run CT reconstruction
 
@@ -177,7 +178,21 @@ Reults:
         self.if_corrected = if_corrected
         self.tilt_corrected = tilt_corrected
         # reconstruct
-        self.reconstruct(tilt_corrected, workdir=workdir, outdir=outdir, **kwds)
+        recon = self.reconstruct(
+            tilt_corrected,
+            workdir=workdir, outdir=outdir,
+            remove_rings_at_sinograms=remove_rings_at_sinograms,
+            **kwds)
+        if smooth_recon:
+            if smooth_recon is True:
+                smooth_recon = dict(algorithm='bilateral', sigma_color=0.0005, sigma_spatial=5)
+            from . import smooth
+            recon = self.sm_recon = smooth(
+                recon, workdir=self.outdir,
+                parallel = self.parallel_preprocessing,
+                **smooth_recon)
+        if remove_rings:
+            self.removeRings(recon)
         return
 
 
@@ -321,6 +336,7 @@ Reults:
             ct_series, workdir=None, outdir=None,
             rot_center=None, explore_rot_center=True,
             outfilename_template=None,
+            remove_rings_at_sinograms=False,
             **kwds):
         workdir = workdir or self.workdir;  
         outdir = outdir or self.outdir
@@ -357,6 +373,13 @@ Reults:
         if self.vertical_range:
             sinograms = sinograms[self.vertical_range]
         self.sinograms = sinograms
+        if remove_rings_at_sinograms:
+            if remove_rings_at_sinograms is True:
+                remove_rings_at_sinograms = {}
+            self.rar_sino = sinograms = i3.ring_artifact_removal_Ketcham(
+                sinograms, workdir=os.path.join(workdir, 'rar_sinograms'),
+                parallel = self.parallel_preprocessing,
+                **remove_rings_at_sinograms)
         recon = i3.reconstruct(
             angles, sinograms, 
             workdir=outdir, filename_template=outfilename_template,
