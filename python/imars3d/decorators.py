@@ -68,7 +68,10 @@ method(*args, **kwds)
         outstream = open(logfile, 'wt')
         outstream.write('%s\n\n' % cmd)
         if sp.call(args, stdout=outstream, stderr=outstream, shell=False):
-            raise RuntimeError("%s failed. See log file %s" % (cmd, logfile))
+            outstream.close()
+            text = open(logfile).read()
+            raise RuntimeError("%s failed.\n%s\n" % (cmd, text))
+            # raise RuntimeError("%s failed. See log file %s" % (cmd, logfile))
         print("done.")
         return
     return _

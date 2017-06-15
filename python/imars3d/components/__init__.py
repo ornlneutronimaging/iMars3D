@@ -109,4 +109,19 @@ should normalize the intensity using the intensities near the edges"""
         return
 
 
+class RingArtifactRemoval_Kectham(AbstractComponent):
+
+    def __init__(self, **kwds):
+        self.kargs = kwds
+        return
+    
+    def __call__(self, sinograms, output_sinograms, parallel=True):
+        if parallel:
+            from ..filters.ring_artifact_removal_Ketcham import filter_parallel as filter
+        else:
+            from ..filters.ring_artifact_removal_Ketcham import filter
+        filter(sinograms, output_sinograms, **self.kargs)
+        return
+
+
 # End of file
