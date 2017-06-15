@@ -125,6 +125,20 @@ def build_sinograms(
     return ct_series.identifiers, sinograms
 
 
+def ring_artifact_removal_Ketcham(
+        sinograms, workdir='work', parallel=True, filename_template=None, **kwds):
+    if filename_template is None:
+        filename_template = "rar_sino_%i.tiff"
+    rar_sino = io.ImageFileSeries(
+        os.path.join(workdir, filename_template), 
+        identifiers=sinograms.identifiers, 
+        name="RAR_Sinogram", mode="w"
+    )
+    filter = components.RingArtifactRemoval_Kectham(**kwds)
+    filter(sinograms, rar_sino, parallel=parallel)
+    return rar_sino
+
+
 def reconstruct(angles, sinograms, workdir="work", filename_template = None, **kwds):
     """reconstruct
 
