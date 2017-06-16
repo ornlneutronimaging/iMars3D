@@ -202,7 +202,7 @@ Reults:
                 smooth_recon = dict(algorithm='bilateral', sigma_color=0.0005, sigma_spatial=5)
             from . import smooth
             recon = self.r.sm_recon = smooth(
-                recon, workdir=self.outdir,
+                recon, workdir=os.path.join(self.outdir, 'smoothed'),
                 parallel = self.parallel_preprocessing,
                 filename_template='sm_recon_%s.tiff',
                 **smooth_recon)
@@ -228,18 +228,22 @@ Reults:
         return tilt._compute(image_series, workdir, calculator=calculator, **kwds)
 
 
-    def removeRings(self, reconned=None, outfilename_template=None, **kwds):
+    def removeRings(self, reconned=None, outdir=None, outfilename_template=None, **kwds):
         "remove rings as a post-processing step"
+        if outdir is None:
+            outdir = os.path.join(self.outdir, 'rar_direct')
+            if not os.path.exists(outdir):
+                os.makedirs(outdir)
         import tomopy
         # input
         if reconned is None: reconned = self.r.reconstructed
         # output
-        outfilename_template = outfilename_template or "RAR_%i.tiff"
+        outfilename_template = outfilename_template or "rar_direct_%i.tiff"
         from . import io
         corrected_ifs = io.ImageFileSeries(
-            os.path.join(self.outdir, outfilename_template),
+            os.path.join(outdir, outfilename_template),
             identifiers = reconned.identifiers,
-            name = "Ring-artifact-removed reconstruction", mode = 'w',
+            name = "Ring-artifact-directly-removed reconstruction", mode = 'w',
         )
         # process in chunks
         N = len(reconned)
@@ -257,8 +261,8 @@ Reults:
                 img.save()
                 continue
             continue
-        self.r.recon_RAR = corrected_ifs
-        return self.r.recon_RAR
+        self.r.recon_rar_direct = corrected_ifs
+        return self.r.recon_rar_direct
             
 
     def correctTilt_loop(self, pre, workdir):
@@ -373,11 +377,13 @@ Reults:
         DEVIATION = 40 # max deviation of rot center from center of image
         if explore_rot_center:
             print("* Exploring rotation center using tomopy...")
-            tomopy.write_center(
-                proj.copy(), theta,
-                cen_range=[X//2-DEVIATION, X//2+DEVIATION, 1.],
-                dpath=os.path.join(workdir, 'tomopy-findcenter'),
-                emission=False)
+            dpath=os.path.join(workdir, 'tomopy-findcenter')
+            if not os.path.exists(dpath): # skip if already done
+                tomopy.write_center(
+                    proj.copy(), theta,
+                    cen_range=[X//2-DEVIATION, X//2+DEVIATION, 1.],
+                    dpath=dpath,
+                    emission=False)
         if rot_center is None:
             print("* Computing rotation center using 180deg pairs...")
             from .tilt import find_rot_center
@@ -390,13 +396,7 @@ Reults:
         if self.vertical_range:
             sinograms = sinograms[self.vertical_range]
         self.r.sinograms = sinograms
-        if remove_rings_at_sinograms:
-            if remove_rings_at_sinograms is True:
-                remove_rings_at_sinograms = {}
-            self.r.rar_sino = sinograms = i3.ring_artifact_removal_Ketcham(
-                sinograms, workdir=os.path.join(workdir, 'rar_sinograms'),
-                parallel = self.parallel_preprocessing,
-                **remove_rings_at_sinograms)
+        # reconstruct using original sinograms
         recon = i3.reconstruct(
             angles, sinograms, 
             workdir=outdir, filename_template=outfilename_template,
@@ -404,6 +404,22 @@ Reults:
             nodes=self.parallel_nodes,
             **kwds)
         self.r.reconstructed = recon
+        # reconstruct using rar filtered sinograms
+        if remove_rings_at_sinograms:
+            if remove_rings_at_sinograms is True:
+                remove_rings_at_sinograms = {}
+            self.r.rar_sino = sinograms = i3.ring_artifact_removal_Ketcham(
+                sinograms, workdir=os.path.join(workdir, 'rar_sinograms'),
+                parallel = self.parallel_preprocessing,
+                **remove_rings_at_sinograms)
+            recon = i3.reconstruct(
+                angles, sinograms, 
+                workdir=os.path.join(outdir, 'rar_sinograms'),
+                filename_template=outfilename_template,
+                center=rot_center,
+                nodes=self.parallel_nodes,
+                **kwds)
+            self.r.reconstructed_using_rar_sinograms = recon
         return recon
 
 
