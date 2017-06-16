@@ -79,6 +79,7 @@ Reults:
         self.parallel_nodes = parallel_nodes
         self.clean_on_the_fly = clean_on_the_fly
         self.vertical_range = vertical_range
+        self.r = results()
         return
 
 
@@ -98,8 +99,8 @@ Reults:
         if self.clean_on_the_fly:
             gamma_filtered.removeAll()
         # save references
-        self.gamma_filtered = gamma_filtered
-        self.normalized = normalized
+        self.r.gamma_filtered = gamma_filtered
+        self.r.normalized = normalized
         return normalized
 
 
@@ -147,13 +148,14 @@ Reults:
         if self.clean_on_the_fly:
             pre.removeAll()
         # median filter
-        median_filtered = self.smooth(cropped, outname='median_filtered', algorithm='median', size=3)
+        self.r.median_filtered = median_filtered = self.smooth(
+            cropped, outname='median_filtered', algorithm='median', size=3)
         if smooth_projection:
             if smooth_projection is True:
                 # default smooth
                 smooth_projection = dict(algorithm='bilateral', sigma_color=0.02, sigma_spatial=5)
             pre = smoothed = self.smooth(median_filtered, outname='smoothed', **smooth_projection)
-            self.smoothed_projection = smoothed
+            self.r.smoothed_projection = smoothed
         else:
             pre = median_filtered
         # correct intensity fluctuation
@@ -174,9 +176,9 @@ Reults:
         if self.clean_on_the_fly:
             pre.removeAll()
         #
-        self.cropped = cropped
-        self.if_corrected = if_corrected
-        self.tilt_corrected = tilt_corrected
+        self.r.cropped = cropped
+        self.r.if_corrected = if_corrected
+        self.r.tilt_corrected = tilt_corrected
         # reconstruct
         recon = self.reconstruct(
             tilt_corrected,
@@ -187,9 +189,10 @@ Reults:
             if smooth_recon is True:
                 smooth_recon = dict(algorithm='bilateral', sigma_color=0.0005, sigma_spatial=5)
             from . import smooth
-            recon = self.sm_recon = smooth(
+            recon = self.r.sm_recon = smooth(
                 recon, workdir=self.outdir,
                 parallel = self.parallel_preprocessing,
+                filename_template='sm_recon_%s.tiff',
                 **smooth_recon)
         if remove_rings:
             self.removeRings(recon)
@@ -209,14 +212,15 @@ Reults:
         elif calculator == 'phasecorrelation':
             calculator = tilt.phasecorrelation.PhaseCorrelation()
         if image_series is None:
-            image_series = self.cropped
+            image_series = self.r.if_corrected
         return tilt._compute(image_series, workdir, calculator=calculator, **kwds)
 
 
     def removeRings(self, reconned=None, outfilename_template=None, **kwds):
+        "remove rings as a post-processing step"
         import tomopy
         # input
-        if reconned is None: reconned = self.reconstructed
+        if reconned is None: reconned = self.r.reconstructed
         # output
         outfilename_template = outfilename_template or "RAR_%i.tiff"
         from . import io
@@ -241,8 +245,8 @@ Reults:
                 img.save()
                 continue
             continue
-        self.recon_RAR = corrected_ifs
-        return self.recon_RAR
+        self.r.recon_RAR = corrected_ifs
+        return self.r.recon_RAR
             
 
     def correctTilt_loop(self, pre, workdir):
@@ -368,15 +372,16 @@ Reults:
             rot_center = find_rot_center.find(
                 ct_series, workdir=os.path.join(workdir, 'find-rot-center'))
         print('* Rotation center: %s' % rot_center)
+        self.rot_center = rot_center
         open(os.path.join(workdir, 'rot_center'), 'wt').write(str(rot_center))
         # reconstruct 
         if self.vertical_range:
             sinograms = sinograms[self.vertical_range]
-        self.sinograms = sinograms
+        self.r.sinograms = sinograms
         if remove_rings_at_sinograms:
             if remove_rings_at_sinograms is True:
                 remove_rings_at_sinograms = {}
-            self.rar_sino = sinograms = i3.ring_artifact_removal_Ketcham(
+            self.r.rar_sino = sinograms = i3.ring_artifact_removal_Ketcham(
                 sinograms, workdir=os.path.join(workdir, 'rar_sinograms'),
                 parallel = self.parallel_preprocessing,
                 **remove_rings_at_sinograms)
@@ -386,7 +391,7 @@ Reults:
             center=rot_center,
             nodes=self.parallel_nodes,
             **kwds)
-        self.reconstructed = recon
+        self.r.reconstructed = recon
         return recon
 
 
@@ -553,6 +558,10 @@ Reults:
         setattr(self, '%s_pattern' % kind, found)
         return
 
+    pass
+
+
+class results:
     pass
 
 
