@@ -144,7 +144,7 @@ def reconstruct(angles, sinograms, workdir="work", filename_template = None, **k
 
  * angles: ct scan angles in degrees
     """
-    filename_template = filename_template or  "recon_%i.tiff"
+    filename_template = filename_template or  "reconstructed_%i.tiff"
     recon_series = io.ImageFileSeries(
         os.path.join(workdir, filename_template),
         identifiers = sinograms.identifiers,
