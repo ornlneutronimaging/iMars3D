@@ -145,7 +145,7 @@ class SelectDirPanel(Panel):
     def createRemovalAlertPanel(self):
         # panel for remove old dir
         alert = self.alert = ipyw.Label("** Warning: We are about to remove directory", layout=self.label_layout)
-        self.pathtext = ipyw.Label("")
+        self.pathtext = ipyw.HTML("")
         self.alert_banner = ipyw.HBox(children=[self.alert, self.pathtext])
         layout=ipyw.Layout(width='240px', padding='10px')
         yes = ipyw.Button(description='Yes. Please remove the directory', layout=layout)
@@ -169,7 +169,6 @@ class SelectDirPanel(Panel):
             return
         wait.close()
         self.selected = self.path_candidate
-        # print "seletecd: %s" % self.selected
         self.nextStep()
         return
     
@@ -204,6 +203,9 @@ class SelectDirPanel(Panel):
         return
 
 class WorkDirPanel(SelectDirPanel):
+
+    layout = ipyw.Layout()
+
     def __init__(self, config, initial_guess):
         self.config = config
         # fast disk
@@ -236,6 +238,9 @@ class WorkDirPanel(SelectDirPanel):
             js_alert("/SNSlocal2 only has %s GB left. Reconstruction may encounter problems." % (int(free_in_G), ))
         
 class OutputDirPanel(SelectDirPanel):
+
+    layout = ipyw.Layout()
+
     def __init__(self, config, initial_guess):
         self.config = config
         self.root = os.path.join(config.iptsdir, "shared/processed_data/")
