@@ -38,7 +38,7 @@ def filter_one_bilateral(img, sigma_color=None, sigma_spatial=None):
     img = img.copy()
     img/=max
     img[img<0] = 0
-    filtered = denoise_bilateral(img, sigma_color=sigma_color, sigma_spatial=sigma_spatial, multichannel=False)
+    filtered = denoise_bilateral(img, sigma_color=sigma_color/max, sigma_spatial=sigma_spatial, multichannel=False)
     return (filtered * max).astype("float32")
 
 def filter_one(img, algorithm='bilateral', **kwds):
