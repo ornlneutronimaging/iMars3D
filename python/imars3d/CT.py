@@ -114,10 +114,21 @@ Reults:
         * workdir: fast work dir
         * outdir: output dir. can be at a slower disk
         * crop_window: (xmin, ymin, xmax, ymax)
+        * remove_rings_at_sinograms: remove ring artifacts by filtering sinograms
+          - if ==False, no filtering
+          - if is True, filtering with default parameters
+          - if is a dictionary, will be used as kwd arguments for filtering component
+            e.g. dict(average_window_size=20, Nsubsets=10, correction_range=(0.9, 1.1))
+        * smooth_recon: smooth the reconstruction result
+          - if ==False, no smoothing
+          - if is True, smoothing with default parameters
+          - if is a dictionary, will be used as kwd arguments for smoothing component
+            e.g. dict(algorithm='bilateral', sigma_color=0.0005, sigma_spatial=5)
         * smooth_projection: extra smoothing of projection
           - if ==False, no smoothing
           - if is True, smoothing with default parameters
           - if is a dictionary, will be used as kwd arguments for smoothing component
+            e.g. dict(algorithm='bilateral', sigma_color=0.02, sigma_spatial=5)
 
     Default processing chain:
         * preprocess
@@ -128,10 +139,11 @@ Reults:
         * (optional) smooth: by default, use bilateral filter
         * intensity fluctuation correction
         * tilt correction
-        * sinogram
+        * create sinograms
+        * (optional) apply ring-artifact-removal filter to sinograms
         * find center of rotation
         * reconstruction
-        * (optional) ring artifact removal
+        * (optional) smooth reconstruction
         """
         workdir = workdir or self.workdir;  outdir = outdir or self.outdir
         # preprocess
