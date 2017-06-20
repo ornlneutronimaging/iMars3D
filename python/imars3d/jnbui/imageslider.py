@@ -113,6 +113,8 @@ class ImageSlider:
         nrows, ncols = arr.shape
         col = int(offsetX*1./self.width * ncols)
         row = int(offsetY*1./self.height * nrows)
+        col = min(ncols-1, col)
+        row = min(nrows-1, row)
         return arr[row, col]
 
     
