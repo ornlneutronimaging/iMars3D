@@ -45,7 +45,7 @@ class WizardPanel:
 class InstrumentPanel(Panel):
 
     instruments = dict(
-        vulcan = 'sns',
+        # vulcan = 'sns',
         snap = 'sns',
         cg1d = 'hfir',
         )
@@ -53,7 +53,8 @@ class InstrumentPanel(Panel):
     def __init__(self, config):
         self.config = config
         explanation = ipyw.Label("Please chose the instrument", layout=self.label_layout)
-        self.text = ipyw.Text(value="CG1D", description="", placeholder="instrument name")
+        # self.text = ipyw.Text(value="CG1D", description="", placeholder="instrument name")
+        self.text = ipyw.Select(value="CG1D", options=[i.upper() for i in self.instruments.keys()])
         self.ok = ipyw.Button(description='OK', layout=self.button_layout)
         self.widgets = [explanation, self.text, self.ok]
         self.ok.on_click(self.validate)
