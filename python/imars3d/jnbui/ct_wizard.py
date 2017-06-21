@@ -261,6 +261,7 @@ class OutputDirPanel(SelectDirPanel):
 
 
 class CTDirPanel(Panel):
+    
     def __init__(self, config):
         self.config = config
         # by standard, ct directories must be inside IPTS/raw/ct_scans, but older IPTS may not conform
@@ -273,14 +274,24 @@ class CTDirPanel(Panel):
             options=config.ct_scan_subdirs, value=config.ct_scan_subdirs[0], 
             description="CT scans")
         self.ok = ipyw.Button(description='Select', layout=self.button_layout)
-        self.widgets = [explanation, self.select, self.ok]
+        self.use_dir_selector = ipyw.Button(
+            description='If you cannot find your CT scan above, click me instead',
+            layout=ipyw.Layout(margin="0 0 0 200px", width="350px"))
+        self.widgets = [explanation, self.select, self.ok, self.use_dir_selector]
         self.ok.on_click(self.validate)
+        self.use_dir_selector.on_click(self.switchToDirSelector)
         self.panel = ipyw.VBox(children=self.widgets, layout=self.layout)
         
     def validate(self, s):
         self.config.ct_subdir = self.select.value.encode()
         self.remove()
         self.nextStep()
+        return
+
+    def switchToDirSelector(self, s):
+        self.remove()
+        self.createDirSelector()
+        self.show()
         return
     
     def nextStep(self):
