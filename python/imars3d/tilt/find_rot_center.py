@@ -2,6 +2,11 @@
 import os, numpy as np
 
 def find(ct_series, workdir=None, max_npairs=20):
+    if not os.path.exists(workdir):
+        os.makedirs(workdir)
+    outpath = os.path.join(workdir, 'ROT_CENTER')
+    if os.path.exists(outpath): # if already calculated, skip
+        return float(open(outpath).read())
     img = lambda angle: ct_series.getImage(angle)
     from . import _find180DegImgPairs
     from .direct import findShift
@@ -15,7 +20,9 @@ def find(ct_series, workdir=None, max_npairs=20):
         # print shift, center, img(a0).data.shape[1]/2.
         centers.append(center)
         continue
-    return np.median(centers)
+    res = np.median(centers)
+    open(outpath, 'wt').write(str(res))
+    return res
 
 
 def find_using_edges(ct_series, workdir=None):

@@ -22,7 +22,7 @@ class DirectMinimization:
         return
     
     def __call__(self, img0, img180):
-        return computeTilt(img0.data, img180.data), 1.0
+        return computeTilt(img0.data, img180.data, workdir=self.logging_dir), 1.0
 
 
 def computeTilt(img0, img180, workdir=None, **kwds):
@@ -30,22 +30,25 @@ def computeTilt(img0, img180, workdir=None, **kwds):
     shift = findShift(img0, flipped_img180)
     differ = lambda a,b: shift_diff(shift, a,b)
     tilts = np.arange(-2., 2.1, 0.2)
-    tilt = _argmin_tilt(tilts, img0, flipped_img180, differ)
+    tilt = _argmin_tilt(tilts, img0, flipped_img180, differ, workdir=workdir)
     tilts = np.arange(tilt-0.2, tilt+0.21, 0.02)
-    tilt = _argmin_tilt(tilts, img0, flipped_img180, differ)
+    tilt = _argmin_tilt(tilts, img0, flipped_img180, differ, workdir=workdir)
     return tilt
 
 
-def _argmin_tilt(tilts, img0, flipped_img180, differ):
+def _argmin_tilt(tilts, img0, flipped_img180, differ, workdir=None):
     nrows, ncols = img0.shape
     borderY, borderX = nrows//20, ncols//20
     from skimage.transform import rotate
     diffs = []
+    if workdir:
+        logfile = open(os.path.join(workdir, 'log._argmin_tilt'), 'wt')
     for tilt in tilts:
         a = rotate(img0/np.max(img0), -tilt)[borderY:-borderY, borderX:-borderX]
         b = rotate(flipped_img180/np.max(flipped_img180), tilt)[borderY:-borderY, borderX:-borderX]
         diff = differ(a,b)
-        print("* tilt=%s, diff=%s" % (tilt, diff))
+        if workdir:
+            logfile.write("* tilt=%s, diff=%s\n" % (tilt, diff))
         diffs.append(diff)
         continue
     return tilts[np.argmin(diffs)]
@@ -73,7 +76,7 @@ def findShift(img0, flipped_img180):
     note: the relation between rot center and shift is
       rot_center = -shift/2 if 0 is center of image
     """
-    print("* Calculating shift...")
+    # print("* Calculating shift...")
     ncols = img0.shape[1]
     def diff(x):
         return shift_diff(x, img0, flipped_img180)

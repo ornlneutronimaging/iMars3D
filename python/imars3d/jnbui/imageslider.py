@@ -88,9 +88,14 @@ class ImageSlider:
     def getimg_bytes(self):
         arr = self.current_img.data.copy()
         min, max = self.c_range
-        arr[arr<min] = 0
+        arr[arr<min] = min
         arr[arr>max] = max
         img = ((arr-min)/(max-min)*(2**15-1)).astype('int16')
+        size = np.min(img.shape)
+        if size>300:
+            downsample_ratio = 300./size
+            import scipy.misc
+            img = scipy.misc.imresize(img, downsample_ratio)
         f = StringIO()
         PIL.Image.fromarray(img).save(f, self.fmt)
         return f.getvalue()
@@ -108,6 +113,8 @@ class ImageSlider:
         nrows, ncols = arr.shape
         col = int(offsetX*1./self.width * ncols)
         row = int(offsetY*1./self.height * nrows)
+        col = min(ncols-1, col)
+        row = min(nrows-1, row)
         return arr[row, col]
 
     

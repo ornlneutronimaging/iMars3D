@@ -15,7 +15,7 @@ def filter(ct_series, output_img_series, **kwds):
         ct_series, output_img_series, DESC, filter_one, **kwds)
 
 
-def filter_one(img, average_window_size=20, Nsubsets=10, correction_range=(0.99, 1.01)):
+def filter_one(img, average_window_size=20, Nsubsets=10, correction_range=(0.9, 1.1)):
     """remove ring artifacts using the Ketcham method
 
     This only should be applied to sinograms
@@ -24,6 +24,7 @@ def filter_one(img, average_window_size=20, Nsubsets=10, correction_range=(0.99,
     - average_window_size: 
     - Nsubsets: 
     """
+    import numpy as np
     N = average_window_size
     corrections = []
     Nangles = img.shape[0]
