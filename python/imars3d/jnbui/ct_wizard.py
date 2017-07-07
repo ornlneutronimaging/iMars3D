@@ -306,7 +306,7 @@ class CTDirPanel(Panel):
         from .fileselector import FileSelectorPanel as FSP
         self.fsp = FSP("Please select the CT directory", start_dir=config.iptsdir, type='directory')
         # the call back function for the file selector
-        def next():
+        def next(s):
             self.config.ct_subdir = self.fsp.selected
             self.nextStep()
             return
@@ -426,7 +426,7 @@ class OBPanel(Panel):
         from .fileselector import FileSelectorPanel as FSP
         self.fsp = FSP("OB files", start_dir=config.iptsdir, type='file', multiple=True)
         # call back function
-        def next():
+        def next(s):
             self.config.ob_files = self.fsp.selected
             self.nextStep()
             return
@@ -497,7 +497,7 @@ class DFPanel(Panel):
         from .fileselector import FileSelectorPanel as FSP
         self.fsp = FSP("DF files", start_dir=config.iptsdir, type='file', multiple=True)
         # call back function
-        def next():
+        def next(s):
             self.config.df_files = self.fsp.selected
             self.nextStep()
             return
