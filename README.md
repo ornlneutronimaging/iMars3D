@@ -23,8 +23,7 @@ $ pip install progressbar2
 If running the jupyter interface, install more dependencies:
 
 ```
-$ conda install ipywidgets
-$ cd /path/to/ipywe; python setup.py install
+$ conda install -c neutrons ipywe
 ```
 
 To install imars3d itself,
