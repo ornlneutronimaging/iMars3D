@@ -14,12 +14,12 @@ curr_panel = None
 
 def tomoReconStart(image_width=300, image_height=300, remove_rings_at_sinograms=False, smooth_rec=False, smooth_proj=False):
     global remove_rings, smooth_recon, smooth_projection, curr_panel
-    remove_rings = remove_rings_at_singograms
+    remove_rings = remove_rings_at_sinograms
     smooth_recon = smooth_rec
     smooth_projection = smooth_proj
     curr_panel = ReconStartButtons(image_width=image_width, image_height=image_height)
     curr_panel.show()
-    return curr_panel.ct curr_panel.config
+    return curr_panel.ct, curr_panel.config
 
 class ReconPanel:
 
@@ -101,9 +101,9 @@ class ReconWizard(ReconPanel):
     def saveConfig(self):
         if not os.path.exists(self.config.outdir):
             os.makedirs(self.config.outdir)
-        os.chdir(config.outdir)
+        os.chdir(self.config.outdir)
         assert os.getcwd() == self.config.outdir
-        pkl.dump(config, open('recon-config.pkl', 'wb'))
+        pkl.dump(self.config, open('recon-config.pkl', 'wb'))
         for k, v in self.config.__dict__.items():
             if k.startswith('_'): continue
             sv = str(v)
@@ -158,7 +158,7 @@ class ImgSliderROIPanel(ReconPanel):
         self.roi_data = None
         self.createTabs()
 
-    def createTabs():
+    def createTabs(self):
         self.ct_slider = ImageSlider(self.ppd, self.img_width, self.img_height)
         self.df_slider = ImageSlider(self.ct.dfs, self.img_width, self.img_height)
         self.ob_slider = ImageSlider(self.ct.obs, self.img_width, self.img_height)
@@ -183,7 +183,7 @@ class ImgSliderROIPanel(ReconPanel):
         self.roi_data = [self.ct_slider._xcoord_absolute, self.ct_slider._xcoord_max_roi, self.ct_slider._ycoord_absolute, self.ct_slider._ycoord_max_roi]
         global curr_panel
         self.reomve()
-        curr_panel = ImgDisplayPanel(self.ppd, self.img_width, self.img_height, self.ct, self.config self.roi_data)
+        curr_panel = ImgDisplayPanel(self.ppd, self.img_width, self.img_height, self.ct, self.config, self.roi_data)
         curr_panel.show()
 
     def df_select(self):
