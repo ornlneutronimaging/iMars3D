@@ -10,6 +10,16 @@ from IPython.display import display, HTML, clear_output
 remove_rings = None
 smooth_recon = None
 smooth_projection = None
+curr_panel = None
+
+def tomoReconStart(image_width=300, image_height=300, remove_rings_at_sinograms=False, smooth_rec=False, smooth_proj=False):
+    global remove_rings, smooth_recon, smooth_projection, curr_panel
+    remove_rings = remove_rings_at_singograms
+    smooth_recon = smooth_rec
+    smooth_projection = smooth_proj
+    curr_panel = ReconStartButtons(image_width=image_width, image_height=image_height)
+    curr_panel.show()
+    return curr_panel.ct curr_panel.config
 
 class ReconPanel:
 
@@ -29,13 +39,9 @@ class ReconPanel:
 
 class ReconStartButtons(ReconPanel):
     
-    def __init__(self, image_width=300, image_height=300, remove_rings_at_sinograms=False, smooth_rec=False, smooth_proj=False):
-        global remove_rings, smooth_recon, smooth_projection
+    def __init__(self, image_width, image_height):
         self.img_width = image_width
         self.img_height = image_height
-        remove_rings = remove_rings_at_sinograms
-        smooth_rec = smooth_recon
-        smooth_projection = smooth_proj
         self.widgets = None
         self.panel = None
         self.createButtons()
@@ -53,9 +59,10 @@ class ReconStartButtons(ReconPanel):
         return
 
     def nextStep(self):
+        global curr_panel
         self.remove()
-        wizard_panel = ReconWizard(self.img_width, self.img_height)
-        wizard_panel.show()
+        curr_panel = ReconWizard(self.img_width, self.img_height)
+        curr_panel.show()
         return
 
     def reloadConfig(self):
@@ -71,9 +78,10 @@ class ReconStartButtons(ReconPanel):
             if len(sv) > 60:
                 sv = sv[:50] + '...'
             print "{0:20}{1:<}".format(k,sv)
+        global curr_panel
         self.remove()
-        ct_create = CTCreationPanel(self.img_width, self.img_height, config)
-        ct_create.show()
+        curr_panel = CTCreationPanel(self.img_width, self.img_height, config)
+        curr_panel.show()
         return
         
 class ReconWizard(ReconPanel):
@@ -84,13 +92,11 @@ class ReconWizard(ReconPanel):
         self.config = None
         self.panel = None
         self.createWizardPanel()
-        return
 
     def createWizardPanel(self):
         self.config = ctw.config()
         ctw.wizard(self.config)
         self.saveConfig()
-        return
 
     def saveConfig(self):
         if not os.path.exists(self.config.outdir):
@@ -107,10 +113,10 @@ class ReconWizard(ReconPanel):
         self.nextStep()
 
     def nextStep(self):
+        global curr_panel
         self.remove()
-        ct_create = CTCreationPanel(self.img_width, self.img_height, self.config)
-        ct_create.show()
-        return
+        curr_panel = CTCreationPanel(self.img_width, self.img_height, self.config)
+        curr_panel.show()
 
 class CTCreationPanel(ReconPanel):
 
@@ -131,10 +137,11 @@ class CTCreationPanel(ReconPanel):
         self.ppd = self.ct.preprocess()
         self.nextStep()
 
-    def nextStep(self)
+    def nextStep(self):
+        global curr_panel
         self.remove()
-        slider_roi = ImgSliderROIPanel(self.img_width, self.img_height, self.config, self.ct, self.ppd)
-        slider_roi.show()
+        curr_panel = ImgSliderROIPanel(self.img_width, self.img_height, self.config, self.ct, self.ppd)
+        curr_panel.show()
 
 class ImgSliderROIPanel(ReconPanel):
 
@@ -150,7 +157,6 @@ class ImgSliderROIPanel(ReconPanel):
         self.ob_slider = None
         self.roi_data = None
         self.createTabs()
-        return
 
     def createTabs():
         self.ct_slider = ImageSlider(self.ppd, self.img_width, self.img_height)
@@ -172,28 +178,27 @@ class ImgSliderROIPanel(ReconPanel):
         df_button.on_click(self.df_select)
         ob_button.on_click(self.ob_select)
         self.panel = tab
-        return
 
     def ct_select(self):
         self.roi_data = [self.ct_slider._xcoord_absolute, self.ct_slider._xcoord_max_roi, self.ct_slider._ycoord_absolute, self.ct_slider._ycoord_max_roi]
+        global curr_panel
         self.reomve()
-        img_dpanel = ImgDisplayPanel(self.ppd, self.img_width, self.img_height, self.ct, self.config self.roi_data)
-        img_dpanel.show()
-        return
+        curr_panel = ImgDisplayPanel(self.ppd, self.img_width, self.img_height, self.ct, self.config self.roi_data)
+        curr_panel.show()
 
     def df_select(self):
         self.roi_data = [self.df_slider._xcoord_absolute, self.df_slider._xcoord_max_roi, self.df_slider._ycoord_absolute, self.df_slider._ycoord_max_roi]
+        global curr_panel
         self.remove()
-        img_dpanel = ImgDisplayPanel(self.ct.dfs, self.img_width, self.img_height, self.ct, self.config, self.roi_data)
-        img_dpanel.show()
-        return
+        curr_panel = ImgDisplayPanel(self.ct.dfs, self.img_width, self.img_height, self.ct, self.config, self.roi_data)
+        curr_panel.show()
 
     def ob_select(self):
         self.roi_data = [self.ob_slider._xcoord_absolute, self.ob_slider._xcoord_max_roi, self.ob_slider._ycoord_absolute, self.ob_slider._ycoord_max_roi]
+        global curr_panel
         self.remove()
-        img_dpanel = ImgDisplayPanel(self.ct.obs, self.img_width, self.img_height, self.ct, self.config, self.roi_data)
-        img_dpanel.show()
-        return
+        curr_panel = ImgDisplayPanel(self.ct.obs, self.img_width, self.img_height, self.ct, self.config, self.roi_data)
+        curr_panel.show()
 
 class ImgDisplayPanel(ReconPanel):
 
@@ -206,7 +211,6 @@ class ImgDisplayPanel(ReconPanel):
         self.img_disp = None
         self.avg_img = self.calc_avg(img_series)
         self.createImgDisplay()
-        return
 
     def calc_avg(self, img_series):
         num = len(img_series)
@@ -225,7 +229,6 @@ class ImgDisplayPanel(ReconPanel):
         conf_pan = ipyw.VBox(children=children, layout=self.panel_layout)
         self.panel = conf_pan   
         recon_button.on_click(self.nextStep)
-        return
 
     def nextStep(self):
         xmin = self.img_disp._xcoord_absolute
