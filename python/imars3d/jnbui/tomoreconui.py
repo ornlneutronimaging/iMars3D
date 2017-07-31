@@ -21,6 +21,9 @@ def tomoReconStart(image_width=300, image_height=300, remove_rings_at_sinograms=
     smooth_projection = smooth_proj
     start_pan = ReconStartButtons()
     start_pan.show()
+    while select_next == -1:
+        print("No Button")
+        continue
     if select_next == 0:
         config = start_pan.config
         start_pan.remove()
@@ -63,7 +66,7 @@ class ReconPanel:
 
     panel_layout = ipyw.Layout(border="1px lightgray solid", margin="5px", padding="15px")
     button_layout = ipyw.Layout(margin="10px 5px 5px 5px")
-    label_layout = ipyw.Layout(height='35px', padding='8px', width='300px')
+    label_layout = ipyw.Layout(height='35px', padding='8px', width='500px')
 
     def show(self):
         display(self.panel)
@@ -92,7 +95,7 @@ class ReconStartButtons(ReconPanel):
         self.panel = ipyw.VBox(children=self.widgets, layout=self.panel_layout)
         return
 
-    def reloadConfig(self):
+    def reloadConfig(self, event):
         self.config = pkl.load(open('/HFIR/CG1D/IPTS-15518/shared/processed_data/derek_inj/recon-config.pkl'))
         if not os.path.exists(self.config.outdir):
             os.makedirs(self.config.outdir)
@@ -105,9 +108,11 @@ class ReconStartButtons(ReconPanel):
             if len(sv) > 60:
                 sv = sv[:50] + '...'
             print "{0:20}{1:<}".format(k,sv)
+        global select_next
+        select_next = 0
         return
 
-    def prepWizard(self):
+    def prepWizard(self, event):
         global select_next
         select_next = 1
         
