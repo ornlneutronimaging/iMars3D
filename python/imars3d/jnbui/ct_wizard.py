@@ -8,7 +8,7 @@ def wizard(config):
 import os, imars3d, numpy as np, glob, time
 import ipywidgets as ipyw
 from IPython.display import display, HTML, clear_output
-from ._utils import js_alert
+from _utils import js_alert
 
 class config:
     # object to hold inputs gathered from users
