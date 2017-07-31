@@ -1,25 +1,63 @@
 # coding: utf-8
 
-import os, subprocess, numpy as np
+import os
+#import subprocess
+import numpy as np
 import ipywidgets as ipyw
 import pickle as pkl
-from ipywe import ImageDisplay, ImageSlider
-from .ct_wizard import ct_wizard as ctw
-from IPython.display import display, HTML, clear_output
+from ipywe import imagedisplay as imgd, imageslider as imgs
+#from .ct_wizard 
+import ct_wizard as ctw
+from IPython.display import display #, HTML, clear_output
 
-remove_rings = None
-smooth_recon = None
-smooth_projection = None
-curr_panel = None
+select_next = -1
 
 def tomoReconStart(image_width=300, image_height=300, remove_rings_at_sinograms=False, smooth_rec=False, smooth_proj=False):
-    global remove_rings, smooth_recon, smooth_projection, curr_panel
+    global select_next
+    img_width = image_width
+    img_height = image_height
     remove_rings = remove_rings_at_sinograms
     smooth_recon = smooth_rec
     smooth_projection = smooth_proj
-    curr_panel = ReconStartButtons(image_width=image_width, image_height=image_height)
-    curr_panel.show()
-    return curr_panel.ct, curr_panel.config
+    start_pan = ReconStartButtons()
+    start_pan.show()
+    if select_next == 0:
+        config = start_pan.config
+        start_pan.remove()
+    elif select_next == 1:
+        start_pan.remove()
+        wizard = ReconWizard()
+        wizard.show()
+        config = wizard.config
+        wizard.remove()
+    else:
+        print("A button was not clicked before the code continued")
+        raise ValueError
+    ct_create = CTCreationPanel(config)
+    ct = ct_create.ct
+    ppd = ct_create.ppd
+    select_next = -1
+    img_slide = ImgSliderROIPanel(img_width, img_height, ct, ppd)
+    img_slide.show()
+    roi = img_slide.roi_data
+    if select_next == 0:
+        img_slide.remove()
+        img_disp = ImgDisplayPanel(ppd, img_width, img_height, ct, config, roi, remove_rings, smooth_recon, smooth_projection)
+        img_disp.show()
+    elif select_next == 1:
+        img_slide.remove()
+        img_disp = ImgDisplayPanel(ct.dfs, img_width, img_height, ct, config, roi, remove_rings, smooth_recon, smooth_projection)
+        img_disp.show()
+    elif select_next == 2:
+        img_slide.remove()
+        img_disp = ImgDisplayPanel(ct.obs, img_width, img_height, ct, config, roi, remove_rings, smooth_recon, smooth_projection)
+        img_disp.show()
+    else:
+        print("The code continued before a recon button was clicked.")
+        raise ValueError
+    ct = img_disp.ct
+    img_disp.remove()
+    return config, ct
 
 class ReconPanel:
 
@@ -34,16 +72,12 @@ class ReconPanel:
         for w in self.widgets: w.close()
         self.panel.close()
 
-    def nextStep(self):
-        raise NotImplementedError
-
 class ReconStartButtons(ReconPanel):
     
-    def __init__(self, image_width, image_height):
-        self.img_width = image_width
-        self.img_height = image_height
+    def __init__(self):
         self.widgets = None
         self.panel = None
+        self.config = None
         self.createButtons()
         return
 
@@ -53,49 +87,43 @@ class ReconStartButtons(ReconPanel):
         prev_button = ipyw.Button(description="Previous Config", layout=self.button_layout)
         buttons = ipyw.HBox(children=[scratch_button, prev_button])
         self.widgets = [explanation, buttons]
-        scratch_button.on_click(self.nextStep)
+        scratch_button.on_click(self.prepWizard)
         prev_button.on_click(self.reloadConfig)
         self.panel = ipyw.VBox(children=self.widgets, layout=self.panel_layout)
         return
 
-    def nextStep(self):
-        global curr_panel
-        self.remove()
-        curr_panel = ReconWizard(self.img_width, self.img_height)
-        curr_panel.show()
-        return
-
     def reloadConfig(self):
-        config = pkl.load(open('/HFIR/CG1D/IPTS-15518/shared/processed_data/derek_inj/recon-config.pkl'))
-        if not os.path.exists(config.outdir):
-            os.makedirs(config.outdir)
-        os.chdir(config.outdir)
-        assert os.getcwd() == config.outdir
-        pkl.dump(config, open('recon-config.pkl', 'wb'))
-        for k, v in config.__dict__.items():
+        self.config = pkl.load(open('/HFIR/CG1D/IPTS-15518/shared/processed_data/derek_inj/recon-config.pkl'))
+        if not os.path.exists(self.config.outdir):
+            os.makedirs(self.config.outdir)
+        os.chdir(self.config.outdir)
+        assert os.getcwd() == self.config.outdir
+        pkl.dump(self.config, open('recon-config.pkl', 'wb'))
+        for k, v in self.config.__dict__.items():
             if k.startswith('_'): continue
             sv = str(v)
             if len(sv) > 60:
                 sv = sv[:50] + '...'
             print "{0:20}{1:<}".format(k,sv)
-        global curr_panel
-        self.remove()
-        curr_panel = CTCreationPanel(self.img_width, self.img_height, config)
-        curr_panel.show()
         return
+
+    def prepWizard(self):
+        global select_next
+        select_next = 1
         
 class ReconWizard(ReconPanel):
 
-    def __init__(self, image_width, image_height):
-        self.img_width = image_width
-        self.img_height = image_height
+    def __init__(self):
         self.config = None
         self.panel = None
         self.createWizardPanel()
 
     def createWizardPanel(self):
         self.config = ctw.config()
-        ctw.wizard(self.config)
+        pan = ctw.wizard(self.config)
+        pan
+        self.widgets = [pan]
+        self.panel = ipyw.VBox(children=self.widgets)
         self.saveConfig()
 
     def saveConfig(self):
@@ -110,19 +138,10 @@ class ReconWizard(ReconPanel):
             if len(sv) > 60:
                 sv = sv[:50] + '...'
             print "{0:20}{1:<}".format(k,sv)
-        self.nextStep()
-
-    def nextStep(self):
-        global curr_panel
-        self.remove()
-        curr_panel = CTCreationPanel(self.img_width, self.img_height, self.config)
-        curr_panel.show()
 
 class CTCreationPanel(ReconPanel):
 
-    def __init__(self, image_width, image_height, config):
-        self.img_width = image_width
-        self.img_height = image_height
+    def __init__(self, config):
         self.config = config
         self.ct = None
         self.ppd = None
@@ -135,20 +154,12 @@ class CTCreationPanel(ReconPanel):
         self.ct = CT(self.config.datadir, CT_subdir=self.config.ct_dir, CT_identifier=self.config.ct_sig, workdir=self.config.workdir, outdir=self.config.outdir, ob_files=self.config.ob_files, df_files=self.config.df_files) #ob_identifier=ob_sig, df_identifier=df_sig
         #Ignoring the %%time magics for now
         self.ppd = self.ct.preprocess()
-        self.nextStep()
-
-    def nextStep(self):
-        global curr_panel
-        self.remove()
-        curr_panel = ImgSliderROIPanel(self.img_width, self.img_height, self.config, self.ct, self.ppd)
-        curr_panel.show()
 
 class ImgSliderROIPanel(ReconPanel):
 
-    def __init__(self, image_width, image_height, config, ct, ppd):
+    def __init__(self, image_width, image_height, ct, ppd):
         self.img_width = image_width
         self.img_height = image_height
-        self.config = config
         self.ct = ct
         self.ppd = ppd
         self.panel = None
@@ -159,9 +170,9 @@ class ImgSliderROIPanel(ReconPanel):
         self.createTabs()
 
     def createTabs(self):
-        self.ct_slider = ImageSlider(self.ppd, self.img_width, self.img_height)
-        self.df_slider = ImageSlider(self.ct.dfs, self.img_width, self.img_height)
-        self.ob_slider = ImageSlider(self.ct.obs, self.img_width, self.img_height)
+        self.ct_slider = imgs.ImageSlider(self.ppd, self.img_width, self.img_height)
+        self.df_slider = imgs.ImageSlider(self.ct.dfs, self.img_width, self.img_height)
+        self.ob_slider = imgs.ImageSlider(self.ct.obs, self.img_width, self.img_height)
         explanation = ipyw.Label("Select a Region of Interest for the CT, DF, or OB Images", layout=self.label_layout)
         ct_button = ipyw.Button(description="Reconstruct", layout=self.button_layout)
         df_button = ipyw.Button(description="Reconstruct", layout=self.button_layout)
@@ -169,45 +180,41 @@ class ImgSliderROIPanel(ReconPanel):
         ct_tab = ipyw.VBox(children=[self.ct_slider, ct_button], layout=self.panel_layout)
         df_tab = ipyw.VBox(children=[self.df_slider, df_button], layout=self.panel_layout)
         ob_tab = ipyw.VBox(children=[self.df_slider, df_button], layout=self.panel_layout)
-        children = [ct_tab, df_tab, ob_tab]
-        tab = ipyw.Tab(children=children)
-        tab.set_title(0, "CT")
-        tab.set_title(1, "DF")
-        tab.set_title(2, "OB")
+        self.widgets = [ct_tab, df_tab, ob_tab]
+        self.panel = ipyw.Tab(children=self.widgets)
+        self.panel.set_title(0, "CT")
+        self.panel.set_title(1, "DF")
+        self.panel.set_title(2, "OB")
         ct_button.on_click(self.ct_select)
         df_button.on_click(self.df_select)
         ob_button.on_click(self.ob_select)
-        self.panel = tab
 
     def ct_select(self):
         self.roi_data = [self.ct_slider._xcoord_absolute, self.ct_slider._xcoord_max_roi, self.ct_slider._ycoord_absolute, self.ct_slider._ycoord_max_roi]
-        global curr_panel
-        self.reomve()
-        curr_panel = ImgDisplayPanel(self.ppd, self.img_width, self.img_height, self.ct, self.config, self.roi_data)
-        curr_panel.show()
+        global select_next
+        select_next = 0
 
     def df_select(self):
         self.roi_data = [self.df_slider._xcoord_absolute, self.df_slider._xcoord_max_roi, self.df_slider._ycoord_absolute, self.df_slider._ycoord_max_roi]
-        global curr_panel
-        self.remove()
-        curr_panel = ImgDisplayPanel(self.ct.dfs, self.img_width, self.img_height, self.ct, self.config, self.roi_data)
-        curr_panel.show()
+        global select_next
+        select_next = 1
 
     def ob_select(self):
         self.roi_data = [self.ob_slider._xcoord_absolute, self.ob_slider._xcoord_max_roi, self.ob_slider._ycoord_absolute, self.ob_slider._ycoord_max_roi]
-        global curr_panel
-        self.remove()
-        curr_panel = ImgDisplayPanel(self.ct.obs, self.img_width, self.img_height, self.ct, self.config, self.roi_data)
-        curr_panel.show()
+        global select_next
+        select_next = 2
 
 class ImgDisplayPanel(ReconPanel):
 
-    def __init__(self, img_series, width, height, ct, config, roi_data):
+    def __init__(self, img_series, width, height, ct, config, roi_data, remove_rings, smooth_rec, smooth_proj):
         self.img_width = width
         self.img_height = height
         self.roi_data = roi_data
         self.ct = ct
         self.config = config
+        self.remove_rings = remove_rings
+        self.smooth_recon = smooth_rec
+        self.smooth_projection = smooth_proj
         self.img_disp = None
         self.avg_img = self.calc_avg(img_series)
         self.createImgDisplay()
@@ -222,12 +229,11 @@ class ImgDisplayPanel(ReconPanel):
         return avg_img
 
     def createImgDisplay(self):
-        self.img_disp = ImageDisplay(self.avg_img, self.img_width, self.img_height, init_roi=self.roi_data)
+        self.img_disp = imgd.ImageDisplay(self.avg_img, self.img_width, self.img_height, init_roi=self.roi_data)
         explanation = ipyw.Label("Confirm ROI", layout=self.label_layout)
         recon_button = ipyw.Button(description="Reconstruct", layout=self.button_layout)
-        children = [explanation, self.img_disp, recon_button]
-        conf_pan = ipyw.VBox(children=children, layout=self.panel_layout)
-        self.panel = conf_pan   
+        self.widgets = [explanation, self.img_disp, recon_button]
+        self.panel = ipyw.VBox(children=self.widgets, layout=self.panel_layout)
         recon_button.on_click(self.nextStep)
 
     def nextStep(self):
@@ -235,6 +241,5 @@ class ImgDisplayPanel(ReconPanel):
         ymin = self.img_disp._ycoord_absolute
         xmax = self.img_disp._xcoord_max_roi
         ymax = self.img_disp._ycoord_max_roi
-        self.ct.recon(crop_window=(xmin, ymin, xmax, ymax), remove_rings_at_sinograms=remove_rings, smooth_recon=smooth_recon, smooth_projection=smooth_projection)       
+        self.ct.recon(crop_window=(xmin, ymin, xmax, ymax), remove_rings_at_sinograms=self.remove_rings, smooth_recon=self.smooth_recon, smooth_projection=self.smooth_projection)       
         print self.config.workdir
-
