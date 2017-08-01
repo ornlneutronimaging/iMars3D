@@ -11,9 +11,10 @@ import ct_wizard as ctw
 from IPython.display import display #, HTML, clear_output
 
 select_next = -1
+isClicked = 0
 
 def tomoReconStart(image_width=300, image_height=300, remove_rings_at_sinograms=False, smooth_rec=False, smooth_proj=False):
-    global select_next
+    global select_next, isClicked
     img_width = image_width
     img_height = image_height
     remove_rings = remove_rings_at_sinograms
@@ -21,9 +22,8 @@ def tomoReconStart(image_width=300, image_height=300, remove_rings_at_sinograms=
     smooth_projection = smooth_proj
     start_pan = ReconStartButtons()
     start_pan.show()
-    while select_next == -1:
-        print("No Button")
-        continue
+    start_pan.scratch_button.on_click(start_pan.prepWizard(start_pan))
+    start_pan.prev_button.on_click(start_pan.reloadConfig(start_pan))
     if select_next == 0:
         config = start_pan.config
         start_pan.remove()
@@ -81,17 +81,20 @@ class ReconStartButtons(ReconPanel):
         self.widgets = None
         self.panel = None
         self.config = None
+        self.scratch_button = None
+        self.prev_button = None
+        self.isClicked = 0
         self.createButtons()
         return
 
     def createButtons(self):
         explanation = ipyw.Label("Do you wish to start from scratch or use a previous reconstruction configuration?", layout=self.label_layout)
-        scratch_button = ipyw.Button(description="Start from Scratch", layout=self.button_layout)
-        prev_button = ipyw.Button(description="Previous Config", layout=self.button_layout)
-        buttons = ipyw.HBox(children=[scratch_button, prev_button])
+        self.scratch_button = ipyw.Button(description="Start from Scratch", layout=self.button_layout)
+        self.prev_button = ipyw.Button(description="Previous Config", layout=self.button_layout)
+        buttons = ipyw.HBox(children=[self.scratch_button, self.prev_button])
         self.widgets = [explanation, buttons]
-        scratch_button.on_click(self.prepWizard)
-        prev_button.on_click(self.reloadConfig)
+        #scratch_button.on_click(self.prepWizard)
+        #prev_button.on_click(self.reloadConfig)
         self.panel = ipyw.VBox(children=self.widgets, layout=self.panel_layout)
         return
 
@@ -108,13 +111,15 @@ class ReconStartButtons(ReconPanel):
             if len(sv) > 60:
                 sv = sv[:50] + '...'
             print "{0:20}{1:<}".format(k,sv)
-        global select_next
+        global select_next, isClicked
         select_next = 0
+        isClicked = 1
         return
 
     def prepWizard(self, event):
-        global select_next
+        global select_next, isClicked
         select_next = 1
+        isClicked = 1
         
 class ReconWizard(ReconPanel):
 
@@ -184,7 +189,7 @@ class ImgSliderROIPanel(ReconPanel):
         ob_button = ipyw.Button(description="Reconstruct", layout=self.button_layout)
         ct_tab = ipyw.VBox(children=[self.ct_slider, ct_button], layout=self.panel_layout)
         df_tab = ipyw.VBox(children=[self.df_slider, df_button], layout=self.panel_layout)
-        ob_tab = ipyw.VBox(children=[self.df_slider, df_button], layout=self.panel_layout)
+        ob_tab = ipyw.VBox(children=[self.ob_slider, ob_button], layout=self.panel_layout)
         self.widgets = [ct_tab, df_tab, ob_tab]
         self.panel = ipyw.Tab(children=self.widgets)
         self.panel.set_title(0, "CT")
