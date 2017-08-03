@@ -14,7 +14,7 @@ from _utils import js_alert
 class Context:
     pass
 
-class Config:
+class config:
     # object to hold inputs gathered from users
     ipts = None
     scan = None

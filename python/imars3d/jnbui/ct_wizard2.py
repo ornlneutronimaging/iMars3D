@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from . import ct_wizard as base
-from .ct_wizard import Context, Config
+from .ct_wizard import Context, config
 
 img_width = 0
 img_height = 0
@@ -17,13 +17,13 @@ def wizard(context, image_width=300, image_height=300, remove_rings_at_sinograms
     smooth_recon = smooth_rec
     smooth_projection = smooth_proj
     WizardPanel(StartButtonPanel(context))
-    return context
+    return
 
 import os, imars3d, numpy as np, glob, time
 import ipywidgets as ipyw
 from IPython.display import display, HTML, clear_output
 from _utils import js_alert
-from ipywe import imagedisplay as ImgDisp, imageslider as ImgSlider
+from ipywe import imagedisplay as ImgDisp, imageslider as ImgSlider, fileselector as flselect
 import pickle as pkl
 
 
@@ -42,7 +42,7 @@ class StartButtonPanel(base.Panel):
 
     def __init__(self, context):
         self.context = context
-        self.config = context.config
+        #self.config = self.context.config
         explanation = ipyw.Label("Do you wish to start from scratch or use a previous reconstruction configuration?", layout=self.label_layout)
         scratch_button = ipyw.Button(description="Start from Scratch", layout=self.button_layout)
         prev_button = ipyw.Button(description="Previous Config", layout=self.button_layout)
@@ -53,24 +53,46 @@ class StartButtonPanel(base.Panel):
         prev_button.on_click(self.reloadConfig)
 
     def reloadConfig(self, event):
-        self.config = pkl.load(open('/HFIR/CG1D/IPTS-15518/shared/processed_data/derek_inj/recon-config.pkl'))
-        if not os.path.exists(self.config.outdir):
-            os.makedirs(self.config.outdir)
-        os.chdir(self.config.outdir)
-        assert os.getcwd() == self.config.outdir
-        pkl.dump(self.config, open('recon-config.pkl', 'wb'))
-        for k, v in self.config.__dict__.items():
-            if k.startswith('_'): continue
-            sv = str(v)
-            if len(sv) > 60:
-                sv = sv[:50] + '...'
-            print "{0:20}{1:<}".format(k,sv)
-        #Go to whatever panel will create the CT object
+        self.remove()
+        fselpan = FileSelectPanel(self.context)
+        fselpan.show()
 
     def nextStep(self, event):
         self.remove()
         inst_panel = InstrumentPanel(self.context)
         inst_panel.show()
+
+class FileSelectPanel(base.Panel):
+
+    def __init__(self, context):
+        self.context = context
+        self.fsp = flselect.FileSelectorPanel("Choose a .pkl file to use for configuration")
+        def createConfig(path):
+            self.context.config = pkl.load(open(path))
+            if not os.path.exists(self.context.config.outdir):
+                os.makedirs(self.context.config.outdir)
+            os.chdir(self.context.config.outdir)
+            assert os.getcwd() == self.context.config.outdir
+            pkl.dump(self.context.config, open('recon-config.pkl', 'wb'))
+            for k, v in self.context.config.__dict__.items():
+                if k.startswith('_'): continue
+                sv = str(v)
+                if len(sv) > 60:
+                    sv = sv[:50] + '...'
+                print "{0:20}{1:<}".format(k,sv)
+            self.nextStep()
+        self.fsp.next = createConfig
+        self.panel = self.fsp.panel
+
+    def nextStep(self):
+        self.remove()
+        from imars3d.CT import CT
+        context = self.context
+        config = context.config
+        ct = CT(config.datadir, CT_subdir=config.ct_dir, CT_identifier=config.ct_sig, workdir=config.workdir, outdir=config.outdir, ob_files=config.ob_files, df_files=config.df_files)
+        context.ct = ct
+        img_slide = ImgSliderPanel(context)
+        img_slide.show()
 
     
 class InstrumentPanel(base.InstrumentPanel):
@@ -172,11 +194,11 @@ class DFPanel(base.DFPanel):
 
     def nextStep(self):
         self.remove()
-
         from imars3d.CT import CT
         context = self.context
         config = context.config
-        context.ct = CT(config.datadir, CT_subdir=config.ct_dir, CT_identifier=config.ct_sig, workdir=config.workdir, outdir=config.outdir, ob_files=config.ob_files, df_files=config.df_files)
+        ct = CT(config.datadir, CT_subdir=config.ct_dir, CT_identifier=config.ct_sig, workdir=config.workdir, outdir=config.outdir, ob_files=config.ob_files, df_files=config.df_files)
+        context.ct = ct
         imgslide = ImgSliderPanel(context)
         imgslide.show()
 
@@ -187,13 +209,13 @@ class ImgSliderPanel(base.Panel):
         self.width = img_width
         self.height = img_height
         self.context = context
-        self.config = context.config
-        ct = self.context.ct
+        #self.config = context.config
+        ct = context.ct
         self.ppd = ct.preprocess()
         self.df_imgs = ct.dfs
         self.ob_imgs = ct.obs
-        self.roi_data = None
-        self.img_series = None
+        #self.roi_data = None
+        self.img_disp = None
         self.ct_slider = ImgSlider.ImageSlider(self.ppd, self.width, self.height)
         self.df_slider = ImgSlider.ImageSlider(self.df_imgs, self.width, self.height)
         self.ob_slider = ImgSlider.ImageSlider(self.ob_imgs, self.width, self.height)
@@ -214,54 +236,22 @@ class ImgSliderPanel(base.Panel):
         ob_button.on_click(self.ob_select)
 
     def ct_select(self, event):
-        self.roi_data = [self.ct_slider._xcoord_absolute, self.ct_slider._xcoord_max_roi, self.ct_slider._ycoord_absolute, self.ct_slider._ycoord_max_roi]
-        self.img_series = self.ppd
+        #self.roi_data = [self.ct_slider._xcoord_absolute, self.ct_slider._xcoord_max_roi, self.ct_slider._ycoord_absolute, self.ct_slider._ycoord_max_roi]
+        #self.img_series = self.ppd
+        self.img_disp = self.ct_slider
         self.nextStep()
 
     def df_select(self, event):
-        self.roi_data = [self.df_slider._xcoord_absolute, self.df_slider._xcoord_max_roi, self.df_slider._ycoord_absolute, self.df_slider._ycoord_max_roi]
-        self.img_series = self.df_imgs
+        #self.roi_data = [self.df_slider._xcoord_absolute, self.df_slider._xcoord_max_roi, self.df_slider._ycoord_absolute, self.df_slider._ycoord_max_roi]
+        #self.img_series = self.df_imgs
+        self.img_disp = self.df_slider
         self.nextStep()
 
     def ob_select(self, event):
-        self.roi_data = [self.ob_slider._xcoord_absolute, self.ob_slider._xcoord_max_roi, self.ob_slider._ycoord_absolute, self.ob_slider._ycoord_max_roi]
-        self.img_series = self.ob_imgs
+        #self.roi_data = [self.ob_slider._xcoord_absolute, self.ob_slider._xcoord_max_roi, self.ob_slider._ycoord_absolute, self.ob_slider._ycoord_max_roi]
+        #self.img_series = self.ob_imgs
+        self.img_disp = self.ob_slider
         self.nextStep()
-
-    def nextStep(self):
-        self.remove()
-        img_disp = ImgDisplayPanel(self.context, self.img_series, self.roi_data)
-        img_disp.show()
-
-
-class ImgDisplayPanel(base.Panel):
-
-    def __init__(self, context, image_series, roi):
-        global img_width, img_height
-        self.context = context
-        self.config = context.config
-        self.ct = context.ct
-        self.img_series = image_series
-        self.roi_data = roi
-        self.width = img_width
-        self.height = img_height
-        self.avg_img = self.calc_avg()
-        self.img_disp = ImgDisp.ImageDisplay(self.avg_img, self.width, self.height, init_roi=self.roi_data)
-        explanation = ipyw.Label("Confirm ROI", layout=self.label_layout)
-        recon_button = ipyw.Button(description="Reconstruct", layout=self.button_layout)
-        self.widgets = [explanation, self.img_disp, recon_button]
-        self.panel = ipyw.VBox(children=self.widgets, layout=self.layout)
-        recon_button.on_click(self.nextStep)
-        
-    def calc_avg(self):
-        image_series = self.img_series.copy()
-        num = len(image_series)
-        img_data_series = []
-        for img in image_series:
-            img_data_series.append(img.data)
-        sum_img = np.sum(img_data_series, axis=0)
-        avg_img = sum_img / num
-        return avg_img
 
     def nextStep(self):
         xmin = self.img_disp._xcoord_absolute
@@ -269,7 +259,62 @@ class ImgDisplayPanel(base.Panel):
         xmax = self.img_disp._xcoord_max_roi
         ymax = self.img_disp._ycoord_max_roi
         global remove_rings, smooth_recon, smooth_projection
+        self.context.ct.recon(crop_window=(xmin, ymin, xmax, ymax), remove_rings_at_sinograms=remove_rings, smooth_recon=smooth_recon, smooth_projection=smooth_projection)
+        print(self.context.config.workdir)
+
+
+'''class ImgDisplayPanel(base.Panel):
+
+    def __init__(self, context, image_series, roi):
+        global img_width, img_height
+        self.context = context
+        #self.config = context.config
+        self.ct = context.ct
+        self.img_series = image_series
+        self.roi_data = roi
+        self.width = img_width
+        self.height = img_height
+        self.avg_img = self.calc_avg()
+        disp_img = Image()
+        disp_img.data = self.avg_img
+        self.img_disp = ImgDisp.ImageDisplay(disp_img, self.width, self.height, init_roi=self.roi_data)
+        explanation = ipyw.Label("Confirm ROI", layout=self.label_layout)
+        recon_button = ipyw.Button(description="Reconstruct", layout=self.button_layout)
+        self.widgets = [explanation, self.img_disp, recon_button]
+        self.panel = ipyw.VBox(children=self.widgets, layout=self.layout)
+        recon_button.on_click(self.nextStep)
+        
+    def calc_avg(self):
+        time1 = time.time()
+        image_series = self.img_series
+        num = len(image_series)
+        nrows, ncols = image_series[0].data.shape
+        sum_img = np.zeros((nrows, ncols))
+        for img in image_series:
+            #for row in range(nrows):
+                #for col in range(ncols):
+                    #sum_img[row, col] += img.data[row, col]
+            sum_img = sum_img + img.data
+        #for img in image_series:
+            #img_data_series.append(img.data.copy())
+        #sum_img = np.sum(img_data_series, axis=0)
+        avg_img = sum_img / num
+        time2 = time.time()
+        print "Run Time = " + str(time2 - time1)
+        print avg_img
+        return avg_img
+
+    def nextStep(self, event):
+        xmin = self.img_disp._xcoord_absolute
+        ymin = self.img_disp._ycoord_absolute
+        xmax = self.img_disp._xcoord_max_roi
+        ymax = self.img_disp._ycoord_max_roi
+        global remove_rings, smooth_recon, smooth_projection
         self.ct.recon(crop_window=(xmin, ymin, xmax, ymax), remove_rings_at_sinograms=remove_rings, smooth_recon=smooth_recon, smooth_projection=smooth_projection)
-        print(self.config.workdir)
+        print(self.context.config.workdir)
+
+
+class Image:
+    pass'''
 
 
