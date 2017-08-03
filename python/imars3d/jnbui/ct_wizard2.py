@@ -280,6 +280,11 @@ class ImgSliderPanel(base.Panel):
         global remove_rings, smooth_recon, smooth_projection
         self.context.ct.recon(crop_window=(xmin, ymin, xmax, ymax), remove_rings_at_sinograms=remove_rings, smooth_recon=smooth_recon, smooth_projection=smooth_projection)
         print(self.context.config.workdir)
+        recon_slider = ImgSlider.ImageSlider(self.context.ct.r.reconstructed, self.width, self.height)
+        recon_tab = ipyw.VBox(children=[recon_slider], layout=self.layout)
+        self.widgets.append(recon_tab)
+        self.panel.children = list(self.panel.children) + [recon_tab]
+        self.panel.set_title(3, "Output")
 
 
 '''class ImgDisplayPanel(base.Panel):
