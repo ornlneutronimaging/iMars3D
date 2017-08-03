@@ -2,29 +2,30 @@
 
 from . import ct_wizard as base
 from .ct_wizard import Context, config
-
-img_width = 0
-img_height = 0
-remove_rings = False
-smooth_recon = False
-smooth_projection = False
-
-def wizard(context, image_width=300, image_height=300, remove_rings_at_sinograms=False, smooth_rec=False, smooth_proj=False):
-    global img_width, img_height, remove_rings, smooth_recon, smooth_projection
-    img_width = image_width
-    img_height = image_height
-    remove_rings = remove_rings_at_sinograms
-    smooth_recon = smooth_rec
-    smooth_projection = smooth_proj
-    WizardPanel(StartButtonPanel(context))
-    return
-
 import os, imars3d, numpy as np, glob, time
 import ipywidgets as ipyw
 from IPython.display import display, HTML, clear_output
 from _utils import js_alert
 from ipywe import imagedisplay as ImgDisp, imageslider as ImgSlider, fileselector as flselect
 import pickle as pkl
+
+img_width = 0
+img_height = 0
+remove_rings = False
+smooth_recon = False
+smooth_projection = False
+start_directory = None
+
+def wizard(context, start_dir=os.path.expanduser("~"), image_width=300, image_height=300, remove_rings_at_sinograms=False, smooth_rec=False, smooth_proj=False):
+    global img_width, img_height, remove_rings, smooth_recon, smooth_projection, start_directory
+    img_width = image_width
+    img_height = image_height
+    remove_rings = remove_rings_at_sinograms
+    smooth_recon = smooth_rec
+    smooth_projection = smooth_proj
+    start_directory = start_dir
+    WizardPanel(StartButtonPanel(context))
+    return
 
 
 class WizardPanel:
@@ -65,24 +66,30 @@ class StartButtonPanel(base.Panel):
 class FileSelectPanel(base.Panel):
 
     def __init__(self, context):
+        global start_directory
         self.context = context
-        self.fsp = flselect.FileSelectorPanel("Choose a .pkl file to use for configuration")
+        self.fsp = flselect.FileSelectorPanel("Choose a .pkl file to use for configuration", start_dir=start_directory)
         def createConfig(path):
-            self.context.config = pkl.load(open(path))
+            open_path = open(path)
+            self.context.config = pkl.load(open_path)
             if not os.path.exists(self.context.config.outdir):
                 os.makedirs(self.context.config.outdir)
             os.chdir(self.context.config.outdir)
             assert os.getcwd() == self.context.config.outdir
-            pkl.dump(self.context.config, open('recon-config.pkl', 'wb'))
+            open_config = open('recon-config.pkl', 'wb')
+            pkl.dump(self.context.config, open_config)
             for k, v in self.context.config.__dict__.items():
                 if k.startswith('_'): continue
                 sv = str(v)
                 if len(sv) > 60:
                     sv = sv[:50] + '...'
                 print "{0:20}{1:<}".format(k,sv)
+            open_path.close()
+            open_config.close()
             self.nextStep()
         self.fsp.next = createConfig
         self.panel = self.fsp.panel
+        self.widgets = self.fsp.widgets
 
     def nextStep(self):
         self.remove()
@@ -193,6 +200,18 @@ class OBPanel(base.OBPanel):
 class DFPanel(base.DFPanel):
 
     def nextStep(self):
+        os.makedirs(self.context.config.outdir)
+        os.chdir(self.context.config.outdir)
+        assert os.getcwd() == self.context.config.outdir
+        open_config = open('recon-config.pkl', 'wb')
+        pkl.dump(self.context.config, open_config)
+        for k, v in self.context.config.__dict__.items():
+            if k.startswith('_'): continue
+            sv = str(v)
+            if len(sv) > 60:
+                sv = sv[:50] + '...'
+            print "{0:20}{1:<}".format(k,sv)
+        open_config.close()
         self.remove()
         from imars3d.CT import CT
         context = self.context
