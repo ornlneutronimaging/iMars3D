@@ -113,4 +113,4 @@ class TomopyImageIO(AbstractImageFileIO):
         if ext == 'tif': ext = 'tiff'
         name = 'read_%s' % ext
         h = getattr(cls.reader, name)
-        return h(path)
+        return h(path).copy()
