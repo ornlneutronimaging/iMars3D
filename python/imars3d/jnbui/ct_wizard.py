@@ -1,19 +1,32 @@
 # coding: utf-8
 
 
-def wizard(config):
-    WizardPanel(InstrumentPanel(config))
+def wizard(config=None, context=None):
+    if context is None:
+        context = Context()
+    if config is None:
+        config = Config()
+    context.config = config
+    WizardPanel(InstrumentPanel(context))
     return
 
 import os, imars3d, numpy as np, glob, time
 import ipywidgets as ipyw
 from IPython.display import display, HTML, clear_output
-from ._utils import js_alert
+from _utils import js_alert
 
-class config:
-    # object to hold inputs gathered from users
-    ipts = None
-    scan = None
+class Context:
+    pass
+
+class Config:
+
+    def __init__(self, ipts=None, scan=None):
+        self.ipts = ipts
+        self.scan = scan
+
+# keep the lowercase name for backward compatibility
+config = Config
+
 
 class Panel:
     
@@ -50,8 +63,8 @@ class InstrumentPanel(Panel):
         cg1d = 'hfir',
         )
     
-    def __init__(self, config):
-        self.config = config
+    def __init__(self, context):
+        self.context = context
         explanation = ipyw.Label("Please chose the instrument", layout=self.label_layout)
         # self.text = ipyw.Text(value="CG1D", description="", placeholder="instrument name")
         self.text = ipyw.Select(value="CG1D", options=[i.upper() for i in self.instruments.keys()])
@@ -66,17 +79,17 @@ class InstrumentPanel(Panel):
             s = "instrument %s not supported!" % instrument
             js_alert(s)
         else:
-            self.config.instrument = instrument.upper()
-            self.config.facility = self.instruments[instrument.lower()].upper()
+            self.context.config.instrument = instrument.upper()
+            self.context.config.facility = self.instruments[instrument.lower()].upper()
             self.remove()
-            ipts_panel = IPTSpanel(self.config)
+            ipts_panel = IPTSpanel(self.context)
             ipts_panel.show()
         return
 
 class IPTSpanel(Panel):
     
-    def __init__(self, config):
-        self.config = config
+    def __init__(self, context):
+        self.context = context
         explanation = ipyw.Label("Please input your experiment IPTS number", layout=self.label_layout)
         self.text = ipyw.Text(value="", description="IPTS-", placeholder="IPTS number")
         self.ok = ipyw.Button(description='OK', layout=self.button_layout)
@@ -86,30 +99,30 @@ class IPTSpanel(Panel):
         
     def validate_IPTS(self, s):
         ipts1 = self.text.value.encode()
-        facility = self.config.facility
-        instrument = self.config.instrument
+        facility = self.context.config.facility
+        instrument = self.context.config.instrument
         path = os.path.abspath('/%s/%s/IPTS-%s' % (facility, instrument, ipts1))
         if not os.path.exists(path):
             s = "Cannot open directory %s ! Please check IPTS number" % path
             js_alert(s)
         else:
-            self.config.ipts = ipts = ipts1
+            self.context.config.ipts = ipts = ipts1
             # use your experiment IPTS number
-            self.config.iptsdir = iptsdir = path
+            self.context.config.iptsdir = iptsdir = path
             # path to the directory with ct, ob, and df data files or subdirs
-            datadir = self.config.datadir = os.path.join(iptsdir,"raw/")
+            datadir = self.context.config.datadir = os.path.join(iptsdir,"raw/")
             self.remove()
             # make sure there is ct scan directory
-            self.config.ct_scan_root = ct_scan_root = os.path.join(datadir, 'ct_scans')
+            self.context.config.ct_scan_root = ct_scan_root = os.path.join(datadir, 'ct_scans')
             ct_scan_subdirs = [d for d in os.listdir(ct_scan_root) if os.path.isdir(os.path.join(ct_scan_root, d))]
-            self.config.ct_scan_subdirs = ct_scan_subdirs
-            scan_panel = ScanNamePanel(self.config)
+            self.context.config.ct_scan_subdirs = ct_scan_subdirs
+            scan_panel = ScanNamePanel(self.context)
             scan_panel.show()
         return
 
 class ScanNamePanel(Panel):
-    def __init__(self, config):
-        self.config = config
+    def __init__(self, context):
+        self.context = context
         explanation = ipyw.Label("Please give your neutron CT scan a name:", layout=self.label_layout)
         self.text = ipyw.Text(value="", description="Scan: ", placeholder="name of scan")
         self.ok = ipyw.Button(description='OK', layout=self.button_layout)
@@ -123,9 +136,9 @@ class ScanNamePanel(Panel):
             s = 'Please specify a name for your tomography scan'
             js_alert(s)
         else:
-            self.config.scan = v.encode()
+            self.context.config.scan = v.encode()
             self.remove()
-            wd_panel = WorkDirPanel(self.config, self.config.scan)
+            wd_panel = WorkDirPanel(self.context, self.context.config.scan)
             wd_panel.show()
         return
 
@@ -207,8 +220,8 @@ class WorkDirPanel(SelectDirPanel):
 
     layout = ipyw.Layout()
 
-    def __init__(self, config, initial_guess):
-        self.config = config
+    def __init__(self, context, initial_guess):
+        self.context = context
         # fast disk
         import getpass
         username = getpass.getuser()
@@ -224,8 +237,8 @@ class WorkDirPanel(SelectDirPanel):
         return os.path.join(self.root, v)
     
     def nextStep(self):
-        self.config.workdir = self.selected
-        output_panel = OutputDirPanel(self.config, self.config.scan)
+        self.context.config.workdir = self.selected
+        output_panel = OutputDirPanel(self.context, self.context.config.scan)
         output_panel.show()
 
     def _check_space(self):
@@ -242,8 +255,9 @@ class OutputDirPanel(SelectDirPanel):
 
     layout = ipyw.Layout()
 
-    def __init__(self, config, initial_guess):
-        self.config = config
+    def __init__(self, context, initial_guess):
+        self.context = context
+        config = self.context.config
         self.root = os.path.join(config.iptsdir, "shared/processed_data/")
         explanation = "Please pick a name for reconstruction output directory. Usually it is the same as the name of your CT scan. But you can use a different one if you want to. The directory will be created under %s" % self.root
         SelectDirPanel.__init__(self, initial_guess, explanation)
@@ -255,18 +269,19 @@ class OutputDirPanel(SelectDirPanel):
         return os.path.join(self.root, v)
     
     def nextStep(self):
-        self.config.outdir = self.selected
-        ctdir_panel = CTDirPanel(self.config)
+        self.context.config.outdir = self.selected
+        ctdir_panel = CTDirPanel(self.context)
         ctdir_panel.show()
     pass
 
 
 class CTDirPanel(Panel):
     
-    def __init__(self, config):
-        self.config = config
+    def __init__(self, context):
+        self.context = context
         # by standard, ct directories must be inside IPTS/raw/ct_scans, but older IPTS may not conform
         # in that case, a general directory selector is used
+        config = context.config
         if not config.ct_scan_subdirs:
             return self.createDirSelector()
         # standard case
@@ -284,7 +299,7 @@ class CTDirPanel(Panel):
         self.panel = ipyw.VBox(children=self.widgets, layout=self.layout)
         
     def validate(self, s):
-        self.config.ct_subdir = self.select.value.encode()
+        self.context.config.ct_subdir = self.select.value.encode()
         self.remove()
         self.nextStep()
         return
@@ -296,18 +311,18 @@ class CTDirPanel(Panel):
         return
     
     def nextStep(self):
-        next = CTSigPanel(self.config)
+        next = CTSigPanel(self.context)
         next.show()
         return
 
     def createDirSelector(self):
-        config = self.config
+        config = self.context.config
         # create file selector
         from .fileselector import FileSelectorPanel as FSP
         self.fsp = FSP("Please select the CT directory", start_dir=config.iptsdir, type='directory')
         # the call back function for the file selector
         def next(s):
-            self.config.ct_subdir = self.fsp.selected
+            self.context.config.ct_subdir = self.fsp.selected
             self.nextStep()
             return
         self.fsp.next = next
@@ -317,8 +332,8 @@ class CTDirPanel(Panel):
 
 
 class CTSigPanel(Panel):
-    def __init__(self, config):
-        self.config = config
+    def __init__(self, context):
+        self.context = context
         ct_sig, sample = self.calculate()
         explanation1 = ipyw.HTML(
             "<p>A signature word for filenames of the CT scan is needed.</p>"
@@ -338,7 +353,8 @@ class CTSigPanel(Panel):
         self.panel = ipyw.VBox(children=self.widgets, layout=self.layout)
         
     def calculate(self):
-        config = self.config
+        context = self.context
+        config = context.config
         # all files
         if os.path.isabs(config.ct_subdir):
             ct_dir = config.ct_subdir
@@ -357,20 +373,20 @@ class CTSigPanel(Panel):
         return ct_sig, sample
         
     def validate(self, s):
-        self.config.ct_sig = self.text.value.encode()
+        self.context.config.ct_sig = self.text.value.encode()
         self.remove()
         self.nextStep()
         return
     
     def nextStep(self):
-        next = OBPanel(self.config)
+        next = OBPanel(self.context)
         next.show()
         return
 
 
 class OBPanel(Panel):
-    def __init__(self, config):
-        self.config = config
+    def __init__(self, context):
+        self.context = context
         all_obs = self.calculate()
         # by standard, ob files must be inside IPTS/raw/OB, but older IPTS may not conform.
         # in that case, a general file selector is used
@@ -392,7 +408,7 @@ class OBPanel(Panel):
         self.panel = ipyw.VBox(children=self.widgets, layout=self.layout)
         
     def calculate(self):
-        config = self.config
+        config = self.context.config
         # all files
         config.ob_dir = ob_dir = os.path.join(config.datadir, 'ob')
         exts = ['.fits', '.tif', '.tiff']
@@ -409,25 +425,25 @@ class OBPanel(Panel):
         if not v:
             js_alert("Please select at least one OB file")
             return
-        config = self.config
+        config = self.context.config
         config.ob_files = [os.path.join(config.ob_dir, f) for f in v]
         self.remove()
         self.nextStep()
         return
     
     def nextStep(self):
-        next = DFPanel(self.config)
+        next = DFPanel(self.context)
         next.show()
         return
 
     def createOBFilesSelector(self):
-        config = self.config
+        config = self.context.config
         # create file selector
         from .fileselector import FileSelectorPanel as FSP
         self.fsp = FSP("OB files", start_dir=config.iptsdir, type='file', multiple=True)
         # call back function
         def next(s):
-            self.config.ob_files = self.fsp.selected
+            self.context.config.ob_files = self.fsp.selected
             self.nextStep()
             return
         self.fsp.next = next
@@ -437,8 +453,8 @@ class OBPanel(Panel):
 
     
 class DFPanel(Panel):
-    def __init__(self, config):
-        self.config = config
+    def __init__(self, context):
+        self.context = context
         all_dfs = self.calculate()
         # by standard, df files must be inside IPTS/raw/DF, but older IPTS may not conform.
         # in that case, a general file selector is used
@@ -460,7 +476,7 @@ class DFPanel(Panel):
         self.panel = ipyw.VBox(children=self.widgets, layout=self.layout)
         
     def calculate(self):
-        config = self.config
+        config = self.context.config
         # all files
         config.df_dir = df_dir = os.path.join(config.datadir, 'df')
         exts = ['.fits', '.tif', '.tiff']
@@ -481,7 +497,7 @@ class DFPanel(Panel):
         if not v:
             js_alert("Please select at least one DF file")
             return
-        config = self.config
+        config = self.context.config
         config.df_files = [os.path.join(config.df_dir, f) for f in v]
         self.remove()
         self.nextStep()
@@ -492,13 +508,13 @@ class DFPanel(Panel):
         return
 
     def createDFFilesSelector(self):
-        config = self.config
+        config = self.context.config
         # create file selector
         from .fileselector import FileSelectorPanel as FSP
         self.fsp = FSP("DF files", start_dir=config.iptsdir, type='file', multiple=True)
         # call back function
         def next(s):
-            self.config.df_files = self.fsp.selected
+            self.context.config.df_files = self.fsp.selected
             self.nextStep()
             return
         self.fsp.next = next
