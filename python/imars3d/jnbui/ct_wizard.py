@@ -1,8 +1,12 @@
 # coding: utf-8
 
 
-def wizard(context):
-    context.config = Config()
+def wizard(config=None, context=None):
+    if context is None:
+        context = Context()
+    if config is None:
+        config = Config()
+    context.config = config
     WizardPanel(InstrumentPanel(context))
     return
 
@@ -14,10 +18,15 @@ from _utils import js_alert
 class Context:
     pass
 
-class config:
-    # object to hold inputs gathered from users
-    ipts = None
-    scan = None
+class Config:
+
+    def __init__(self, ipts=None, scan=None):
+        self.ipts = ipts
+        self.scan = scan
+
+# keep the lowercase name for backward compatibility
+config = Config
+
 
 class Panel:
     
