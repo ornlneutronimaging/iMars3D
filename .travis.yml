@@ -37,6 +37,7 @@ install:
   - conda install -n testenv -c dgursoy tomopy=0.1.15
 #  - conda install -n testenv -c scikit-xray xraylib lmfit=0.8.3 netcdf4 # install from scikit-xray channel
   - conda install -n testenv psutil scikit-image
+  - conda install -n testenv -c neutrons ipywe
   - source activate testenv
   - pip install progressbar2
   - pip install awscli
