@@ -15,6 +15,7 @@ Reconstruction of a CT scan:
 
 Install dependencies:
 ```
+$ conda config --add channels conda-forge
 $ conda install pytest pyyaml numpy scipy matplotlib astropy mpi4py psutil scikit-image
 $ conda install -c dgursoy tomopy=0.1.15
 $ pip install progressbar2
