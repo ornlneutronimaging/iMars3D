@@ -28,6 +28,16 @@ class Config:
 config = Config
 
 
+def close(w):
+    "recursively close a widget"
+    if hasattr(w, 'children'):
+        for c in w.children:
+            close(c)
+            continue
+    w.close()
+    return
+
+
 class Panel:
     
     layout = ipyw.Layout(border="1px lightgray solid", margin='5px', padding='15px')
@@ -38,8 +48,7 @@ class Panel:
         display(self.panel)
         
     def remove(self):
-        for w in self.widgets: w.close()
-        self.panel.close()
+        close(self.panel)
         
     def nextStep(self):
         raise NotImplementedError
@@ -69,8 +78,11 @@ class InstrumentPanel(Panel):
         # self.text = ipyw.Text(value="CG1D", description="", placeholder="instrument name")
         self.text = ipyw.Select(value="CG1D", options=[i.upper() for i in self.instruments.keys()])
         self.ok = ipyw.Button(description='OK', layout=self.button_layout)
-        self.widgets = [explanation, self.text, self.ok]
         self.ok.on_click(self.validate)
+        skip = ipyw.Button(description="Skip", layout=self.button_layout)
+        skip.on_click(self.skip)
+        buttons = ipyw.HBox(children=(self.ok, skip))
+        self.widgets = [explanation, self.text, buttons]
         self.panel = ipyw.VBox(children=self.widgets, layout=self.layout)
         
     def validate(self, s):
@@ -81,10 +93,21 @@ class InstrumentPanel(Panel):
         else:
             self.context.config.instrument = instrument.upper()
             self.context.config.facility = self.instruments[instrument.lower()].upper()
-            self.remove()
-            ipts_panel = IPTSpanel(self.context)
-            ipts_panel.show()
+            self.nextStep()
         return
+
+    def nextStep(self):
+        self.remove()
+        ipts_panel = IPTSpanel(self.context)
+        ipts_panel.show()
+        return
+
+    def skip(self, s):
+        self.context.config.instrument = None
+        self.context.config.facility = None
+        self.nextStep()
+        return
+
 
 class IPTSpanel(Panel):
     
@@ -93,8 +116,11 @@ class IPTSpanel(Panel):
         explanation = ipyw.Label("Please input your experiment IPTS number", layout=self.label_layout)
         self.text = ipyw.Text(value="", description="IPTS-", placeholder="IPTS number")
         self.ok = ipyw.Button(description='OK', layout=self.button_layout)
-        self.widgets = [explanation, self.text, self.ok]
         self.ok.on_click(self.validate_IPTS)
+        skip = ipyw.Button(description="Skip", layout=self.button_layout)
+        skip.on_click(self.skip)
+        buttons = ipyw.HBox(children=(self.ok, skip))
+        self.widgets = [explanation, self.text, buttons]
         self.panel = ipyw.VBox(children=self.widgets, layout=self.layout)
         
     def validate_IPTS(self, s):
@@ -111,14 +137,28 @@ class IPTSpanel(Panel):
             self.context.config.iptsdir = iptsdir = path
             # path to the directory with ct, ob, and df data files or subdirs
             datadir = self.context.config.datadir = os.path.join(iptsdir,"raw/")
-            self.remove()
             # make sure there is ct scan directory
             self.context.config.ct_scan_root = ct_scan_root = os.path.join(datadir, 'ct_scans')
             ct_scan_subdirs = [d for d in os.listdir(ct_scan_root) if os.path.isdir(os.path.join(ct_scan_root, d))]
             self.context.config.ct_scan_subdirs = ct_scan_subdirs
-            scan_panel = ScanNamePanel(self.context)
-            scan_panel.show()
+            self.nextStep()
         return
+
+    def nextStep(self):
+        self.remove()
+        scan_panel = ScanNamePanel(self.context)
+        scan_panel.show()
+        return
+
+    def skip(self, s):
+        self.context.config.ipts = None
+        self.context.config.iptsdir = os.path.expanduser('~')
+        self.context.config.datadir = os.path.expanduser('~')
+        self.context.config.ct_scan_root = os.path.expanduser('~')
+        self.context.config.ct_scan_subdirs = []
+        self.nextStep()
+        return
+
 
 class ScanNamePanel(Panel):
     def __init__(self, context):
@@ -225,8 +265,16 @@ class WorkDirPanel(SelectDirPanel):
         # fast disk
         import getpass
         username = getpass.getuser()
+        root = "/SNSlocal2/%s" % username
+        if not os.path.exists(root):
+            try:
+                os.makedirs(root)
+            except:
+                root = os.path.expanduser("~/work.imars3d")
+                if not os.path.exists(root):
+                    os.makedirs(root)
+        self.root = root
         self._check_space()
-        self.root = "/SNSlocal2/%s" % username
         explanation = "Please pick a name for your temporary working directory. Usually it is the same as the name of your CT scan. But you can use a different one if you want to. The directory will be created under %s" % self.root
         SelectDirPanel.__init__(self, initial_guess, explanation)
         self.path_field.description = 'Workdir: '
@@ -242,14 +290,16 @@ class WorkDirPanel(SelectDirPanel):
         output_panel.show()
 
     def _check_space(self):
-        import subprocess as sp
-        df = sp.Popen(["df", "/SNSlocal2"], stdout=sp.PIPE)
-        output = df.communicate()[0]
-        device, size, used, available, percent, mountpoint = \
-                output.split("\n")[1].split()
-        free_in_G = float(available)/1e6
+        free_in_G = get_space(self.root)
         if free_in_G < 200:
-            js_alert("/SNSlocal2 only has %s GB left. Reconstruction may encounter problems." % (int(free_in_G), ))
+            js_alert("%s only has %s GB left. Reconstruction may encounter problems." % (self.root, int(free_in_G)))
+
+
+def get_space(path):
+    if not os.path.exists(path):
+        return get_space(os.path.dirname(path))
+    stat = os.statvfs(path)
+    return stat.f_frsize * stat.f_bavail / 1.e9 # Gigabytes
         
 class OutputDirPanel(SelectDirPanel):
 
@@ -411,6 +461,8 @@ class OBPanel(Panel):
         config = self.context.config
         # all files
         config.ob_dir = ob_dir = os.path.join(config.datadir, 'ob')
+        if not os.path.exists(ob_dir):
+            return
         exts = ['.fits', '.tif', '.tiff']
         files = []
         for f in os.listdir(ob_dir):
@@ -479,6 +531,8 @@ class DFPanel(Panel):
         config = self.context.config
         # all files
         config.df_dir = df_dir = os.path.join(config.datadir, 'df')
+        if not os.path.exists(df_dir):
+            return
         exts = ['.fits', '.tif', '.tiff']
         files = []
         for f in os.listdir(df_dir):
