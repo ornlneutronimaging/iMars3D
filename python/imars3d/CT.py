@@ -465,13 +465,27 @@ Reults:
                 "failed to find CT images. directory: %s, patterns tried: %s"%(
                     subdir, patterns)
                 )
+        # routine to convert filename to angle name
         re_pattern = '(\S+)_(\d+)_(\d+)_(\d+).(\S+)'
         def fn2angle(fn):
             import re
             m = re.match(re_pattern, fn)
+            if m is None:
+                msg = "Failed to match pattern %r to %r. Skip" % (re_pattern, fn)
+                import warnings
+                warnings.warn(msg)
+                return
             return float('%s.%s' % (m.group(2), m.group(3)))
+        # all CT file paths following the patterns
         fns = map(os.path.basename, files)
-        angles = map(fn2angle, fns)
+        # convert fn to angles. skip files that cannot be converted
+        angles = []
+        for fn in fns:
+            angle = fn2angle(fn)
+            if angle is not None:
+                angles.append(angle)
+            continue
+        # unique and ordered
         angles = set(angles)
         angles = sorted(angles)
         assert len(angles) > 2, "too few angles"
