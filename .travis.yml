@@ -33,7 +33,8 @@ install:
   - conda config --set always_yes true
   - conda update conda
   - conda create -n testenv pip pytest python=$TRAVIS_PYTHON_VERSION
-  - conda install -n testenv pyyaml numpy scipy matplotlib astropy mpi4py
+  - conda install -n testenv pyyaml numpy scipy 
+  - conda install -n testenv matplotlib astropy mpi4py
   - conda install -n testenv -c dgursoy tomopy=0.1.15
 #  - conda install -n testenv -c scikit-xray xraylib lmfit=0.8.3 netcdf4 # install from scikit-xray channel
   - conda install -n testenv psutil scikit-image
