@@ -18,7 +18,7 @@ python:
 #    - os: linux
 
 env:
-  - PATH=$HOME/travis/mc/bin:$PATH LD_LIBRARY_PATH=$HOME/travis/mc/lib
+#  - PATH=$HOME/travis/mc/bin:$PATH LD_LIBRARY_PATH=$HOME/travis/mc/lib
    
 before_install:
   - df -h
@@ -32,6 +32,7 @@ install:
   - export GIT_FULL_HASH=`git rev-parse HEAD`
   - conda config --set always_yes true
   - conda update conda
+  - conda config --add channels conda-forge
   - conda create -n testenv python=$TRAVIS_PYTHON_VERSION
   - conda install -n testenv pip pytest
   - conda install -n testenv pyyaml numpy scipy 
