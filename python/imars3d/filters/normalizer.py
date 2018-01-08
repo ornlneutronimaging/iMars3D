@@ -33,7 +33,7 @@ def average(image_collection):
 def normalize(ct_series, df_images, ob_images, workdir, output_img_series):
     """
     * ct_series: an image series for ct scan
-    * df_images: dark field image collection
+    * df_images: dark field image collection. can be None
     * ob_images: open beam image collection
     * workdir: path where intermediate data files will be written into
     """
@@ -41,12 +41,15 @@ def normalize(ct_series, df_images, ob_images, workdir, output_img_series):
     if not os.path.exists(workdir):
         os.makedirs(workdir)
     # dark field
-    df_output = os.path.join(workdir, "df.npy")
-    if not os.path.exists(df_output):
-        df = average(df_images)
-        np.save(df_output, df)
+    if df_images is not None:
+        df_output = os.path.join(workdir, "df.npy")
+        if not os.path.exists(df_output):
+            df = average(df_images)
+            np.save(df_output, df)
+        else:
+            df = np.load(df_output)
     else:
-        df = np.load(df_output)
+        df = 0.
     # open beam
     ob_output = os.path.join(workdir, "ob.npy")
     if not os.path.exists(ob_output):
