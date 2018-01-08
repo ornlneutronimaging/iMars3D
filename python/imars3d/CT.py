@@ -28,6 +28,15 @@ Reults:
 
 * reconstructed
 * recon_RAR
+
+Customizing preprocessors:
+
+>>> ct = CT(...)
+>>> ct.gamma_filter = False # no gamma filtering
+>>> ct.gamma_filter = my_gamma_filter # use my own gamma filter
+>>> ct.normalizer = ... # similarly for normalizer
+>>> ct.preprocess()
+>>> ct.recon()
 """
 
     def __init__(
@@ -82,6 +91,8 @@ Reults:
         self.r = results()
         return
 
+    gamma_filter = None
+    normalizer = None
 
     @dec.timeit
     def preprocess(self, workdir=None, outdir=None):
@@ -92,11 +103,30 @@ Reults:
         ct_series = self.ct_series
         theta = self.theta
         # preprocess
-        gamma_filtered = i3.gamma_filter(
-            ct_series, workdir=os.path.join(workdir, 'gamma-filter'),
-            parallel = self.parallel_preprocessing)
-        normalized = i3.normalize(gamma_filtered, dfs, obs, workdir=os.path.join(workdir, 'normalization'))
-        if self.clean_on_the_fly:
+        # this allows gamma_filter to be turned off if user set ct.gamma_filter=False
+        if self.gamma_filter is not False:
+            # this allows user to set a custom gamma_filter function
+            if self.gamma_filter is None:
+                # the default gamma filter
+                self.gamma_filter = i3.gamma_filter
+            gamma_filter = self.gamma_filter
+            # run gamma filtering
+            gamma_filtered = gamma_filter(
+                ct_series, workdir=os.path.join(workdir, 'gamma-filter'),
+                parallel = self.parallel_preprocessing)
+        else:
+            # no filtering
+            gamma_filtered = ct_series
+        #
+        # similarly, we allow customization of the normalizer
+        if self.normalizer is not False:
+            if self.normalizer is None:
+                self.normalizer = i3.normalize
+            normalizer = self.normalizer
+            normalized = normalizer(gamma_filtered, dfs, obs, workdir=os.path.join(workdir, 'normalization'))
+        else:
+            normalized = gamma_filtered
+        if self.clean_on_the_fly and gamma_filtered is not ct_series:
             gamma_filtered.removeAll()
         # save references
         self.r.gamma_filtered = gamma_filtered
