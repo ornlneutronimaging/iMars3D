@@ -1,5 +1,8 @@
-sudo: false
-# dist: trusty
+# sudo: false
+# # dist: trusty
+sudo: required
+dist: trusty
+group: deprecated-2017Q4
 
 language: python
 
@@ -7,9 +10,9 @@ python:
   - 2.7
 #  - 3.6
 
-# branches:
-#   only:
-#    - master
+branches:
+  only:
+    - master
 #
 # services:
 #
@@ -18,7 +21,7 @@ python:
 #    - os: linux
 
 env:
-  - PATH=$HOME/travis/mc/bin:$PATH LD_LIBRARY_PATH=$HOME/travis/mc/lib
+#  - PATH=$HOME/travis/mc/bin:$PATH LD_LIBRARY_PATH=$HOME/travis/mc/lib
    
 before_install:
   - df -h
@@ -32,8 +35,14 @@ install:
   - export GIT_FULL_HASH=`git rev-parse HEAD`
   - conda config --set always_yes true
   - conda update conda
-  - conda create -n testenv pip pytest python=$TRAVIS_PYTHON_VERSION
-  - conda install -n testenv pyyaml numpy scipy matplotlib astropy mpi4py
+  - conda config --add channels conda-forge
+  - conda create -n testenv python=$TRAVIS_PYTHON_VERSION
+  - conda install -n testenv pip pytest
+  - conda install -n testenv numpy
+  - conda install -n testenv scipy
+  - conda install -n testenv matplotlib
+  - conda install -n testenv astropy mpi4py
+  - conda install -n testenv pyyaml
   - conda install -n testenv -c dgursoy tomopy=0.1.15
 #  - conda install -n testenv -c scikit-xray xraylib lmfit=0.8.3 netcdf4 # install from scikit-xray channel
   - conda install -n testenv psutil scikit-image

@@ -35,7 +35,7 @@ def filter_one(img, **kwds):
     - kwds: additional kwd args to pass to remove_outliers_bymedian
     """
     max = np.iinfo(img.dtype).max
-    threshold = max/2
+    threshold = max-5
     img = np.array(img, "float32")
     remove_outliers_bymedian(img, img>threshold, **kwds)
     return img
