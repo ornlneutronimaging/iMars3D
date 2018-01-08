@@ -28,6 +28,15 @@ Reults:
 
 * reconstructed
 * recon_RAR
+
+Customizing preprocessors:
+
+>>> ct = CT(...)
+>>> ct.gamma_filter = False # no gamma filtering
+>>> ct.gamma_filter = my_gamma_filter # use my own gamma filter
+>>> ct.normalizer = ... # similarly for normalizer
+>>> ct.preprocess()
+>>> ct.recon()
 """
 
     def __init__(
