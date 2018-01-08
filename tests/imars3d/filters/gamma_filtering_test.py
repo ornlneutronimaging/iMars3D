@@ -9,6 +9,8 @@ def test(interactive=False):
     path = os.path.join(dir, "..", "..", "iMars3D_data_set", "20120618_TURBINECT_0180_46_750_0055.fits")
     img = io.ImageFile(path).getData()
     assert img.dtype == np.dtype('uint16')
+    # force a pixel to be an outlier
+    img[0,0] = (1<<16) - 1
     # filter
     orig_max = np.max(img)
     img = filters.gamma_filtering.filter_one(img)
