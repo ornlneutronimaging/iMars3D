@@ -34,4 +34,28 @@ def test():
     ct.recon(tilt=-1.40, explore_rot_center=False)
     return
 
-if __name__ == '__main__': test()
+def test2():
+    nodes = os.environ.get('NODES')
+    if nodes:
+        nodes = int(nodes)
+    print("Processing using %s nodes" % (nodes or 'all'))
+    
+    from imars3d.CT import CT
+    ct = CT(
+        dir,
+        clean_on_the_fly=True, 
+        vertical_range=slice(900, 1000),
+        parallel_nodes=nodes,
+        skip_df = True
+    )
+    ct.recon(tilt=-1.40, explore_rot_center=False)
+    return
+
+
+def main():
+    test()
+    test2()
+    return
+
+
+if __name__ == '__main__': main()
