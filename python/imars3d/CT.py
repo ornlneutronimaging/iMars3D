@@ -346,6 +346,7 @@ Customizing preprocessors:
         if xmax > WIDTH-1: xmax =WIDTH-1
         if ymin < 0: ymin = 0
         if ymax > HEIGHT-1: ymax =HEIGHT-1
+        xmin, xmax, ymin, ymax = map(int, (xmin, xmax, ymin, ymax))
         # crop
         return self.crop(series, left=xmin, right=xmax, top=ymin, bottom=ymax)
 

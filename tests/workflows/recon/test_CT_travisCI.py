@@ -17,14 +17,9 @@ print(dir)
 
 import imars3d
 imars3d.configuration['parallelization']['max_nodes'] = 2
+from imars3d.CT import CT
 
-def test():
-    nodes = os.environ.get('NODES')
-    if nodes:
-        nodes = int(nodes)
-    print("Processing using %s nodes" % (nodes or 'all'))
-    
-    from imars3d.CT import CT
+def test(nodes):
     ct = CT(
         dir,
         clean_on_the_fly=True, 
@@ -34,13 +29,7 @@ def test():
     ct.recon(tilt=-1.40, explore_rot_center=False)
     return
 
-def test2():
-    nodes = os.environ.get('NODES')
-    if nodes:
-        nodes = int(nodes)
-    print("Processing using %s nodes" % (nodes or 'all'))
-    
-    from imars3d.CT import CT
+def test2(nodes):
     ct = CT(
         dir,
         clean_on_the_fly=True, 
@@ -53,8 +42,13 @@ def test2():
 
 
 def main():
-    # test()
-    test2()
+    nodes = os.environ.get('NODES')
+    if nodes:
+        nodes = int(nodes)
+    print("Processing using %s nodes" % (nodes or 'all'))
+    
+    # test(nodes)
+    test2(nodes)
     return
 
 
