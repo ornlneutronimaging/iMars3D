@@ -37,13 +37,27 @@ Customizing preprocessors:
 >>> ct.normalizer = ... # similarly for normalizer
 >>> ct.preprocess()
 >>> ct.recon()
+
+By default, intermediate results will be moved over to the disk where the outputs are (outdir) after CT reconstruction is all done:
+
+    clean_intermediate_files='archive'
+
+or they can be cleaned on the fly to save disk usage:
+
+    clean_intermediate_files='on_the_fly"
+
+or they can be kept where it is:
+
+    clean_intermediate_files=None
+
+and you will need to clean them up yourself.
 """
 
     def __init__(
             self, path, CT_subdir=None, CT_identifier=None,
             workdir='work', outdir='out', 
             parallel_preprocessing=True, parallel_nodes=None,
-            clean_on_the_fly=False,
+            clean_intermediate_files='archive',
             vertical_range=None,
             ob_identifier=None, df_identifier=None,
             ob_files=None, df_files=None,
@@ -92,7 +106,8 @@ Customizing preprocessors:
 
         self.parallel_preprocessing = parallel_preprocessing
         self.parallel_nodes = parallel_nodes
-        self.clean_on_the_fly = clean_on_the_fly
+        assert clean_intermediate_files in ['on_the_fly', 'archive', None]
+        self.clean_intermediate_files = clean_intermediate_files
         self.vertical_range = vertical_range
         self.r = results()
         return
@@ -132,7 +147,7 @@ Customizing preprocessors:
             normalized = normalizer(gamma_filtered, dfs, obs, workdir=os.path.join(workdir, 'normalization'))
         else:
             normalized = gamma_filtered
-        if self.clean_on_the_fly and gamma_filtered is not ct_series:
+        if self.clean_intermediate_files=='on_the_fly' and gamma_filtered is not ct_series:
             gamma_filtered.removeAll()
         # save references
         self.r.gamma_filtered = gamma_filtered
@@ -144,7 +159,7 @@ Customizing preprocessors:
               smooth_projection=None, remove_rings_at_sinograms=None,
               smooth_recon=None, remove_rings=None,
               **kwds):
-        """Run CT reconstruction
+        """Run CT reconstruction workflow
 
     Parameters:
         * workdir: fast work dir
@@ -193,7 +208,7 @@ Customizing preprocessors:
             cropped = self.crop(
                 pre, 
                 left=xmin, right=xmax, top=ymin, bottom=ymax)
-        if self.clean_on_the_fly:
+        if self.clean_intermediate_files == 'on_the_fly':
             pre.removeAll()
         # median filter
         self.r.median_filtered = median_filtered = self.smooth(
@@ -209,7 +224,7 @@ Customizing preprocessors:
         # correct intensity fluctuation
         if_corrected = i3.correct_intensity_fluctuation(
             pre, workdir=os.path.join(workdir, 'intensity-fluctuation-correction'))
-        if self.clean_on_the_fly:
+        if self.clean_intermediate_files == 'on_the_fly':
             pre.removeAll()
         # correct tilt
         pre = if_corrected
@@ -221,7 +236,7 @@ Customizing preprocessors:
                 pre, tilt=tilt, 
                 workdir=os.path.join(workdir, 'tilt-correction' ),
                 max_npairs=None, parallel=self.parallel_preprocessing)
-        if self.clean_on_the_fly:
+        if self.clean_intermediate_files == 'on_the_fly':
             pre.removeAll()
         #
         self.r.cropped = cropped
@@ -244,6 +259,12 @@ Customizing preprocessors:
                 **smooth_recon)
         if remove_rings:
             self.removeRings(recon)
+        # clean up
+        if self.clean_intermediate_files == 'archive':
+            import shutil
+            import datetime
+            now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            shutil.move(workdir, os.path.join(outdir, 'work-%s' % now))
         return
 
 
@@ -309,7 +330,7 @@ Customizing preprocessors:
             tilt_corrected, tilt = i3.correct_tilt(
                 pre, workdir=os.path.join(workdir, 'tilt-correction-%s' % i),
                 max_npairs=None, parallel=self.parallel_preprocessing)
-            if self.clean_on_the_fly:
+            if self.clean_intermediate_files == 'on_the_fly':
                 pre.removeAll()
             if abs(tilt) < MAX_TILT_ALLOWED: break
             pre = tilt_corrected
