@@ -8,7 +8,7 @@ python tests/getdata.py
 python tests/imars3d/signon.py
 
 if [ ${TRAVIS_EVENT_TYPE} == "cron" ]; then
-    echo "* Running CT tests"
+    echo "* Running CT workflow tests"
     travis_wait 60 python tests/workflows/recon/test_CT_travisCI.py test
     travis_wait 60 python tests/workflows/recon/test_CT_travisCI.py test2
     echo "  - Done."
