@@ -3,6 +3,9 @@
 
 """
 This test is to be run by travis CI.
+
+$ python THIS.py test
+$ python THIS.py test2
 """
 
 # tell pytest to skip this test
@@ -46,10 +49,11 @@ def main():
     if nodes:
         nodes = int(nodes)
     print("Processing using %s nodes" % (nodes or 'all'))
-    
-    test(nodes)
-    import shutil; shutil.rmtree('work'); shutil.rmtree('out')
-    test2(nodes)
+
+    import sys
+    name = sys.argv[1] if len(sys.argv)>1 else 'test'
+    method = eval(name)
+    method(nodes)
     return
 
 
