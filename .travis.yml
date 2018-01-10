@@ -47,6 +47,7 @@ install:
 #  - conda install -n testenv -c scikit-xray xraylib lmfit=0.8.3 netcdf4 # install from scikit-xray channel
   - conda install -n testenv psutil scikit-image
   - conda install -n testenv -c neutrons ipywe
+  - conda install -n testenv -c conda-forge zeromq=4.2.1   # Jan 10, 2018. conda-forge: pyzmq 16.0.2 not compatible with latest zeromq 4.2.3
   - source activate testenv
   - pip install progressbar2
   - pip install awscli
