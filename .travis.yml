@@ -24,42 +24,14 @@ env:
 #  - PATH=$HOME/travis/mc/bin:$PATH LD_LIBRARY_PATH=$HOME/travis/mc/lib
    
 before_install:
-  - df -h
-  - free
-  - if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then wget http://repo.continuum.io/miniconda/Miniconda-3.5.5-Linux-x86_64.sh -O miniconda.sh; else wget http://repo.continuum.io/miniconda/Miniconda3-3.5.5-Linux-x86_64.sh -O miniconda.sh; fi
-  - chmod +x miniconda.sh
-  - ./miniconda.sh -b -p /home/travis/mc
+  - ./builders/travis/before_install.sh
   - export PATH=/home/travis/mc/bin:$PATH
 
 install:
-  - export GIT_FULL_HASH=`git rev-parse HEAD`
-  - conda config --set always_yes true
-  - conda update conda
-  - conda config --add channels conda-forge
-  - conda create -n testenv python=$TRAVIS_PYTHON_VERSION
-  - conda install -n testenv pip pytest
-  - conda install -n testenv numpy
-  - conda install -n testenv scipy
-  - conda install -n testenv matplotlib
-  - conda install -n testenv astropy mpi4py
-  - conda install -n testenv pyyaml
-  - conda install -n testenv -c dgursoy tomopy=0.1.15
-#  - conda install -n testenv -c scikit-xray xraylib lmfit=0.8.3 netcdf4 # install from scikit-xray channel
-  - conda install -n testenv psutil scikit-image
-  - conda install -n testenv -c neutrons ipywe
-  - source activate testenv
-  - pip install progressbar2
-  - pip install awscli
-  - python setup.py install
-#  - pip install coveralls
-#  - pip install codecov
+  - ./builders/travis/install.sh
 
 script:
-   - python builders/setup-aws-testconfig.py
-   - python tests/getdata.py
-   - python tests/imars3d/signon.py
-   - py.test
-#   - python tests/workflows/recon/test_CT_travisCI.py
+  - ./builders/travis/script.sh
 
 notifications:
   email:

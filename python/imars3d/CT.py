@@ -46,7 +46,9 @@ Customizing preprocessors:
             clean_on_the_fly=False,
             vertical_range=None,
             ob_identifier=None, df_identifier=None,
-            ob_files=None, df_files=None):
+            ob_files=None, df_files=None,
+            skip_df=False,
+    ):
         self.path = path
         if CT_subdir is not None:
             # if ct is in a subdir, its name most likely the
@@ -72,10 +74,14 @@ Customizing preprocessors:
             os.makedirs(outdir)
         self.outdir = outdir
         # find data paths
+        self.skip_df = skip_df
         self.sniff()
         from . import io
         # dark field
-        self.dfs = io.imageCollection(glob_pattern=self.DF_pattern, files=self.df_files, name="Dark Field")
+        if not self.skip_df:
+            self.dfs = io.imageCollection(glob_pattern=self.DF_pattern, files=self.df_files, name="Dark Field")
+        else:
+            self.dfs = None
         # open beam
         self.obs = io.imageCollection(glob_pattern=self.OB_pattern, files=self.ob_files, name="Open Beam")
         # ct
@@ -340,6 +346,7 @@ Customizing preprocessors:
         if xmax > WIDTH-1: xmax =WIDTH-1
         if ymin < 0: ymin = 0
         if ymax > HEIGHT-1: ymax =HEIGHT-1
+        xmin, xmax, ymin, ymax = map(int, (xmin, xmax, ymin, ymax))
         # crop
         return self.crop(series, left=xmin, right=xmax, top=ymin, bottom=ymax)
 
@@ -459,11 +466,12 @@ Customizing preprocessors:
             print(" * found OB pattern: %s" % self.OB_pattern)
         else:
             self.OB_pattern = None
-        if not self.df_files:
-            self.find_DF()
-            print(" * found DF pattern: %s" % self.DF_pattern)
-        else:
-            self.DF_pattern = None
+        if not self.skip_df:
+            if not self.df_files:
+                self.find_DF()
+                print(" * found DF pattern: %s" % self.DF_pattern)
+            else:
+                self.DF_pattern = None
         self.find_CT()
         print(" * found CT pattern: %s" % self.CT_pattern)
         return
