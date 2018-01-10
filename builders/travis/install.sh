@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 export GIT_FULL_HASH=`git rev-parse HEAD`
 conda config --set always_yes true
 conda update conda
