@@ -47,7 +47,8 @@ def main():
         nodes = int(nodes)
     print("Processing using %s nodes" % (nodes or 'all'))
     
-    # test(nodes)
+    test(nodes)
+    import shutil; shutil.rmtree('work'); shutil.rmtree('out')
     test2(nodes)
     return
 
