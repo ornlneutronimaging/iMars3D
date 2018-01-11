@@ -25,22 +25,37 @@ from imars3d.CT import CT
 def test(nodes):
     ct = CT(
         dir,
-        clean_on_the_fly=True, 
+        clean_intermediate_files = 'on_the_fly', 
         vertical_range=slice(900, 1000),
         parallel_nodes=nodes,
     )
     ct.recon(tilt=-1.40, explore_rot_center=False)
+    assert not os.path.exists('work')
     return
 
 def test2(nodes):
     ct = CT(
         dir,
-        clean_on_the_fly=True, 
+        clean_intermediate_files='archive',
         vertical_range=slice(900, 1000),
         parallel_nodes=nodes,
         skip_df = True
     )
     ct.recon(tilt=-1.40, explore_rot_center=False)
+    assert not os.path.exists('work')
+    import glob
+    assert glob.glob('out/work-*')
+    return
+
+def test3(nodes):
+    ct = CT(
+        dir,
+        clean_intermediate_files = None,
+        vertical_range=slice(900, 1000),
+        parallel_nodes=nodes,
+    )
+    ct.recon(tilt=-1.40, explore_rot_center=False)
+    assert os.path.exists('work')
     return
 
 
