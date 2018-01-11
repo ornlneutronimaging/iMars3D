@@ -31,7 +31,7 @@ install:
   - ./builders/travis/install.sh
 
 script:
-  - ./builders/travis/script.sh
+  - travis_wait 90 ./builders/travis/script.sh
 
 notifications:
   email:
