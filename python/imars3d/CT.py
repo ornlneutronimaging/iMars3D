@@ -260,11 +260,13 @@ and you will need to clean them up yourself.
         if remove_rings:
             self.removeRings(recon)
         # clean up
+        import shutil
         if self.clean_intermediate_files == 'archive':
-            import shutil
             import datetime
             now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
             shutil.move(workdir, os.path.join(outdir, 'work-%s' % now))
+        elif self.clean_intermediate_files == 'on_the_fly':
+            shutil.rmtree(workdir)
         return
 
 
