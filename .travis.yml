@@ -28,7 +28,7 @@ env:
    
 before_install:
   - rm -rf /home/travis/mc  # forcing cache creation
-  - if [ -d /home/travis/mc ] ; then USE_CACHE=yes; echo "Use cache"; else USE_CACHE=no; fi
+  - if [ -d /home/travis/mc ] ; then export USE_CACHE=yes; echo "Use cache"; else export USE_CACHE=no; fi
   - ./builders/travis/before_install.sh
   - export PATH=/home/travis/mc/bin:$PATH
 
