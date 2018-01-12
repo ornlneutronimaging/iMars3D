@@ -6,6 +6,10 @@ group: deprecated-2017Q4
 
 language: python
 
+cache:
+  directories:
+    - $HOME/mc
+
 python:
   - 2.7
 #  - 3.6
@@ -21,7 +25,6 @@ branches:
 #    - os: linux
 
 env:
-#  - PATH=$HOME/travis/mc/bin:$PATH LD_LIBRARY_PATH=$HOME/travis/mc/lib
    
 before_install:
   - ./builders/travis/before_install.sh
