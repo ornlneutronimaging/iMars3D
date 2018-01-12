@@ -7,6 +7,7 @@ export GIT_FULL_HASH=`git rev-parse HEAD`
 if [ ${USE_CACHE} == "yes" ] ; then
     source activate testenv
 else
+    # install dependencies
     conda config --set always_yes true
     conda update conda
     conda config --add channels conda-forge
@@ -29,4 +30,5 @@ else
     # pip install codecov
 fi
 
-python setup.py install
+# install imars3d
+# python setup.py install

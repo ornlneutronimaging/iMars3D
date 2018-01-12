@@ -3,6 +3,8 @@
 set -e
 
 source activate testenv
+export PYTHONPATH=$PWD
+
 python builders/setup-aws-testconfig.py
 python tests/getdata.py
 python tests/imars3d/signon.py
