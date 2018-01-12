@@ -3,8 +3,8 @@
 set -e
 
 export GIT_FULL_HASH=`git rev-parse HEAD`
-if [ -d /home/travis/mc ] ; then
-    echo "Use cache"
+
+if [ ${USE_CACHE} == "yes" ] ; then
     source activate testenv
 else
     conda config --set always_yes true
