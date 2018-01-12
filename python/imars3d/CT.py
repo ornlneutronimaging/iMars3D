@@ -155,7 +155,9 @@ and you will need to clean them up yourself.
         return normalized
 
 
-    def recon(self, workdir=None, outdir=None, tilt=None, crop_window=None,
+    def recon(self,
+              workdir=None, outdir=None, outfilename_template=None,
+              tilt=None, crop_window=None,
               smooth_projection=None, remove_rings_at_sinograms=None,
               smooth_recon=None, remove_rings=None,
               **kwds):
@@ -243,10 +245,12 @@ and you will need to clean them up yourself.
         self.r.if_corrected = if_corrected
         self.r.tilt_corrected = tilt_corrected
         # reconstruct
+        outfilename_template = outfilename_template or "recon_%04d.tiff"
         recon = self.reconstruct(
             tilt_corrected,
             workdir=workdir, outdir=outdir,
             remove_rings_at_sinograms=remove_rings_at_sinograms,
+            outfilename_template=outfilename_template,
             **kwds)
         if smooth_recon:
             if smooth_recon is True:
@@ -255,7 +259,7 @@ and you will need to clean them up yourself.
             recon = self.r.sm_recon = smooth(
                 recon, workdir=os.path.join(self.outdir, 'smoothed'),
                 parallel = self.parallel_preprocessing,
-                filename_template='sm_recon_%s.tiff',
+                filename_template='sm_' + outfilename_template,
                 **smooth_recon)
         if remove_rings:
             self.removeRings(recon)
