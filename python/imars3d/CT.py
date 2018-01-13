@@ -421,6 +421,7 @@ and you will need to clean them up yourself.
             rot_center=None, explore_rot_center=True,
             outfilename_template=None,
             remove_rings_at_sinograms=False,
+            mirror=True,
             **kwds):
         workdir = workdir or self.workdir;  
         outdir = outdir or self.outdir
@@ -460,6 +461,9 @@ and you will need to clean them up yourself.
         if self.vertical_range:
             sinograms = sinograms[self.vertical_range]
         self.r.sinograms = sinograms
+        # sometimes the rotation angles and the stacking sequence coulb be not in the right convention
+        if mirror:
+            angles = -np.array(angles)
         # reconstruct using original sinograms
         recon = i3.reconstruct(
             angles, sinograms, 
