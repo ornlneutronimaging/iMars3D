@@ -442,7 +442,7 @@ class OBPanel(Panel):
         # in that case, a general file selector is used
         if not all_obs:
             return self.createOBFilesSelector()
-        # standard case
+        # select files at standard place
         explanation1 = ipyw.HTML(
             "Open beam (OB) measurements are needed for normalization. "
             "Please select the OB files from below."
@@ -453,8 +453,14 @@ class OBPanel(Panel):
             description="OB files", 
             layout=ipyw.Layout(margin="20px", width="600px"))
         self.ok = ipyw.Button(description='OK', layout=self.button_layout)
-        self.widgets = [explanation1, self.select, self.ok]
         self.ok.on_click(self.validate)
+        # button to switch over to arbitrary files selector
+        self.use_arbitrary_files_selector = ipyw.Button(
+            description='If you cannot find your OB files above, click me instead',
+            layout=ipyw.Layout(margin="0 0 0 200px", width="350px"))
+        self.use_arbitrary_files_selector.on_click(self.switchToFilesSelector)
+        #
+        self.widgets = [explanation1, self.select, self.ok, self.use_arbitrary_files_selector]
         self.panel = ipyw.VBox(children=self.widgets, layout=self.layout)
         
     def calculate(self):
@@ -481,6 +487,12 @@ class OBPanel(Panel):
         config.ob_files = [os.path.join(config.ob_dir, f) for f in v]
         self.remove()
         self.nextStep()
+        return
+    
+    def switchToFilesSelector(self, s):
+        self.remove()
+        self.createOBFilesSelector()
+        self.show()
         return
     
     def nextStep(self):
@@ -512,7 +524,7 @@ class DFPanel(Panel):
         # in that case, a general file selector is used
         if not all_dfs:
             return self.createDFFilesSelector()
-        # standard case
+        # select files at standard place
         explanation1 = ipyw.HTML(
             "Dark field (DF) measurements are needed for background correction. "
             "Please select the DF files from below. "
@@ -523,8 +535,14 @@ class DFPanel(Panel):
             description="DF files", 
             layout=ipyw.Layout(margin="20px", width="600px"))
         self.ok = ipyw.Button(description='OK', layout=ipyw.Layout(margin="20px"))
-        self.widgets = [explanation1, self.select, self.ok]
         self.ok.on_click(self.validate)
+        # button to switch to arbitrary files selector
+        self.use_arbitrary_files_selector = ipyw.Button(
+            description='If you cannot find your OB files above, click me instead',
+            layout=ipyw.Layout(margin="0 0 0 200px", width="350px"))
+        self.use_arbitrary_files_selector.on_click(self.switchToFilesSelector)
+        # 
+        self.widgets = [explanation1, self.select, self.ok, self.use_arbitrary_files_selector]
         self.panel = ipyw.VBox(children=self.widgets, layout=self.layout)
         
     def calculate(self):
@@ -555,6 +573,12 @@ class DFPanel(Panel):
         config.df_files = [os.path.join(config.df_dir, f) for f in v]
         self.remove()
         self.nextStep()
+        return
+    
+    def switchToFilesSelector(self, s):
+        self.remove()
+        self.createDFFilesSelector()
+        self.show()
         return
     
     def nextStep(self):
