@@ -3,10 +3,7 @@
 set -e
 
 source activate testenv
-export PYTHONPATH=$PWD
-
-echo $PWD
-ls $PWD
+export PYTHONPATH=$PWD/python
 
 python builders/setup-aws-testconfig.py
 python tests/getdata.py
