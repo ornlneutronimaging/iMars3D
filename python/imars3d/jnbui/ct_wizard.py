@@ -38,7 +38,7 @@ def close(w):
     return
 
 
-class Panel:
+class Panel(object):
     
     layout = ipyw.Layout(border="1px lightgray solid", margin='5px', padding='15px')
     button_layout = ipyw.Layout(margin='10px 5px 5px 5px')
@@ -538,12 +538,21 @@ class DFPanel(Panel):
         self.ok.on_click(self.validate)
         # button to switch to arbitrary files selector
         self.use_arbitrary_files_selector = ipyw.Button(
-            description='If you cannot find your OB files above, click me instead',
+            description='If you cannot find your DF files above, click me instead',
             layout=ipyw.Layout(margin="0 0 0 200px", width="350px"))
         self.use_arbitrary_files_selector.on_click(self.switchToFilesSelector)
         # 
-        self.widgets = [explanation1, self.select, self.ok, self.use_arbitrary_files_selector]
+        self.widgets = [self.createSkipButton(), explanation1, self.select, self.ok, self.use_arbitrary_files_selector]
         self.panel = ipyw.VBox(children=self.widgets, layout=self.layout)
+
+
+    def createSkipButton(self):
+        skip_DF = ipyw.Button(
+            description='Skip dark field files',
+            layout=ipyw.Layout(margin="20px", width="180px"))
+        skip_DF.on_click(self.onSkipDF)
+        return skip_DF
+    
         
     def calculate(self):
         config = self.context.config
@@ -580,9 +589,23 @@ class DFPanel(Panel):
         self.createDFFilesSelector()
         self.show()
         return
+
+    def onSkipDF(self, s):
+        config = self.context.config
+        config.skip_df = True
+        config.df_files = None
+        self.remove()
+        self.nextStep()
+        return
     
     def nextStep(self):
         print "Configuration done!"
+        return
+
+    def remove(self):
+        if hasattr(self, 'fsp'):
+            self.fsp.remove()
+        super(DFPanel, self).remove()
         return
 
     def createDFFilesSelector(self):
@@ -593,11 +616,13 @@ class DFPanel(Panel):
         # call back function
         def next(s):
             self.context.config.df_files = self.fsp.selected
+            self.remove()
             self.nextStep()
             return
         self.fsp.next = next
         # show() method need self.panel
-        self.panel = self.fsp.panel
+        # self.panel = self.fsp.panel
+        self.panel = ipyw.VBox(children=(self.createSkipButton(), self.fsp.panel), layout=self.layout)
         return
 
     
