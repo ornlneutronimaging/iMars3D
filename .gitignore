@@ -1,6 +1,15 @@
 *.pyc
 *~
 .ipynb*
+
+# data
 /tests/iMars3D*data*set
+
+# python distribution
+/build
+/dist
+
+# temp files and dirs
 _tmp
+_mp*_tmp
 
