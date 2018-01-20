@@ -268,7 +268,11 @@ and you will need to clean them up yourself.
         if self.clean_intermediate_files == 'archive':
             import datetime
             now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-            shutil.move(workdir, os.path.join(outdir, 'work-%s' % now))
+            newpath = os.path.join(outdir, 'work-%s' % now)
+            shutil.move(workdir, newpath)
+            # create a soft link so that the intermediate data can still be accessed
+            # from the CT object
+            os.symlink(newpath, workdir)
         elif self.clean_intermediate_files == 'on_the_fly':
             shutil.rmtree(workdir)
         return
