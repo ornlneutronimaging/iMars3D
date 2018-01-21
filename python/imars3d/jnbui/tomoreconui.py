@@ -3,7 +3,7 @@ from __future__ import print_function
 
 from . import ct_wizard as base
 from .ct_wizard import Context, Config
-import os
+import os, time
 import ipywidgets as ipyw
 from IPython.display import display
 from _utils import js_alert
@@ -358,10 +358,13 @@ class DFPanel(base.DFPanel):
         self.remove()
         from imars3d.CT import CT
         context = self.context
-        ct = CT(context.config.datadir, CT_subdir=context.config.ct_dir,
-                CT_identifier=context.config.ct_sig, workdir=context.config.workdir,
-                outdir=context.config.outdir, ob_files=context.config.ob_files,
-                df_files=context.config.df_files)
+        # let users know it is going to be a while
+        with wait_alert("Gathering information for the CT reconstruction. Please wait..."):
+            ct = CT(context.config.datadir, CT_subdir=context.config.ct_dir,
+                    CT_identifier=context.config.ct_sig, workdir=context.config.workdir,
+                    outdir=context.config.outdir, ob_files=context.config.ob_files,
+                    df_files=context.config.df_files)
+        #
         context.ct = ct
         imgslide = ImgSliderPanel(context)
         imgslide.show()
@@ -390,51 +393,38 @@ class ImgSliderPanel(base.Panel):
         self.height = context.ui_config.img_height
         self.context = context
         ct = context.ct
-        self.ppd = ct.preprocess()
-        self.df_imgs = ct.dfs
-        self.ob_imgs = ct.obs
-        self.img_disp = None
+        with wait_alert("Preprocessing. Please wait..."):
+            self.ppd = ct.preprocess()
+        # create interface
+        explanation = ipyw.Label(
+            "Select a Region of Interest from the CT Images, and make sure the OB and DF images are reasonable",
+            layout = ipyw.Layout(height='35px', padding='4px', width='500px')
+            )
+        # image sliders
         self.ct_slider = ImgSlider.ImageSlider(self.ppd, self.width, self.height)
+        self.df_imgs = ct.dfs
         self.df_slider = ImgSlider.ImageSlider(self.df_imgs, self.width, self.height)
+        self.ob_imgs = ct.obs
         self.ob_slider = ImgSlider.ImageSlider(self.ob_imgs, self.width, self.height)
-        explanation = ipyw.Label("Select a Region of Interest for the CT, DF, or OB Images", layout=self.label_layout)
-        ct_button = ipyw.Button(description="Reconstruct",
-                                layout=self.button_layout)
-        df_button = ipyw.Button(description="Reconstruct",
-                                layout=self.button_layout)
-        ob_button = ipyw.Button(description="Reconstruct",
-                                layout=self.button_layout)
-        ct_tab = ipyw.VBox(children=[self.ct_slider, ct_button],
-                           layout=self.layout)
-        df_tab = ipyw.VBox(children=[self.df_slider, df_button],
-                           layout=self.layout)
-        ob_tab = ipyw.VBox(children=[self.ob_slider, ob_button],
-                           layout=self.layout)
-        self.widgets = [ct_tab, df_tab, ob_tab]
-        self.panel = ipyw.Tab(children=self.widgets)
-        self.panel.set_title(0, "CT")
-        self.panel.set_title(1, "DF")
-        self.panel.set_title(2, "OB")
-        ct_button.on_click(self.ct_select)
-        df_button.on_click(self.df_select)
-        ob_button.on_click(self.ob_select)
+        # we may need widgets other than the image slider, so we add a container here
+        ct_tab = ipyw.VBox(children=[self.ct_slider], layout=self.layout)
+        df_tab = ipyw.VBox(children=[self.df_slider], layout=self.layout)
+        ob_tab = ipyw.VBox(children=[self.ob_slider], layout=self.layout)
+        # tab containers
+        self.tab_list = [ct_tab, df_tab, ob_tab] # save this so we can easily add more tabs later
+        # the tabs widget
+        self.tabs = ipyw.Tab(children=self.tab_list)
+        self.tabs.set_title(0, "CT")
+        self.tabs.set_title(1, "DF")
+        self.tabs.set_title(2, "OB")
+        # reconstruct button
+        self.recon_button = ipyw.Button(description="Reconstruct", layout=self.button_layout)
+        self.recon_button.on_click(self.onRecon)
+        # 
+        self.panel = ipyw.VBox(children=[explanation, self.tabs, self.recon_button])
+        return
 
-    def ct_select(self, event):
-        """Sets img_disp to ct_slider so the ROI values can be obtained"""
-        self.img_disp = self.ct_slider
-        self.nextStep()
-
-    def df_select(self, event):
-        """Sets img_disp to df_slider so the ROI values can be obtained"""
-        self.img_disp = self.df_slider
-        self.nextStep()
-
-    def ob_select(self, event):
-        """Sets img_disp to ob_slider so the ROI values can be obtained"""
-        self.img_disp = self.ob_slider
-        self.nextStep()
-
-    def nextStep(self):
+    def onRecon(self, event):
         """
         Grabs the ROI values from img_disp.
         Then, uses those values and the context.ui_config
@@ -444,22 +434,37 @@ class ImgSliderPanel(base.Panel):
         using the reconstructed images, and appends it
         as a fourth tab in the currently displayed panel.
         """
-        xmin = self.img_disp._xcoord_absolute
-        ymin = self.img_disp._ycoord_absolute
-        xmax = self.img_disp._xcoord_max_roi
-        ymax = self.img_disp._ycoord_max_roi
+        self.recon_button.layout.display = 'none' # hide reconstruct button
+        xmin = self.ct_slider._xcoord_absolute
+        ymin = self.ct_slider._ycoord_absolute
+        xmax = self.ct_slider._xcoord_max_roi
+        ymax = self.ct_slider._ycoord_max_roi
         context = self.context
-        print("* starting reconstruction...")
-        context.ct.recon(
-            crop_window=(xmin, ymin, xmax, ymax),
-            remove_rings_at_sinograms=context.ui_config.remove_rings,
-            smooth_recon=context.ui_config.smooth_recon,
-            smooth_projection=context.ui_config.smooth_projection)
+        with wait_alert("Reconstructing. Please wait..."):
+            context.ct.recon(
+                crop_window=(xmin, ymin, xmax, ymax),
+                remove_rings_at_sinograms=context.ui_config.remove_rings,
+                smooth_recon=context.ui_config.smooth_recon,
+                smooth_projection=context.ui_config.smooth_projection)
         print(context.config.workdir)
         recon_slider = ImgSlider.ImageSlider(
             context.ct.r.reconstructed,
             self.width, self.height)
         recon_tab = ipyw.VBox(children=[recon_slider], layout=self.layout)
-        self.widgets.append(recon_tab)
-        self.panel.children = list(self.panel.children) + [recon_tab]
-        self.panel.set_title(3, "Output")
+        # add new tab
+        self.tab_list.append(recon_tab)
+        self.tabs.children = self.tab_list
+        self.tabs.set_title(3, "Output")
+        return
+
+
+from contextlib import contextmanager
+@contextmanager
+def wait_alert(msg):
+    # let user know it is going to be a while
+    layout = ipyw.Layout(border='1px solid lightgray', padding='2px 2px')
+    wait = ipyw.HTML(value="<p>%s</p>" % msg, layout=layout)
+    display(wait); time.sleep(0.2)
+    yield
+    # remove the alert
+    wait.close()
