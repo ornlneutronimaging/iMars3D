@@ -2,7 +2,7 @@
 from __future__ import print_function
 
 from . import ct_wizard as base
-from .ct_wizard import Context, config
+from .ct_wizard import Context, Config
 import os
 import ipywidgets as ipyw
 from IPython.display import display
@@ -10,13 +10,19 @@ from _utils import js_alert
 from ipywe import imageslider as ImgSlider, fileselector as flselect
 import pickle as pkl
 
-img_width = 0
-img_height = 0
-remove_rings = False
-smooth_recon = False
-smooth_projection = False
-start_directory = None
+class UIConfig:
+    img_width = 0
+    img_height = 0
+    remove_rings = False
+    smooth_recon = False
+    smooth_projection = False
+    start_directory = None
 
+def createContext():
+    context = Context()
+    config = Config()
+    context.config = config
+    return context
 
 def wizard(context, start_dir=os.path.expanduser("~"), image_width=300, image_height=300, remove_rings_at_sinograms=False, smooth_rec=False, smooth_proj=False):
     """
@@ -49,13 +55,14 @@ def wizard(context, start_dir=os.path.expanduser("~"), image_width=300, image_he
         of the projection will be run after reconstruction.
         Initial Value: False
     """
-    global img_width, img_height, remove_rings, smooth_recon, smooth_projection, start_directory
-    img_width = image_width
-    img_height = image_height
-    remove_rings = remove_rings_at_sinograms
-    smooth_recon = smooth_rec
-    smooth_projection = smooth_proj
-    start_directory = start_dir
+    ui_config = UIConfig()
+    ui_config.img_width = image_width
+    ui_config.img_height = image_height
+    ui_config.remove_rings = remove_rings_at_sinograms
+    ui_config.smooth_recon = smooth_rec
+    ui_config.smooth_projection = smooth_proj
+    ui_config.start_directory = start_dir
+    context.ui_config = ui_config
     WizardPanel(StartButtonPanel(context))
     return
 
@@ -128,10 +135,9 @@ class FileSelectPanel(base.Panel):
             Object (from ct_wizard.py) that stores the config
             and ct objects used in the reconstruction process   
         """
-        global start_directory
         self.context = context
         self.fsp = flselect.FileSelectorPanel("Choose a .pkl file to use for configuration",
-                                              start_dir=start_directory)
+                                              start_dir=context.ui_config.start_directory)
 
         def createConfig(path):
             """
@@ -380,9 +386,8 @@ class ImgSliderPanel(base.Panel):
             Object (from ct_wizard.py) that stores the config
             and ct objects used in the reconstruction process   
         """
-        global img_width, img_height
-        self.width = img_width
-        self.height = img_height
+        self.width = context.ui_config.img_width
+        self.height = context.ui_config.img_height
         self.context = context
         ct = context.ct
         self.ppd = ct.preprocess()
@@ -432,7 +437,7 @@ class ImgSliderPanel(base.Panel):
     def nextStep(self):
         """
         Grabs the ROI values from img_disp.
-        Then, uses those values and the globals set
+        Then, uses those values and the context.ui_config
         in the starting function to begin the reconstruction process.
         Once the process is complete, prints the working directory
         for the process. Finally, creates an ImageSlider widget
@@ -443,14 +448,17 @@ class ImgSliderPanel(base.Panel):
         ymin = self.img_disp._ycoord_absolute
         xmax = self.img_disp._xcoord_max_roi
         ymax = self.img_disp._ycoord_max_roi
-        global remove_rings, smooth_recon, smooth_projection
-        self.context.ct.recon(crop_window=(xmin, ymin, xmax, ymax),
-                              remove_rings_at_sinograms=remove_rings,
-                              smooth_recon=smooth_recon,
-                              smooth_projection=smooth_projection)
-        print(self.context.config.workdir)
-        recon_slider = ImgSlider.ImageSlider(self.context.ct.r.reconstructed,
-                                             self.width, self.height)
+        context = self.context
+        print("* starting reconstruction...")
+        context.ct.recon(
+            crop_window=(xmin, ymin, xmax, ymax),
+            remove_rings_at_sinograms=context.ui_config.remove_rings,
+            smooth_recon=context.ui_config.smooth_recon,
+            smooth_projection=context.ui_config.smooth_projection)
+        print(context.config.workdir)
+        recon_slider = ImgSlider.ImageSlider(
+            context.ct.r.reconstructed,
+            self.width, self.height)
         recon_tab = ipyw.VBox(children=[recon_slider], layout=self.layout)
         self.widgets.append(recon_tab)
         self.panel.children = list(self.panel.children) + [recon_tab]
