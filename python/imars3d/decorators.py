@@ -30,6 +30,7 @@ args, kwds = pickle.load(open(%(args_pkl)r, 'rb'))
 """ + import_statement + """
 method(*args, **kwds)
 """
+    import logging; logger = logging.getLogger("mpi")
     tmpdir="_mpi_tmp/%s" % (f.__name__,)
     if not os.path.exists(tmpdir):
         os.makedirs(tmpdir)
@@ -55,23 +56,15 @@ method(*args, **kwds)
         nodes = min(nodes, imars3d.configuration['parallelization']['max_nodes'])
         # shell cmd
         cmd = 'mpirun -np %(nodes)s python %(pyfile)s' % locals()
-        print("* running %s" % cmd)
-        print("  - args: %s" % (args,))
-        print("  - kwds:")
+        logger.info("* running %s" % cmd)
+        logger.info("  - args: %s" % (args,))
+        logger.info("  - kwds:")
         for k,v in kwds.items():
-            print("    - %s: %s" % (k,v))
+            logger.info("    - %s: %s" % (k,v))
             continue
         import subprocess as sp, shlex
         args = shlex.split(cmd)
-        logfile = os.path.join(dir, 'log.run')
-        print("  - logging in %s" % os.path.abspath(logfile))
-        outstream = open(logfile, 'wt')
-        outstream.write('%s\n\n' % cmd)
-        if sp.call(args, stdout=outstream, stderr=outstream, shell=False):
-            outstream.close()
-            text = open(logfile).read()
-            raise RuntimeError("%s failed.\n%s\n" % (cmd, text))
-            # raise RuntimeError("%s failed. See log file %s" % (cmd, logfile))
-        print("done.")
+        sp.check_call(args, shell=False)
+        logger.info("done.")
         return
     return _

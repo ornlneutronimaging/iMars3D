@@ -1,7 +1,7 @@
 # -*- python -*-
 # -*- coding: utf-8 -*-
 
-
+from __future__ import print_function
 import progressbar, numpy as np, os
 
 def average(image_collection):
@@ -77,7 +77,7 @@ def normalize(ct_series, df_images, ob_images, workdir, output_img_series):
             output_img_series.putImage(angle, data)
         bar.update(i)
         continue
-    print()
+    print('\n')
     return
 
 # End of file

@@ -6,7 +6,9 @@ helpers to convert functions working for one image
 to functions working for an image series
 """
 
+from __future__ import print_function
 import numpy as np, sys, os, time
+import progressbar
 
 WAIT_COUNT = 10 # wait this many times for the master node to create the output dir
 WAIT_SECONDS = 1.0 # wait this many seconds every time
@@ -51,14 +53,29 @@ def filter_parallel_onenode(
     N = int(np.ceil(totalN*1. / size))
     # start and stop index
     start, stop = rank*N, min(totalN, (rank+1)*N)
-    # 
-    for angle in ct_series.identifiers[start: stop]:
-        sys.stderr.write("%s: %s\n" % (prefix, angle))
+    # progress bar
+    # for simplicity, we just report the progress at rank 0, which should be a
+    # good indication of progress of all nodes any way
+    if rank==0:
+        bar = progressbar.ProgressBar(
+            widgets=[
+                prefix,
+                progressbar.Percentage(),
+                progressbar.Bar(),
+                ' [', progressbar.ETA(), '] ',
+            ],
+            max_value = stop-start-1
+        )
+    for i, angle in enumerate(ct_series.identifiers[start: stop]):
+        # sys.stderr.write("%s: %s\n" % (prefix, angle))
         # skip over existing results
         if not output_img_series.exists(angle):
             data = ct_series.getData(angle)
             output_img_series.putImage(angle, filter_one(data, **kwds))
+        if rank==0: bar.update(i)
         continue
+    comm.Barrier()
+    if rank==0: print('\n')
     return
 from ..decorators import mpi_parallelize
 filter_parallel = mpi_parallelize(filter_parallel_onenode)
@@ -74,7 +91,6 @@ def filter(ct_series, output_img_series, desc, filter_one, **kwds):
     """
     prefix = "%s %s:" % (desc, ct_series.name or "")
     N = ct_series.nImages
-    import progressbar
     bar = progressbar.ProgressBar(
         widgets=[
             prefix,
@@ -91,7 +107,7 @@ def filter(ct_series, output_img_series, desc, filter_one, **kwds):
             output_img_series.putImage(angle, filter_one(data, **kwds))
         bar.update(i)
         continue
-    print()
+    print('\n')
     return
 
 # End of file
