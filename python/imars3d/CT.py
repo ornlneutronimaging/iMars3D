@@ -6,6 +6,10 @@ import numpy as np
 import imars3d as i3
 import progressbar
 from . import decorators as dec
+from imars3d import configuration
+pb_config = configuration['progress_bar']
+ct_config = configuration.get('CT', dict(clean_intermediate_files="archive"))
+
 
 class CT:
 
@@ -48,21 +52,23 @@ or they can be cleaned on the fly to save disk usage:
 
 or they can be kept where it is:
 
-    clean_intermediate_files=None
+    clean_intermediate_files=False
 
 and you will need to clean them up yourself.
+The default behavior can be modified by configuration file "imars3d.conf".
 """
 
     def __init__(
             self, path, CT_subdir=None, CT_identifier=None,
             workdir='work', outdir='out', 
             parallel_preprocessing=True, parallel_nodes=None,
-            clean_intermediate_files='archive',
+            clean_intermediate_files=None,
             vertical_range=None,
             ob_identifier=None, df_identifier=None,
             ob_files=None, df_files=None,
             skip_df=False,
     ):
+        import logging; self.logger = logging.getLogger("CT")
         self.path = path
         if CT_subdir is not None:
             # if ct is in a subdir, its name most likely the
@@ -106,7 +112,9 @@ and you will need to clean them up yourself.
 
         self.parallel_preprocessing = parallel_preprocessing
         self.parallel_nodes = parallel_nodes
-        assert clean_intermediate_files in ['on_the_fly', 'archive', None]
+        if clean_intermediate_files is None:
+            clean_intermediate_files = ct_config['clean_intermediate_files']
+        assert clean_intermediate_files in ['on_the_fly', 'archive', False]
         self.clean_intermediate_files = clean_intermediate_files
         self.vertical_range = vertical_range
         self.r = results()
@@ -268,7 +276,11 @@ and you will need to clean them up yourself.
         if self.clean_intermediate_files == 'archive':
             import datetime
             now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-            shutil.move(workdir, os.path.join(outdir, 'work-%s' % now))
+            newpath = os.path.join(outdir, 'work-%s' % now)
+            shutil.move(workdir, newpath)
+            # create a soft link so that the intermediate data can still be accessed
+            # from the CT object
+            os.symlink(newpath, workdir)
         elif self.clean_intermediate_files == 'on_the_fly':
             shutil.rmtree(workdir)
         return
@@ -594,14 +606,16 @@ and you will need to clean them up yourself.
                     progressbar.Bar(),
                     ' [', progressbar.ETA(), '] ',
                 ],
-                max_value = len(angles) - 1
+                max_value = len(angles) - 1,
+                **pb_config
             )
             for i, angle in enumerate(angles):
                 try:
                     ifs.getFilename(angle)
                 except:
                     import traceback as tb
-                    tb.print_exc()
+                    m = tb.format_exc()
+                    self.logger.debug("i=%s,angle=%s: %s" % (i, angle, m))
                     bad = True
                     break
                 bar.update(i)

@@ -3,10 +3,11 @@
 
 
 import progressbar
+from imars3d import configuration
+pb_config = configuration['progress_bar']
+
 
 from .AbstractComponent import AbstractComponent
-
-
 class Projection(AbstractComponent):
 
     def __call__(self, ct_series, sinograms):
@@ -51,7 +52,8 @@ create_pbar = lambda prefix, max: progressbar.ProgressBar(
         progressbar.Bar(),
         ' [', progressbar.ETA(), '] ',
     ],
-    max_value = max
+    max_value = max,
+    **pb_config
 )
 
 
@@ -63,6 +65,7 @@ class Projection_MP(AbstractComponent):
 
     def __call__(self, ct_series, sinograms):
         """convert ct image series to sinogram series"""
+        print ("* Projecting...")
         # get metadata for sinograms
         data0 = ct_series[0].data
         Y, X = data0.shape
@@ -82,9 +85,9 @@ class Projection_MP(AbstractComponent):
         script = os.path.join(os.path.dirname(__file__), 'projection_mp.py')
         cmd = 'python %s %s' % (script, args_pkl)
         # 
-        from ..shutils import exec_withlog
-        logfile = os.path.join(dir, 'log.run')
-        exec_withlog(cmd, logfile)
+        import subprocess as sp, shlex
+        args = shlex.split(cmd)
+        sp.check_call(args, shell=False)
         return
 
 

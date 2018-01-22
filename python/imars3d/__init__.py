@@ -4,11 +4,9 @@ from __future__ import absolute_import, division, print_function
 import matplotlib as mpl; mpl.use("Agg")
 
 
-
 # config file
 # Examples
-#   * tests/imars3d/tilt/imars3d.conf
-#   * tests/imars3d/parallel/imars3d.conf
+#   * tests/imars3d/imars3d.conf
 import yaml, os
 conf_path = "imars3d.conf"
 config = dict()
@@ -19,10 +17,14 @@ import logging.config
 logging_conf = config.get("logging")
 if logging_conf:
     logging.config.dictConfig(logging_conf)
-# parallelization cofnig
+# parallelization config
 parallel = config.get('parallelization')
 if not parallel:
     config['parallelization'] = dict(max_nodes=20)
+# progressbar config
+progress_bar = config.get('progress_bar')
+if not progress_bar:
+    config['progress_bar'] = dict(term_width=80)
 # have to rename. config is a subpackage
 configuration = config
 

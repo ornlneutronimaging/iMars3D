@@ -1,4 +1,19 @@
 
+def exec_redirect_to_stdout(cmd, shell=False):
+    "execute a command in a subproces and redirect outputs (including errors) to sys.stdout"
+    import subprocess as sp, shlex, sys
+    args = shlex.split(cmd)
+    # sp.check_call(args, shell=shell)
+    # manually pipe the output from the subprocess to sys.stdout so that
+    # jupyter gets it inside the web page instead of the stdout of the terminal
+    # from which jupyter is launched
+    p = sp.Popen(args, shell=shell, stdout=sp.PIPE, stderr=sp.STDOUT)
+    for c in iter(lambda: p.stdout.read(1), ''):
+        sys.stdout.write(c)
+    p.communicate(); r = p.poll()
+    if r: raise RuntimeError("Cmd %r failed" % cmd)
+    return
+
 
 def exec_withlog(cmd, logfile):
     import subprocess as sp, shlex

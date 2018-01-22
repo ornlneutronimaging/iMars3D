@@ -214,13 +214,16 @@ class SelectDirPanel(Panel):
         wait = ipyw.HTML(value="<p>Removing. Please wait...</p>")
         display(wait); time.sleep(0.2)
         import shutil
-        try:
-            shutil.rmtree(self.path_candidate)
-        except:
-            wait.close()
-            js_alert("Unable to remove directory tree %s" % self.path_candidate)
-            self.askForDir(s)
-            return
+        if os.path.islink(self.path_candidate):
+            os.unlink(self.path_candidate)
+        else:
+            try:
+                shutil.rmtree(self.path_candidate)
+            except:
+                wait.close()
+                js_alert("Unable to remove directory tree %s" % self.path_candidate)
+                self.askForDir(s)
+                return
         wait.close()
         self.selected = self.path_candidate
         self.nextStep()
