@@ -29,7 +29,7 @@ def average(image_collection):
             res += data
         bar.update(i)
         continue
-    print()
+    print('\n')
     return res/N
 
 
