@@ -9,6 +9,7 @@ from IPython.display import display
 from _utils import js_alert
 from ipywe import imageslider as ImgSlider, fileselector as flselect
 import pickle as pkl
+import logging; logger = logging.getLogger('ui')
 
 class UIConfig:
     img_width = 0
@@ -156,13 +157,14 @@ class FileSelectPanel(base.Panel):
             assert os.getcwd() == self.context.config.outdir
             open_config = open('recon-config.pkl', 'wb')
             pkl.dump(self.context.config, open_config)
+            logger.info("Configuration:")
             for k, v in self.context.config.__dict__.items():
                 if k.startswith('_'):
                     continue
                 sv = str(v)
                 if len(sv) > 60:
                     sv = sv[:50] + '...'
-                print("{0:20}{1:<}".format(k, sv))
+                logger.info("{0:20}{1:<}".format(k, sv))
             open_path.close()
             open_config.close()
             self.nextStep()
@@ -342,30 +344,39 @@ class DFPanel(base.DFPanel):
         Finally, removes the current panel,
         and replaces it with an ImgSliderPanel.
         """
+        # save path of current imars3d config
+        import imars3d;  orig_imars3d_config = os.path.abspath(imars3d.conf_path)
+        # create output dir and move over there
         os.makedirs(self.context.config.outdir)
         os.chdir(self.context.config.outdir)
         assert os.getcwd() == self.context.config.outdir
-        open_config = open('recon-config.pkl', 'wb')
-        pkl.dump(self.context.config, open_config)
+        # copy imars3d config if it exists
+        if os.path.exists(orig_imars3d_config):
+            import shutil
+            shutil.copyfile(orig_imars3d_config,  imars3d.conf_path)
+        # save recon config
+        with open('recon-config.pkl', 'wb') as open_config:
+            pkl.dump(self.context.config, open_config)
+        # logging
+        logger.info("Configuration:")
         for k, v in self.context.config.__dict__.items():
             if k.startswith('_'):
                 continue
             sv = str(v)
             if len(sv) > 60:
                 sv = sv[:50] + '...'
-            print("{0:20}{1:<}".format(k, sv))
-        open_config.close()
-        self.remove()
+            logger.info("{0:20}{1:<}".format(k, sv))
+        # create CT object
         from imars3d.CT import CT
         context = self.context
-        # let users know it is going to be a while
         with wait_alert("Gathering information for the CT reconstruction. Please wait..."):
             ct = CT(context.config.datadir, CT_subdir=context.config.ct_dir,
                     CT_identifier=context.config.ct_sig, workdir=context.config.workdir,
                     outdir=context.config.outdir, ob_files=context.config.ob_files,
                     df_files=context.config.df_files)
-        #
         context.ct = ct
+        # new interface
+        self.remove()
         imgslide = ImgSliderPanel(context)
         imgslide.show()
 
@@ -440,21 +451,26 @@ class ImgSliderPanel(base.Panel):
         xmax = self.ct_slider._xcoord_max_roi
         ymax = self.ct_slider._ycoord_max_roi
         context = self.context
-        with wait_alert("Reconstructing. Please wait..."):
-            context.ct.recon(
-                crop_window=(xmin, ymin, xmax, ymax),
-                remove_rings_at_sinograms=context.ui_config.remove_rings,
-                smooth_recon=context.ui_config.smooth_recon,
-                smooth_projection=context.ui_config.smooth_projection)
-        print(context.config.workdir)
-        recon_slider = ImgSlider.ImageSlider(
-            context.ct.r.reconstructed,
-            self.width, self.height)
-        recon_tab = ipyw.VBox(children=[recon_slider], layout=self.layout)
-        # add new tab
-        self.tab_list.append(recon_tab)
-        self.tabs.children = self.tab_list
-        self.tabs.set_title(3, "Output")
+        def run_recon():
+            with wait_alert("Reconstructing. Please wait..."):
+                context.ct.recon(
+                    crop_window=(xmin, ymin, xmax, ymax),
+                    remove_rings_at_sinograms=context.ui_config.remove_rings,
+                    smooth_recon=context.ui_config.smooth_recon,
+                    smooth_projection=context.ui_config.smooth_projection)
+            logger.info("workdir: %s" % context.config.workdir)
+            recon_slider = ImgSlider.ImageSlider(
+                context.ct.r.reconstructed,
+                self.width, self.height)
+            recon_tab = ipyw.VBox(children=[recon_slider], layout=self.layout)
+            # add new tab
+            self.tab_list.append(recon_tab)
+            self.tabs.children = self.tab_list
+            self.tabs.set_title(3, "Output")
+            return
+        import threading
+        t = threading.Thread(name='recon', target=run_recon)
+        t.start()
         return
 
 

@@ -8,6 +8,8 @@ import progressbar
 from . import decorators as dec
 from imars3d import configuration
 pb_config = configuration['progress_bar']
+ct_config = configuration.get('CT', dict(clean_intermediate_files="archive"))
+
 
 class CT:
 
@@ -50,16 +52,17 @@ or they can be cleaned on the fly to save disk usage:
 
 or they can be kept where it is:
 
-    clean_intermediate_files=None
+    clean_intermediate_files=False
 
 and you will need to clean them up yourself.
+The default behavior can be modified by configuration file "imars3d.conf".
 """
 
     def __init__(
             self, path, CT_subdir=None, CT_identifier=None,
             workdir='work', outdir='out', 
             parallel_preprocessing=True, parallel_nodes=None,
-            clean_intermediate_files='archive',
+            clean_intermediate_files=None,
             vertical_range=None,
             ob_identifier=None, df_identifier=None,
             ob_files=None, df_files=None,
@@ -109,7 +112,9 @@ and you will need to clean them up yourself.
 
         self.parallel_preprocessing = parallel_preprocessing
         self.parallel_nodes = parallel_nodes
-        assert clean_intermediate_files in ['on_the_fly', 'archive', None]
+        if clean_intermediate_files is None:
+            clean_intermediate_files = ct_config['clean_intermediate_files']
+        assert clean_intermediate_files in ['on_the_fly', 'archive', False]
         self.clean_intermediate_files = clean_intermediate_files
         self.vertical_range = vertical_range
         self.r = results()
