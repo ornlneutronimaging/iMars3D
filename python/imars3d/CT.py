@@ -6,6 +6,8 @@ import numpy as np
 import imars3d as i3
 import progressbar
 from . import decorators as dec
+from imars3d import configuration
+pb_config = configuration['progress_bar']
 
 class CT:
 
@@ -63,6 +65,7 @@ and you will need to clean them up yourself.
             ob_files=None, df_files=None,
             skip_df=False,
     ):
+        import logging; self.logger = logging.getLogger("CT")
         self.path = path
         if CT_subdir is not None:
             # if ct is in a subdir, its name most likely the
@@ -598,14 +601,16 @@ and you will need to clean them up yourself.
                     progressbar.Bar(),
                     ' [', progressbar.ETA(), '] ',
                 ],
-                max_value = len(angles) - 1
+                max_value = len(angles) - 1,
+                **pb_config
             )
             for i, angle in enumerate(angles):
                 try:
                     ifs.getFilename(angle)
                 except:
                     import traceback as tb
-                    tb.print_exc()
+                    m = tb.format_exc()
+                    self.logger.debug("i=%s,angle=%s: %s" % (i, angle, m))
                     bad = True
                     break
                 bar.update(i)

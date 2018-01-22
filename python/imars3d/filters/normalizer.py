@@ -3,6 +3,8 @@
 
 from __future__ import print_function
 import progressbar, numpy as np, os
+from imars3d import configuration
+pb_config = configuration['progress_bar']
 
 def average(image_collection):
     N = image_collection.nImages
@@ -16,7 +18,8 @@ def average(image_collection):
             progressbar.Bar(),
             ' [', progressbar.ETA(), '] ',
         ],
-        max_value = N-1
+        max_value = N-1,
+        **pb_config
     )
     for i, im in enumerate(image_collection.iterImages()):
         data = np.array(im.getData(), dtype="float32")
@@ -67,7 +70,8 @@ def normalize(ct_series, df_images, ob_images, workdir, output_img_series):
             progressbar.Bar(),
             ' [', progressbar.ETA(), '] ',
         ],
-        max_value = N-1
+        max_value = N-1,
+        **pb_config
     )
     for i, angle in enumerate(ct_series.identifiers):
         # skip over existing results

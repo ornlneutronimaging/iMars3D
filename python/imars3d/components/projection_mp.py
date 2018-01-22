@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import multiprocessing as mp, numpy as np, pickle, os
+import logging; logger = logging.getLogger("projection")
 
 # global array
 data = None
@@ -39,7 +40,7 @@ def job_handler(y):
     sinograms = pickle.loads(sinograms_pkl)
     sino = sinograms[y]
     if sinograms.exists(y):
-        print("%s already existed" % sino)
+        logger.debug("%s already existed" % sino)
         return y
     sino.data = data[:, y, :]
     from imars3d.filters.smoothing import filter_one_median as smooth

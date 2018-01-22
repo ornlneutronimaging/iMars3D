@@ -9,6 +9,8 @@ to functions working for an image series
 from __future__ import print_function
 import numpy as np, sys, os, time
 import progressbar
+from imars3d import configuration
+pb_config = configuration['progress_bar']
 
 WAIT_COUNT = 10 # wait this many times for the master node to create the output dir
 WAIT_SECONDS = 1.0 # wait this many seconds every time
@@ -22,6 +24,7 @@ def filter_parallel_onenode(
     * filter_one: function to filter one image
     * kwds: additional kargs for filter_one
     """
+    import logging; logger = logging.getLogger("mpi")
     from mpi4py import MPI
     comm = MPI.COMM_WORLD
     size = comm.Get_size()
@@ -47,7 +50,8 @@ def filter_parallel_onenode(
     #
     prefix = "%s %s:" % (desc, ct_series.name or "")
     if rank==0:
-        print( "Running %s on %s" % (desc, ct_series.name) )
+        logger.info( "Running %s on %s" % (desc, ct_series.name) )
+        pass
     totalN = ct_series.nImages
     # number of images to process in this process
     N = int(np.ceil(totalN*1. / size))
@@ -64,7 +68,8 @@ def filter_parallel_onenode(
                 progressbar.Bar(),
                 ' [', progressbar.ETA(), '] ',
             ],
-            max_value = stop-start-1
+            max_value = stop-start-1,
+            **pb_config
         )
     for i, angle in enumerate(ct_series.identifiers[start: stop]):
         # sys.stderr.write("%s: %s\n" % (prefix, angle))
@@ -98,7 +103,8 @@ def filter(ct_series, output_img_series, desc, filter_one, **kwds):
             progressbar.Bar(),
             ' [', progressbar.ETA(), '] ',
         ],
-        max_value = N-1
+        max_value = N-1,
+        **pb_config
     )
     for i, angle in enumerate(ct_series.identifiers):
         # skip over existing results

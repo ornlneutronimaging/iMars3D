@@ -6,6 +6,8 @@ import pylab, matplotlib as mpl
 from matplotlib import pyplot as plt
 from .smooth import smooth
 from scipy.optimize import curve_fit
+from imars3d import configuration
+pb_config = configuration['progress_bar']
 
 class PhaseCorrelation:
 
@@ -173,7 +175,7 @@ class PhaseCorrelation:
     def _initProgress(self):
         self._progress = 0
         import progressbar
-        self._pbar = progressbar.ProgressBar(max_value = progressbar.UnknownLength)
+        self._pbar = progressbar.ProgressBar(max_value = progressbar.UnknownLength, **pb_config)
         return
     def _updateProgress(self):
         self._progress += 1

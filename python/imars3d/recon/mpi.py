@@ -1,8 +1,11 @@
 # -*- python -*-
 # -*- coding: utf-8 -*-
 
-import progressbar
 import os, sys, numpy as np, imars3d
+
+import progressbar
+from imars3d import configuration
+pb_config = configuration['progress_bar']
 
 
 def recon(sinograms, theta, recon_series, nodes=None, **kwds):
@@ -57,6 +60,7 @@ parallalization. sth similar to $ mpirun -np NODES python "code to call this met
 * theta: angles in radians
 * recon: reconstruction method
     """
+    import logging; logger = logging.getLogger("mpi")
     import imars3d.io
     
     from mpi4py import MPI
@@ -73,18 +77,37 @@ parallalization. sth similar to $ mpirun -np NODES python "code to call this met
     if recon is None:
         from .use_tomopy import recon_batch_singlenode as recon
     
+    # progress bar
+    # for simplicity, we just report the progress at rank 0, which should be a
+    # good indication of progress of all nodes any way
+    if rank==0:
+        bar = progressbar.ProgressBar(
+            widgets=[
+                "Reconstructing",
+                progressbar.Percentage(),
+                progressbar.Bar(),
+                ' [', progressbar.ETA(), '] ',
+            ],
+            max_value = stop-start,
+            **pb_config
+        )
+        start0 = start
     while start < stop:
         stop1 = min(start + stepsize, stop)
-        print("node %s of %s working on %s:%s" % (rank, size, start, stop1))
+        logger.debug("node %s of %s working on %s:%s" % (rank, size, start, stop1))
         sinograms1 = sinograms[start:stop1]
         if not len(sinograms): continue
         recon_series1 = recon_series[start:stop1]
         try:
             recon(sinograms1, theta, recon_series1, center=center, **kwds)
         except:
-            print("node %s of %s: recon %s:%s failed" % (rank, size, start, stop1))
+            logger.info("node %s of %s: recon %s:%s failed" % (rank, size, start, stop1))
         start = stop1
+        if rank==0:
+            bar.update(start-start0)
         continue
+    comm.Barrier()
+    if rank==0: print('\n')
     return
 
 
