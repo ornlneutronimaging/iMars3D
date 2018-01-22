@@ -176,7 +176,7 @@ class FileSelectPanel(base.Panel):
         """
         Removes the current panel. Then, creates a ct object,
         and saves it into context's ct member.
-        Fianlly, creates an ImgSliderPanel and displays it.
+        Fianlly, creates an MainUIPanel and displays it.
         """
         self.remove()
         from imars3d.CT import CT
@@ -186,7 +186,7 @@ class FileSelectPanel(base.Panel):
                 outdir=context.config.outdir, ob_files=context.config.ob_files,
                 df_files=context.config.df_files)
         context.ct = ct
-        img_slide = ImgSliderPanel(context)
+        img_slide = MainUIPanel(context)
         img_slide.show()
 
 
@@ -342,7 +342,7 @@ class DFPanel(base.DFPanel):
         Then, after printing the configuration, creates a ct object,
         and stores the result in context.ct. 
         Finally, removes the current panel,
-        and replaces it with an ImgSliderPanel.
+        and replaces it with an MainUIPanel.
         """
         # save path of current imars3d config
         import imars3d;  orig_imars3d_config = os.path.abspath(imars3d.conf_path)
@@ -377,11 +377,11 @@ class DFPanel(base.DFPanel):
         context.ct = ct
         # new interface
         self.remove()
-        imgslide = ImgSliderPanel(context)
+        imgslide = MainUIPanel(context)
         imgslide.show()
 
 
-class ImgSliderPanel(base.Panel):
+class MainUIPanel(base.Panel):
     """Creates a tab interface where each tab displays
        an ImageSlider widget with either the CT, DF, or OB
        images displayed. In each tab, there is also
@@ -390,9 +390,11 @@ class ImgSliderPanel(base.Panel):
        a new tab is added that displays
        an ImageSlider of the reconstructed images."""
 
+    layout = ipyw.Layout(border="1px solid lightgray", padding='4px')
+
     def __init__(self, context):
         """
-        Create ImgSliderPanel instance.
+        Create MainUIPanel instance.
         
         Parameters
         ----------
@@ -407,9 +409,9 @@ class ImgSliderPanel(base.Panel):
         with wait_alert("Preprocessing. Please wait..."):
             self.ppd = ct.preprocess()
         # create interface
-        explanation = ipyw.Label(
-            "Select a Region of Interest from the CT Images, and make sure the OB and DF images are reasonable",
-            layout = ipyw.Layout(height='35px', padding='4px', width='500px')
+        explanation = ipyw.HTML(
+            "<p>Select a Region of Interest from the CT Images, and make sure the OB and DF images are reasonable</p>",
+            layout = ipyw.Layout(padding='4px', width='500px')
             )
         # image sliders
         self.ct_slider = ImgSlider.ImageSlider(self.ppd, self.width, self.height)
@@ -432,7 +434,7 @@ class ImgSliderPanel(base.Panel):
         self.recon_button = ipyw.Button(description="Reconstruct", layout=self.button_layout)
         self.recon_button.on_click(self.onRecon)
         # 
-        self.panel = ipyw.VBox(children=[explanation, self.tabs, self.recon_button])
+        self.panel = ipyw.VBox(children=[explanation, self.tabs, self.recon_button], layout=self.layout)
         return
 
     def onRecon(self, event):

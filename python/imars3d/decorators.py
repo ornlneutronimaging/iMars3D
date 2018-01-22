@@ -62,17 +62,8 @@ method(*args, **kwds)
         for k,v in kwds.items():
             logger.info("    - %s: %s" % (k,v))
             continue
-        import subprocess as sp, shlex, sys
-        args = shlex.split(cmd)
-        # sp.check_call(args, shell=False)
-        # manually pipe the output from the subprocess to sys.stdout so that
-        # jupyter gets it inside the web page instead of the stdout of the terminal
-        # from which jupyter is launched
-        p = sp.Popen(args, shell=False, stdout=sp.PIPE, stderr=sp.STDOUT)
-        for c in iter(lambda: p.stdout.read(1), ''):
-            sys.stdout.write(c)
-        p.communicate(); r = p.poll()
-        if r: raise RuntimeError("Cmd %r failed" % cmd)
+        from .shutils import exec_redirect_to_stdout
+        exec_redirect_to_stdout(cmd)
         logger.info("done.")
         return
     return _

@@ -44,8 +44,8 @@ recon_mpi(**kargs)
     nodes = min(nodes, imars3d.configuration['parallelization']['max_nodes'])
     # shell cmd
     cmd = 'mpirun -np %(nodes)s python %(pyfile)s' % locals()
-    if os.system(cmd):
-        raise RuntimeError("%s failed" % cmd)
+    from ..shutils import exec_redirect_to_stdout
+    exec_redirect_to_stdout(cmd)
     return
 
 
