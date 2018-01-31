@@ -16,5 +16,5 @@ if len(sys.argv) < 2:
 OUT=os.path.abspath(sys.argv[1])
 if not os.path.exists(OUT):
     os.makedirs(OUT)
-cmd = "aws s3 sync s3://imars3d-testdata/ %s/ --profile imars3d_tester" % OUT
+cmd = "aws s3 sync s3://ndav-imars3d-testdata/ %s/ --profile imars3d_tester" % OUT
 sp.check_call(cmd.split())
