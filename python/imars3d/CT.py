@@ -96,19 +96,6 @@ The default behavior can be modified by configuration file "imars3d.conf".
         # find data paths
         self.skip_df = skip_df
         self.sniff()
-        from . import io
-        # dark field
-        if not self.skip_df:
-            self.dfs = io.imageCollection(glob_pattern=self.DF_pattern, files=self.df_files, name="Dark Field")
-        else:
-            self.dfs = None
-        # open beam
-        self.obs = io.imageCollection(glob_pattern=self.OB_pattern, files=self.ob_files, name="Open Beam")
-        # ct
-        angles = self.angles
-        self.theta = angles * np.pi / 180.
-        pattern = self.CT_pattern
-        self.ct_series = io.ImageFileSeries(pattern, identifiers = angles, name = "CT")
 
         self.parallel_preprocessing = parallel_preprocessing
         self.parallel_nodes = parallel_nodes
@@ -504,6 +491,12 @@ The default behavior can be modified by configuration file "imars3d.conf".
 
 
     def sniff(self):
+        """find OB/DF/CT files and constract data members
+        - dfs
+        - obs
+        - theta (radian), angles (degree)
+        - ct_series
+        """
         if not self.ob_files:
             self.find_OB()
             print(" * found OB pattern: %s" % self.OB_pattern)
@@ -517,6 +510,20 @@ The default behavior can be modified by configuration file "imars3d.conf".
                 self.DF_pattern = None
         self.find_CT()
         print(" * found CT pattern: %s" % self.CT_pattern)
+        
+        from . import io
+        # dark field
+        if not self.skip_df:
+            self.dfs = io.imageCollection(glob_pattern=self.DF_pattern, files=self.df_files, name="Dark Field")
+        else:
+            self.dfs = None
+        # open beam
+        self.obs = io.imageCollection(glob_pattern=self.OB_pattern, files=self.ob_files, name="Open Beam")
+        # ct
+        angles = self.angles
+        self.theta = angles * np.pi / 180.
+        pattern = self.CT_pattern
+        self.ct_series = io.ImageFileSeries(pattern, identifiers = angles, name = "CT")
         return
         
     CT_pattern_cache = "CT_PATTERN"
