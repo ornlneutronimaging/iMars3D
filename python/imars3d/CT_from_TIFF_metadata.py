@@ -51,17 +51,59 @@ It uses metadata in TIFF to find the CT/OB/DF files.
 
 
     def sniff(self):
+        from . import io
         ct_files, angles = self._getCTfiles()
-        return
+        ct_pattern = os.path.join(self.ct_dir, self.ct_filename_template)
+        ct_series = io.ImageFileSeries(ct_pattern, identifiers = angles, name = "CT")
+        # open beam
+        ob_files = self._find_OB_DF_files('Open Beam', 'ob')
+        obs = io.imageCollection(files=ob_files, name="Open Beam")
+        # dark field
+        if not self.skip_df:
+            df_files = self._find_OB_DF_files('Dark field', 'df')
+            dfs = io.imageCollection(files=df_files, name="Dark Field")
+        else:
+            dfs = None
+        return ct_series, angles, dfs, obs
 
 
+    def _find_OB_DF_files(self, type, subdir):
+        f1 = self.ct_file_path
+        # get the IPTS folder path
+        tokens = f1.split('/')
+        p = ''
+        for token in tokens:
+            p += token + '/'
+            if token.startswith('IPTS'): break
+        ipts_dir = p
+        # ob subdir
+        ob_dir = os.path.join(ipts_dir, 'raw', subdir)
+        # files and their mtimes
+        entries = os.listdir(ob_dir)
+        out = []
+        day = 24*3600.
+        for e in entries:
+            p = os.path.join(ob_dir, e)
+            mt = os.path.getmtime(p)
+            # OB file mtime should be not too early
+            if mt > self.earliest_ct_mtime - day:
+                out.append(p)
+            continue
+        if len(out) == 0:
+            raise RuntimeError("There is no %s files within one day of CT measurement" % type)
+        if len(out) < 5:
+            import warnings
+            warnings.warn("Too few %s files" % type)
+        return out
+
+    ct_filename_template = 'at_%s.tiff'
     def _getCTfiles(self):
         f1 = self.ct_file_path
         metadata = readTIFMetadata(f1)
         groupID = int(metadata['GroupID'])
         # assume CT files are all in the same directory
         dir = os.path.dirname(f1)
-        files = []; angles = []
+        files = []; angles = []; mtimes = []
         for entry in os.listdir(dir):
             p = os.path.join(dir, entry)
             if os.path.isdir(p): continue
@@ -75,18 +117,22 @@ It uses metadata in TIFF to find the CT/OB/DF files.
             if groupID1 != groupID: continue
             files.append(p)
             angles.append(float(meta1['RotationActual']))
+            mtimes.append(os.path.getmtime(f1))
             continue
+        self.earliest_ct_mtime = np.min(mtimes) # remember this. OB and DF sniffing needs this
         frame_size = int(metadata['FrameSize'])
         # temp directory to hold CT
         if frame_size != 1:
-            ct_dir = os.path.join(self.workdir, 'CT_frame_averaged')
+            self.ct_dir = ct_dir = os.path.join(self.workdir, 'CT_frame_averaged')
             if not os.path.exists(ct_dir): os.makedirs(ct_dir)
         # 
         angle_file_list = sorted(zip(angles, files))
         output_files = []; output_angles = []
         for index, (angle, path) in enumerate(angle_file_list):
             if frame_size == 1:
-                output_files.append(path)
+                newpath = os.path.join(ct_dir, self.ct_filename_template % angle)
+                os.symlink(path, newpath)
+                output_files.append(newpath)
                 output_angles.append(angle)
                 continue
             # need average
@@ -108,9 +154,11 @@ It uses metadata in TIFF to find the CT/OB/DF files.
                     data += page.asarray()
                 continue
             data/=frame_size
-            path = os.path.join(ct_dir, 'at_%s.tiff' % ave_angle)
-            tifffile.imsave(path, data)
-            output_files.append(path)
+            # save a new file
+            newpath = os.path.join(ct_dir, self.ct_filename_template % ave_angle)
+            tifffile.imsave(newpath, data)
+            # 
+            output_files.append(newpath)
             output_angles.append(ave_angle)
             continue
         return output_files, output_angles
