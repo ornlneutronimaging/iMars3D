@@ -28,6 +28,36 @@ pb_config = configuration['progress_bar']
 
 
 
+def autoreduce(ct_file_path, local_disk_partition='/SNSlocal2', parallel_nodes=20):
+    meta = readTIFMetadata(ct_file_path)
+    RunNo = int(meta['RunNo'])
+    GroupID = int(meta['GroupID'])
+    GroupSize = int(meta['GroupSize'])
+    if RunNo < GroupID + GroupSize - 1:
+        return
+    if RunNo < GroupID + GroupSize - 1:
+        raise RuntimeError("Corrupted file? See %s" % ct_file_path)
+    ipts_dir = getIPTSdir(ct_file_path)
+    autoreduce_dir = os.path.join(ipts_dir, 'shared', 'autoreduce')
+    if not os.path.exists(autoreduce_dir):
+        os.makedirs(autoreduce_dir)
+    workdir = os.path.join(local_disk_partition, 'work.CT-group-%s' % GroupID)
+    outdir = os.path.join(autoreduce_dir, 'CT-group-%s' % GroupID)
+    ct = CT(
+        ct_file_path,
+        skip_df=False,
+        workdir=workdir, outdir=outdir, 
+        parallel_preprocessing=True,
+        parallel_nodes=parallel_nodes,
+        clean_intermediate_files='on_the_fly',
+        vertical_range=None,
+    )
+    ct.preprocess()
+    ct.recon()
+    return
+    
+
+
 from .CTProcessor import CTProcessor
 class CT(CTProcessor):
 
@@ -87,13 +117,7 @@ It uses metadata in TIFF to find the CT/OB/DF files.
 
     def _find_OB_DF_files(self, type, subdir):
         f1 = self.ct_file_path
-        # get the IPTS folder path
-        tokens = f1.split('/')
-        p = ''
-        for token in tokens:
-            p += token + '/'
-            if token.startswith('IPTS'): break
-        ipts_dir = p
+        ipts_dir = getIPTSdir(f1)
         # ob subdir
         ob_dir = os.path.join(ipts_dir, 'raw', subdir)
         # files and their mtimes
@@ -181,6 +205,15 @@ It uses metadata in TIFF to find the CT/OB/DF files.
             continue
         return output_files, output_angles
 
+
+def getIPTSdir(f1):
+    # get the IPTS folder path
+    tokens = f1.split('/')
+    p = ''
+    for token in tokens:
+        p += token + '/'
+        if token.startswith('IPTS'): break
+    return p
 
 def readTIFMetadata(f1):
     metadata = dict()
