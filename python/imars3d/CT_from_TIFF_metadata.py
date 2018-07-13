@@ -1,5 +1,22 @@
-# CT2 data object
-# This one uses metadata in image TIFF files.
+"""
+CT2 data object
+This one uses metadata in image TIFF files.
+
+GroupID - Unique ID for a radiograph or CT. It equals to the RunNo of the first run in the group.
+GroupSize - Number of expected images in a radiograph or CT 
+RunNo - Incrementing number for each image in a radiograph or CT 
+FrameIndex - The frame index for each each position for a radiograph or CT (starting at 1). This will be reset to 1 for each new CT position.
+
+So for a CT scan:
+  GroupSize = number of frames at each position * (int((end-start)/step) + 1)
+
+where end, start and step are the CT motor positions, and the number of frames is the number of images taken at each position.
+
+For auto-reconstruction, the logic described below should hold:
+  If RunNo = GroupID + GroupSize - 1, start data reduction
+
+"""
+
 
 import os, glob
 import numpy as np, tifffile
@@ -8,6 +25,7 @@ import progressbar
 from . import decorators as dec
 from imars3d import configuration
 pb_config = configuration['progress_bar']
+
 
 
 from .CTProcessor import CTProcessor
@@ -177,4 +195,5 @@ def readTIFMetadata(f1):
             metadata[name] = value
             continue
     return metadata
+
 # End of file
