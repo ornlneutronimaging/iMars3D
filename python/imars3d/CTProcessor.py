@@ -12,12 +12,7 @@ ct_config = configuration.get('CT', dict(clean_intermediate_files="archive"))
 
 class CTProcessor:
 
-    """CT reconstruction
-    
->>> ct = CTProcessor(...)
->>> ct.preprocess()
->>> ct.recon()
-
+    __processor_doc__ = """
 Intermediate results are saved as object variables
 
 * gamma_filtered
@@ -56,6 +51,14 @@ or they can be kept where it is:
 and you will need to clean them up yourself.
 The default behavior can be modified by configuration file "imars3d.conf".
 """
+
+    __doc__ = """CT reconstruction processor
+    
+>>> ct = CTProcessor(ct_series, angles, dfs, obs, **kwds)
+>>> ct.preprocess()
+>>> ct.recon()
+""" + __processor_doc__
+    
 
     def __init__(
             self,

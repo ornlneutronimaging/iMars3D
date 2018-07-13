@@ -8,13 +8,12 @@ import progressbar
 from . import decorators as dec
 from imars3d import configuration
 pb_config = configuration['progress_bar']
-ct_config = configuration.get('CT', dict(clean_intermediate_files="archive"))
 
 
 from .CTProcessor import CTProcessor
 class CT(CTProcessor):
 
-    """CT reconstruction engine
+    __doc__ = """CT reconstruction engine
 
 This is the first CTProcessor class implemented.
 It uses filename patterns to find the CT/OB/DF files.
@@ -22,45 +21,7 @@ It uses filename patterns to find the CT/OB/DF files.
 >>> ct = CT(...)
 >>> ct.preprocess()
 >>> ct.recon()
-
-Intermediate results are saved as object variables
-
-* gamma_filtered
-* normalized
-* cropped
-* if_corrected
-* tilt_corrected
-* sigogram
-
-Reults:
-
-* reconstructed
-* recon_RAR
-
-Customizing preprocessors:
-
->>> ct = CT(...)
->>> ct.gamma_filter = False # no gamma filtering
->>> ct.gamma_filter = my_gamma_filter # use my own gamma filter
->>> ct.normalizer = ... # similarly for normalizer
->>> ct.preprocess()
->>> ct.recon()
-
-By default, intermediate results will be moved over to the disk where the outputs are (outdir) after CT reconstruction is all done:
-
-    clean_intermediate_files='archive'
-
-or they can be cleaned on the fly to save disk usage:
-
-    clean_intermediate_files='on_the_fly"
-
-or they can be kept where it is:
-
-    clean_intermediate_files=False
-
-and you will need to clean them up yourself.
-The default behavior can be modified by configuration file "imars3d.conf".
-"""
+""" + CTProcessor.__processor_doc__
 
     def __init__(
             self, path, CT_subdir=None, CT_identifier=None,
@@ -72,7 +33,7 @@ The default behavior can be modified by configuration file "imars3d.conf".
             ob_files=None, df_files=None,
             skip_df=False,
     ):
-        import logging; self.logger = logging.getLogger("CTProcessor")
+        import logging; self.logger = logging.getLogger("CT")
         self.path = path
         if CT_subdir is not None:
             # if ct is in a subdir, its name most likely the
