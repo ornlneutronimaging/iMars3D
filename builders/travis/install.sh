@@ -16,7 +16,7 @@ else
     conda install -n testenv numpy
     conda install -n testenv scipy
     conda install -n testenv matplotlib
-    conda install -n testenv astropy mpi4py
+    conda install -n testenv astropy mpich mpi4py
     conda install -n testenv pyyaml
     conda install -n testenv -c dgursoy tomopy=0.1.15
     # conda install -n testenv -c scikit-xray xraylib lmfit=0.8.3 netcdf4 # install from scikit-xray channel
