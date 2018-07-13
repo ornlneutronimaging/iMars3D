@@ -19,7 +19,7 @@ dir = os.path.abspath(dir)
 print(dir)
 
 import imars3d
-imars3d.configuration['parallelization']['max_nodes'] = 2
+imars3d.configuration['parallelization']['max_nodes'] = 20
 from imars3d.CT import CT
 
 def test(nodes):
