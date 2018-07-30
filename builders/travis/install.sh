@@ -13,9 +13,7 @@ else
     conda config --add channels conda-forge
     conda create -n testenv python=$TRAVIS_PYTHON_VERSION
     conda install -n testenv pip pytest
-    conda install -n testenv numpy
-    conda install -n testenv scipy
-    conda install -n testenv matplotlib
+    conda install -n testenv numpy scipy matplotlib
     conda install -n testenv astropy mpich mpi4py
     conda install -n testenv pyyaml
     conda install -n testenv -c dgursoy tomopy=0.1.15
