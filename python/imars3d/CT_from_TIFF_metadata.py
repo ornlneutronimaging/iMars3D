@@ -34,6 +34,8 @@ def autoreduce(ct_file_path, local_disk_partition='/SNSlocal2', parallel_nodes=2
     GroupID = int(meta['GroupID'])
     GroupSize = int(meta['GroupSize'])
     if RunNo < GroupID + GroupSize - 1:
+        fn = os.path.basename(ct_file_path)
+        print("%s: Not the last file of the CT. skip" % fn)
         return
     if RunNo < GroupID + GroupSize - 1:
         raise RuntimeError("Corrupted file? See %s" % ct_file_path)
@@ -52,8 +54,8 @@ def autoreduce(ct_file_path, local_disk_partition='/SNSlocal2', parallel_nodes=2
         clean_intermediate_files='on_the_fly',
         vertical_range=None,
     )
-    ct.preprocess()
-    ct.recon()
+    # ct.preprocess()
+    # ct.recon()
     return
     
 
