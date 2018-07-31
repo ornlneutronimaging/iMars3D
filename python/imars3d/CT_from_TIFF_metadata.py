@@ -18,7 +18,7 @@ For auto-reconstruction, the logic described below should hold:
 """
 
 
-import os, glob
+import os, glob, warnings
 import numpy as np, tifffile
 import imars3d as i3
 import progressbar
@@ -43,11 +43,13 @@ def autoreduce(ct_file_path, local_disk_partition='/SNSlocal2', parallel_nodes=2
     autoreduce_dir = os.path.join(ipts_dir, 'shared', 'autoreduce')
     if not os.path.exists(autoreduce_dir):
         os.makedirs(autoreduce_dir)
-    workdir = os.path.join(local_disk_partition, 'work.CT-group-%s' % GroupID)
+    workdir = os.path.join(local_disk_partition, '__autoreduce.CT-group-%s' % GroupID)
+    if os.path.exists(workdir):
+        import shutil
+        shutil.rmtree(workdir)
     outdir = os.path.join(autoreduce_dir, 'CT-group-%s' % GroupID)
     ct = CT(
         ct_file_path,
-        skip_df=False,
         workdir=workdir, outdir=outdir, 
         parallel_preprocessing=True,
         parallel_nodes=parallel_nodes,
@@ -75,7 +77,6 @@ It uses metadata in TIFF to find the CT/OB/DF files.
 
     def __init__(
             self, ct_file_path,
-            skip_df=False,
             workdir='work', outdir='out', 
             parallel_preprocessing=True, parallel_nodes=None,
             clean_intermediate_files=None,
@@ -83,7 +84,6 @@ It uses metadata in TIFF to find the CT/OB/DF files.
     ):
         import logging; self.logger = logging.getLogger("CT_from_TIFF_metadata")
         self.ct_file_path = ct_file_path
-        self.skip_df = skip_df
         # workdir
         if not os.path.exists(workdir):
             os.makedirs(workdir)
@@ -109,34 +109,45 @@ It uses metadata in TIFF to find the CT/OB/DF files.
         ob_files = self._find_OB_DF_files('Open Beam', 'ob')
         obs = io.imageCollection(files=ob_files, name="Open Beam")
         # dark field
-        if not self.skip_df:
-            df_files = self._find_OB_DF_files('Dark field', 'df')
+        df_files = self._find_OB_DF_files('Dark field', 'df', fail_on_not_found=False)
+        if df_files is not None:
             dfs = io.imageCollection(files=df_files, name="Dark Field")
         else:
             dfs = None
         return ct_series, angles, dfs, obs
 
 
-    def _find_OB_DF_files(self, type, subdir):
+    def _find_OB_DF_files(self, type, subdir, fail_on_not_found=True):
         f1 = self.ct_file_path
         ipts_dir = getIPTSdir(f1)
         # ob subdir
         ob_dir = os.path.join(ipts_dir, 'raw', subdir)
         # files and their mtimes
-        entries = os.listdir(ob_dir)
+        candidates = findFiles(ob_dir, '*.tiff')
         out = []
         day = 24*3600.
-        for e in entries:
-            p = os.path.join(ob_dir, e)
+        for p in candidates:
+            e = os.path.basename(p)
             mt = os.path.getmtime(p)
             # OB file mtime should be not too early
-            if mt > self.earliest_ct_mtime - day:
-                out.append(p)
+            if mt < self.earliest_ct_mtime - day:
+                self.logger.debug("%s file %s is too old" % (type, e))
+                continue
+            md = readTIFMetadata(p)
+            et = float(md['ExposureTime'])
+            if not np.isclose(et, self.exposure_time):
+                self.logger.debug("%s file %s was exposed %s seconds, but CT was exposed %s seconds" % (
+                    type, e, et, self.exposure_time))
+                continue
+            self.logger.info("Found %s: %s" % (type, p))
+            out.append(p)
             continue
         if len(out) == 0:
-            raise RuntimeError("There is no %s files within one day of CT measurement" % type)
+            msg = "There is no %s files within one day of CT measurement" % type
+            if fail_on_not_found: raise RuntimeError(msg)
+            warnings.warn(msg)
+            return
         if len(out) < 5:
-            import warnings
             warnings.warn("Too few %s files" % type)
         return out
 
@@ -147,7 +158,7 @@ It uses metadata in TIFF to find the CT/OB/DF files.
         groupID = int(metadata['GroupID'])
         # assume CT files are all in the same directory
         dir = os.path.dirname(f1)
-        files = []; angles = []; mtimes = []
+        files = []; angles = []; mtimes = []; exposure_times = []
         for entry in os.listdir(dir):
             p = os.path.join(dir, entry)
             if os.path.isdir(p): continue
@@ -161,14 +172,19 @@ It uses metadata in TIFF to find the CT/OB/DF files.
             if groupID1 != groupID: continue
             files.append(p)
             angles.append(float(meta1['RotationActual']))
+            exposure_times.append(float(meta1['ExposureTime']))
             mtimes.append(os.path.getmtime(f1))
             continue
+        # check and save exposure times. needed for checking OB and DF
+        et = np.average(exposure_times)
+        assert np.allclose(exposure_times, et)
+        self.exposure_time = et
+        #
         self.earliest_ct_mtime = np.min(mtimes) # remember this. OB and DF sniffing needs this
         frame_size = int(metadata['FrameSize'])
         # temp directory to hold CT
-        if frame_size != 1:
-            self.ct_dir = ct_dir = os.path.join(self.workdir, 'CT_frame_averaged')
-            if not os.path.exists(ct_dir): os.makedirs(ct_dir)
+        self.ct_dir = ct_dir = os.path.join(self.workdir, 'CT_frame_averaged')
+        if not os.path.exists(ct_dir): os.makedirs(ct_dir)
         # 
         angle_file_list = sorted(zip(angles, files))
         output_files = []; output_angles = []
@@ -191,6 +207,7 @@ It uses metadata in TIFF to find the CT/OB/DF files.
             ave_angle = np.average(angles1)
             assert np.allclose(angles1, ave_angle, atol=1e-3), "angle values incosistent: %s" % (angles1,)
             # average data of all frames
+            self.logger.info("Averaging frames from %s" % (map(os.path.basename, files1),))
             data = 0.
             for f1 in files1:
                 with tifffile.TiffFile(f1) as tif:
@@ -204,8 +221,19 @@ It uses metadata in TIFF to find the CT/OB/DF files.
             # 
             output_files.append(newpath)
             output_angles.append(ave_angle)
+            self.logger.info("Adding %s. angle=%s"  % (newpath, ave_angle))
             continue
         return output_files, output_angles
+
+    
+def findFiles(dir, pattern):
+    import fnmatch
+    import os
+    matches = []
+    for root, dirnames, filenames in os.walk(dir):
+        for filename in fnmatch.filter(filenames, pattern):
+            matches.append(os.path.join(root, filename))
+    return matches
 
 
 def getIPTSdir(f1):
