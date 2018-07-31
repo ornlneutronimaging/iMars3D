@@ -32,3 +32,6 @@ To install imars3d itself,
 ```
 $ cd /path/to/imars3d; python setup.py install
 ```
+
+# Configuration
+See tests/imars3d/imars3d.conf for an exampmle.
