@@ -56,8 +56,8 @@ def autoreduce(ct_file_path, local_disk_partition='/SNSlocal2', parallel_nodes=2
         clean_intermediate_files='on_the_fly',
         vertical_range=None,
     )
-    # ct.preprocess()
-    # ct.recon()
+    ct.preprocess()
+    ct.recon()
     return
     
 
@@ -104,7 +104,7 @@ It uses metadata in TIFF to find the CT/OB/DF files.
         from . import io
         ct_files, angles = self._getCTfiles()
         ct_pattern = os.path.join(self.ct_dir, self.ct_filename_template)
-        ct_series = io.ImageFileSeries(ct_pattern, identifiers = angles, name = "CT")
+        ct_series = io.ImageFileSeries(ct_pattern, identifiers = angles, name = "CT", decimal_mark_replacement='.')
         # open beam
         ob_files = self._find_OB_DF_files('Open Beam', 'ob')
         obs = io.imageCollection(files=ob_files, name="Open Beam")
@@ -124,7 +124,7 @@ It uses metadata in TIFF to find the CT/OB/DF files.
         ob_dir = os.path.join(ipts_dir, 'raw', subdir)
         # files and their mtimes
         candidates = findFiles(ob_dir, '*.tiff')
-        out = []
+        out = []; mtimes = []
         day = 24*3600.
         for p in candidates:
             e = os.path.basename(p)
@@ -140,10 +140,27 @@ It uses metadata in TIFF to find the CT/OB/DF files.
                     type, e, et, self.exposure_time))
                 continue
             self.logger.info("Found %s: %s" % (type, p))
-            out.append(p)
+            out.append(p); mtimes.append(mt)
             continue
+        # these files are newer than {earliest CT mtime}-1day.
+        # first see if there are files older than {earliest CT mtime}
+        before_CT = [c for c, mt in zip(out, mtimes) if mt < self.earliest_ct_mtime]
+        if len(before_CT) > 0:
+            out = before_CT
+        else:
+            # if there is no files before CT is taken, try to see if there are files
+            # within 24 hours after the last CT
+            after_CT = [c for c, mt in zip(out, mtimes) if mt < self.latest_ct_mtime + day]
+            if len(after_CT) > 0:
+                out = after_CT
+            else:
+                # all files are newer than {last-CT-mtime}+1day
+                msg = 'No files within one day of CT measurement. will use %s files after one day of CT measurement'
+                warnings.warn(msg)
+                out = [x for _, x in sorted(mtimes, out)]
+                out = out[:10]
         if len(out) == 0:
-            msg = "There is no %s files within one day of CT measurement" % type
+            msg = "There is no %s files either within one day of CT measurement, or after CT measurement" % type
             if fail_on_not_found: raise RuntimeError(msg)
             warnings.warn(msg)
             return
@@ -179,8 +196,9 @@ It uses metadata in TIFF to find the CT/OB/DF files.
         et = np.average(exposure_times)
         assert np.allclose(exposure_times, et)
         self.exposure_time = et
-        #
-        self.earliest_ct_mtime = np.min(mtimes) # remember this. OB and DF sniffing needs this
+        # remember these. OB and DF sniffing needs this
+        self.earliest_ct_mtime = np.min(mtimes) 
+        self.latest_ct_mtime = np.max(mtimes)
         frame_size = int(metadata['FrameSize'])
         # temp directory to hold CT
         self.ct_dir = ct_dir = os.path.join(self.workdir, 'CT_frame_averaged')
