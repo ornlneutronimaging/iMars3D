@@ -28,7 +28,7 @@ pb_config = configuration['progress_bar']
 
 
 
-def autoreduce(ct_file_path, local_disk_partition='/SNSlocal2', parallel_nodes=20):
+def autoreduce(ct_file_path, local_disk_partition='/SNSlocal2', parallel_nodes=20, crop_window=None):
     meta = readTIFMetadata(ct_file_path)
     RunNo = int(meta['RunNo'])
     GroupID = int(meta['GroupID'])
@@ -57,7 +57,7 @@ def autoreduce(ct_file_path, local_disk_partition='/SNSlocal2', parallel_nodes=2
         vertical_range=None,
     )
     ct.preprocess()
-    ct.recon()
+    ct.recon(crop_window=crop_window)
     return
     
 
@@ -241,7 +241,7 @@ It uses metadata in TIFF to find the CT/OB/DF files.
             output_angles.append(ave_angle)
             self.logger.info("Adding %s. angle=%s"  % (newpath, ave_angle))
             continue
-        return output_files, output_angles
+        return output_files, np.array(output_angles)
 
     
 def findFiles(dir, pattern):
