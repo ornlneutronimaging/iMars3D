@@ -30,14 +30,70 @@ class DirectMinimization:
 def computeTilt(img0, img180, workdir=None, **kwds):
     flipped_img180 = np.fliplr(img180)
     shift = findShift(img0, flipped_img180)
-    tilts = np.arange(-2., 2.1, 0.2)
+    tilts = np.arange(-5., 5.1, 0.2)
     tilt = _argmin_tilt(tilts, img0, flipped_img180, shift, workdir=workdir)
-    tilts = np.arange(tilt-0.2, tilt+0.21, 0.02)
-    tilt = _argmin_tilt(tilts, img0, flipped_img180, shift, workdir=workdir)
-    return tilt
+    # refine
+    fit = Fit_ShiftTilt(flipped_img180, img0)
+    res = fit( (tilt, -shift, 0) )
+    return float(res.params['tilt'].value)
+
+
+class Fit_ShiftTilt:
+
+    def __init__(self, img1, img2):
+        self.img1 = img1
+        self.img2 = img2
+        self.mask = np.ones(img1.shape)
+        return
+
+    def __call__(self, p0):
+        tilt, s_x, s_y = p0
+        import lmfit
+        params = lmfit.Parameters()
+        params.add('tilt', value=tilt)
+        params.add('s_x', value=s_x)
+        params.add('s_y', value=s_y)
+        res = lmfit.minimize(self.residual, params, args=(self.img1, self.img2))
+        return res
+
+    def diff(self, params, x, data):
+        """compute difference between image "data" and rotated and shifted image "x"
+
+        x: image 1. data: image2
+        """
+        tilt = params['tilt']
+        # for tilt we rotate both 0 and 180 images. here we just rotate one image for simplicity
+        # hence the factor 2.
+        angle = tilt*2  
+        # shift x,y tuple
+        s_x = params['s_x']
+        s_y = params['s_y']
+        shift = s_x, s_y
+        transformed = self.rotate_and_shift(x, angle, shift)
+        mask1 = self.rotate_and_shift(self.mask, angle, shift)
+        mask2 = mask1 > 0.5
+        return transformed-data, mask2
+
+    def residual(self, params, x, data):
+        img, mask = self.diff(params, x, data)
+        d = img[mask]
+        return d
+
+
+    def rotate_and_shift(self, img, angle, shift):
+        img/=np.max(img)
+        from skimage import transform
+        img2 = transform.rotate(img, angle)
+        dx, dy = shift
+        at = transform.SimilarityTransform(translation=(-dx, -dy))
+        return transform.warp(img2, at)
+
 
 
 def _argmin_tilt(tilts, img0, flipped_img180, shift, workdir=None):
+    """ use np.argmin to find the tilt angle. This is quick and easy, but may not 
+    be very accurate
+    """
     diffs = []
     if workdir:
         logfile = open(os.path.join(workdir, 'log._argmin_tilt'), 'wt')

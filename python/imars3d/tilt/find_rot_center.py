@@ -9,13 +9,18 @@ def find(ct_series, workdir=None, max_npairs=20):
         return float(open(outpath).read())
     img = lambda angle: ct_series.getImage(angle)
     from . import _find180DegImgPairs
-    from .direct import findShift
+    from . import direct
     pairs = _find180DegImgPairs(ct_series.identifiers)
     centers = []
     for i, (a0, a180) in enumerate(pairs):
         if i>max_npairs: break # don't need too many pairs
         workdir1=os.path.join(workdir, "%s_vs_%s"%(a0, a180))
-        shift = findShift(img(a0).data, np.fliplr(img(a180).data))
+        a0data, flip_a180data = img(a0).data, np.fliplr(img(a180).data)
+        shift = direct.findShift(a0data, flip_a180data)
+        # refine
+        fit = direct.Fit_ShiftTilt(a0data, flip_a180data)
+        res = fit( (0., shift, 0) )
+        shift = float(res.params['s_x'].value)
         center = -shift/2. + img(a0).data.shape[1]/2.
         # print shift, center, img(a0).data.shape[1]/2.
         centers.append(center)
