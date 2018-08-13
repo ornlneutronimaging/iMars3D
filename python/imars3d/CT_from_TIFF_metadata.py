@@ -28,7 +28,7 @@ pb_config = configuration['progress_bar']
 
 
 
-def autoreduce(ct_file_path, local_disk_partition='/SNSlocal2', parallel_nodes=20, crop_window=None):
+def autoreduce(ct_file_path, local_disk_partition='/SNSlocal2', parallel_nodes=20, crop_window=None, tilt=None):
     meta = readTIFMetadata(ct_file_path)
     RunNo = int(meta['RunNo'])
     GroupID = int(meta['GroupID'])
@@ -53,11 +53,13 @@ def autoreduce(ct_file_path, local_disk_partition='/SNSlocal2', parallel_nodes=2
         workdir=workdir, outdir=outdir, 
         parallel_preprocessing=True,
         parallel_nodes=parallel_nodes,
-        clean_intermediate_files='on_the_fly',
+        # clean_intermediate_files='on_the_fly',
+        # clean_intermediate_files='archive',
+        clean_intermediate_files = False,
         vertical_range=None,
     )
     ct.preprocess()
-    ct.recon(crop_window=crop_window)
+    ct.recon(crop_window=crop_window, tilt=tilt)
     return
     
 
