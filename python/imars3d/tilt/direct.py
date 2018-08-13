@@ -13,6 +13,8 @@ Just simply
 import os, numpy as np
 from imars3d import io
 from matplotlib import pyplot as plt
+from skimage.transform import rotate
+
 
 class DirectMinimization:
 
@@ -28,31 +30,34 @@ class DirectMinimization:
 def computeTilt(img0, img180, workdir=None, **kwds):
     flipped_img180 = np.fliplr(img180)
     shift = findShift(img0, flipped_img180)
-    differ = lambda a,b: shift_diff(shift, a,b)
     tilts = np.arange(-2., 2.1, 0.2)
-    tilt = _argmin_tilt(tilts, img0, flipped_img180, differ, workdir=workdir)
+    tilt = _argmin_tilt(tilts, img0, flipped_img180, shift, workdir=workdir)
     tilts = np.arange(tilt-0.2, tilt+0.21, 0.02)
-    tilt = _argmin_tilt(tilts, img0, flipped_img180, differ, workdir=workdir)
+    tilt = _argmin_tilt(tilts, img0, flipped_img180, shift, workdir=workdir)
     return tilt
 
 
-def _argmin_tilt(tilts, img0, flipped_img180, differ, workdir=None):
-    nrows, ncols = img0.shape
-    borderY, borderX = nrows//20, ncols//20
-    from skimage.transform import rotate
+def _argmin_tilt(tilts, img0, flipped_img180, shift, workdir=None):
     diffs = []
     if workdir:
         logfile = open(os.path.join(workdir, 'log._argmin_tilt'), 'wt')
     for tilt in tilts:
-        a = rotate(img0/np.max(img0), -tilt)[borderY:-borderY, borderX:-borderX]
-        b = rotate(flipped_img180/np.max(flipped_img180), tilt)[borderY:-borderY, borderX:-borderX]
-        diff = differ(a,b)
+        diff = shift_tilt_diff(shift, tilt, img0, flipped_img180)
+        diff = np.sum( diff**2 ) / diff.size
         if workdir:
             logfile.write("* tilt=%s, diff=%s\n" % (tilt, diff))
         diffs.append(diff)
         continue
     return tilts[np.argmin(diffs)]
-    
+
+
+def shift_tilt_diff(shift, tilt, img1, img2):
+    nrows, ncols = img1.shape
+    borderY, borderX = nrows//20, ncols//20
+    a = rotate(img1/np.max(img1), -tilt)[borderY:-borderY, borderX:-borderX]
+    b = rotate(img2/np.max(img2), tilt)[borderY:-borderY, borderX:-borderX]
+    return shift_diff(shift, a, b)
+
         
 def shift_diff(x, img1, img2):
     # shift positive means img2 was shifted to the left,
@@ -67,7 +72,12 @@ def shift_diff(x, img1, img2):
     else:
         left = img1
         right = img2
-    return ((left-right)**2).sum()/left.size
+    return left-right
+
+
+def shift_diff2(x, img1, img2):
+    d = shift_diff(x, img1, img2)
+    return (d**2).sum()/d.size
 
 MAX_SHIFT = 400
 def findShift(img0, flipped_img180):
@@ -79,7 +89,7 @@ def findShift(img0, flipped_img180):
     # print("* Calculating shift...")
     ncols = img0.shape[1]
     def diff(x):
-        return shift_diff(x, img0, flipped_img180)
+        return shift_diff2(x, img0, flipped_img180)
     start = max(-ncols//2, -MAX_SHIFT)
     end = min(MAX_SHIFT, ncols//2)
     xs = range(start, end)

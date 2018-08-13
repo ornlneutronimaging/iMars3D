@@ -72,7 +72,7 @@ The default behavior can be modified by configuration file "imars3d.conf".
         self.dfs = dfs
         self.obs = obs
         self.angles = angles
-        self.theta = angles * np.pi / 180.
+        self.theta = np.array(angles) * np.pi / 180.
         
         # workdir
         if not os.path.exists(workdir):
