@@ -449,6 +449,7 @@ class results:
 
 
 def archive_bg(workdir, outdir):
+    # the implementation here only works for unix
     import subprocess as sp , sys
     sp.Popen([sys.executable, "-c", "import imars3d.CTProcessor as ctp; ctp.archive(%r, %r)" % (workdir, outdir)])
     return
