@@ -28,7 +28,13 @@ pb_config = configuration['progress_bar']
 
 
 
-def autoreduce(ct_file_path, local_disk_partition='/SNSlocal2', parallel_nodes=20, crop_window=None, tilt=None):
+def autoreduce(
+        ct_file_path, 
+        local_disk_partition='/SNSlocal2', outdir=None, 
+        clean_intermediate_files='on_the_fly',  # on_the_fly, archive, False
+        parallel_nodes=20, 
+        crop_window=None, tilt=None
+):
     meta = readTIFMetadata(ct_file_path)
     RunNo = int(meta['RunNo'])
     GroupID = int(meta['GroupID'])
@@ -45,17 +51,19 @@ def autoreduce(ct_file_path, local_disk_partition='/SNSlocal2', parallel_nodes=2
         os.makedirs(autoreduce_dir)
     workdir = os.path.join(local_disk_partition, '__autoreduce.CT-group-%s' % GroupID)
     if os.path.exists(workdir):
-        import shutil
-        shutil.rmtree(workdir)
-    outdir = os.path.join(autoreduce_dir, 'CT-group-%s' % GroupID)
+        if os.path.islink(workdir):
+            os.unlink(workdir)
+        else:
+            import shutil
+            shutil.rmtree(workdir)
+    if outdir is None:
+        outdir = os.path.join(autoreduce_dir, 'CT-group-%s' % GroupID) 
     ct = CT(
         ct_file_path,
         workdir=workdir, outdir=outdir, 
         parallel_preprocessing=True,
         parallel_nodes=parallel_nodes,
-        # clean_intermediate_files='on_the_fly',
-        # clean_intermediate_files='archive',
-        clean_intermediate_files = False,
+        clean_intermediate_files = clean_intermediate_files,
         vertical_range=None,
     )
     ct.preprocess()
