@@ -45,8 +45,11 @@ def autoreduce(ct_file_path, local_disk_partition='/SNSlocal2', parallel_nodes=2
         os.makedirs(autoreduce_dir)
     workdir = os.path.join(local_disk_partition, '__autoreduce.CT-group-%s' % GroupID)
     if os.path.exists(workdir):
-        import shutil
-        shutil.rmtree(workdir)
+        if os.path.islink(workdir):
+            os.unlink(workdir)
+        else:
+            import shutil
+            shutil.rmtree(workdir)
     outdir = os.path.join(autoreduce_dir, 'CT-group-%s' % GroupID)
     ct = CT(
         ct_file_path,

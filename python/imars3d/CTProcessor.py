@@ -253,13 +253,7 @@ The default behavior can be modified by configuration file "imars3d.conf".
         # clean up
         import shutil
         if self.clean_intermediate_files == 'archive':
-            import datetime
-            now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-            newpath = os.path.join(outdir, 'work-%s' % now)
-            shutil.move(workdir, newpath)
-            # create a soft link so that the intermediate data can still be accessed
-            # from the CT object
-            os.symlink(newpath, workdir)
+            archive(workdir, outdir)
         elif self.clean_intermediate_files == 'on_the_fly':
             shutil.rmtree(workdir)
         return
@@ -452,5 +446,26 @@ The default behavior can be modified by configuration file "imars3d.conf".
 class results:
     pass
 
+
+def archive(workdir, outdir):
+    """create an archive of the workdir in the outdir with time stamp"""
+    import datetime
+    now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    newpath = os.path.join(outdir, 'work-%s' % now)
+    # this will take a long time
+    rsync(workdir, newpath)
+    # 
+    import shutil
+    shutil.rmtree(workdir)
+    # create a soft link so that the intermediate data can still be accessed
+    # from the CT object
+    os.symlink(newpath, workdir)
+    return
+
+
+def rsync(src, dest):
+    cmd = 'rsync -av %s/ %s' % (src, dest)
+    if os.system(cmd):
+        raise RuntimeError("%s failed" % cmd)
 
 # End of file
