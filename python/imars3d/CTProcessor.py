@@ -253,7 +253,7 @@ The default behavior can be modified by configuration file "imars3d.conf".
         # clean up
         import shutil
         if self.clean_intermediate_files == 'archive':
-            archive(workdir, outdir)
+            archive_bg(workdir, outdir)
         elif self.clean_intermediate_files == 'on_the_fly':
             shutil.rmtree(workdir)
         return
@@ -445,6 +445,13 @@ The default behavior can be modified by configuration file "imars3d.conf".
 
 class results:
     pass
+
+
+
+def archive_bg(workdir, outdir):
+    import subprocess as sp , sys
+    sp.Popen([sys.executable, "-c", "import imars3d.CTProcessor as ctp; ctp.archive(%r, %r)" % (workdir, outdir)])
+    return
 
 
 def archive(workdir, outdir):
