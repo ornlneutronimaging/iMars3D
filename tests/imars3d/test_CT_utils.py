@@ -12,11 +12,12 @@ def test():
         else: shutil.rmtree(src)
     os.makedirs(src)
     open(os.path.join(src, 'a.txt'), 'wt').write('')
-    from imars3d.CTProcessor import archive
+    from imars3d.CTProcessor import archive_bg
     dest = '_tmp.archive.dest'
     if os.path.exists(dest): shutil.rmtree(dest)
     os.makedirs(dest)
-    archive(src, dest)
+    archive_bg(src, dest)
+    import time; time.sleep(10)
     dest1 = glob.glob(os.path.join(dest, 'work*'))[0]
     assert os.path.exists(os.path.join(dest1, 'a.txt'))
     return
