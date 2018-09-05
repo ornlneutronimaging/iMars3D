@@ -14,7 +14,7 @@ def test():
     series = io.ImageFileSeries(os.path.join(dir, "normalized_%07.3f.*"), angles, decimal_mark_replacement='.')
     assert np.allclose(
         autocrop.calculateCropWindow(series),
-        (50, 2047, 0, 2047)
+        (0, 2047, 30, 2047)
     )
     return
 
@@ -31,9 +31,21 @@ def test2():
     return
 
 
+def test3():
+    dir = os.path.join(here, "..", "iMars3D_data_set", "autocrop", "dark-bottom")
+    dir = os.path.abspath(dir)
+    series = io.ImageFileSeries(os.path.join(dir, "sm-estimate-ave%s.tiff"), [''])
+    assert np.allclose(
+        autocrop.calculateCropWindow(series),
+        (0, 2047, 1163, 2047)
+    )
+    return
+
+
 def main():
     test()
     test2()
+    test3()
     return
 
 

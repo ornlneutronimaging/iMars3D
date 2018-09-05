@@ -19,7 +19,7 @@ def calculateCropWindow(series):
     right = np.median(sm[:, -10:])
     bottom = np.median(sm[-10:, :])
     #
-    background_int = np.min([left, top, right, bottom])
+    background_int = np.median([left, top, right, bottom])
     # if background is dark
     if background_int < .05:
         Y1, X1 = np.where(sm>0.1)
@@ -32,7 +32,7 @@ def calculateCropWindow(series):
     xmax = X.max(); xmin = X.min()
     # expand it a bit
     width = xmax - xmin; height = ymax - ymin
-    expand_ratio = .15
+    expand_ratio = .1
     xmin -= width*expand_ratio; xmax += width*expand_ratio
     ymin -= height*expand_ratio; ymax += height*expand_ratio
     HEIGHT, WIDTH = ave.shape
