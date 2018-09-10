@@ -165,7 +165,7 @@ It uses metadata in TIFF to find the CT/OB/DF files.
                 out = after_CT
             else:
                 # all files are newer than {last-CT-mtime}+1day
-                msg = 'No files within one day of CT measurement. will use %s files after one day of CT measurement'
+                msg = 'No files within one day of CT measurement. will use %s files after one day of CT measurement' % type
                 warnings.warn(msg)
                 out = [x for _, x in sorted(mtimes, out)]
                 out = out[:10]
@@ -200,7 +200,7 @@ It uses metadata in TIFF to find the CT/OB/DF files.
             files.append(p)
             angles.append(float(meta1['RotationActual']))
             exposure_times.append(float(meta1['ExposureTime']))
-            mtimes.append(os.path.getmtime(f1))
+            mtimes.append(os.path.getmtime(p))
             continue
         # check and save exposure times. needed for checking OB and DF
         et = np.average(exposure_times)
