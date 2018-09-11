@@ -132,10 +132,11 @@ It uses metadata in TIFF to find the CT/OB/DF files.
         ipts_dir = getIPTSdir(f1)
         # ob subdir
         ob_dir = os.path.join(ipts_dir, 'raw', subdir)
-        # files and their mtimes
+        # find all files and their mtimes
         candidates = findFiles(ob_dir, '*.tiff')
-        out = []; mtimes = []
+        out = []; mtimes = []; exposures = {}
         day = 24*3600.
+        # only keep files that are not too old. keep records of exposure and mod time
         for p in candidates:
             e = os.path.basename(p)
             mt = os.path.getmtime(p)
@@ -147,10 +148,12 @@ It uses metadata in TIFF to find the CT/OB/DF files.
             et = float(md['ExposureTime'])
             if not np.isclose(et, self.exposure_time):
                 self.logger.debug("%s file %s was exposed %s seconds, but CT was exposed %s seconds" % (
-                    type, e, et, self.exposure_time))
-                continue
+                    type, p, et, self.exposure_time))
+                if et < self.exposure_time*.8 or et > self.exposure_time*1.2:
+                    # difference too large, skip
+                    continue
             self.logger.info("Found %s: %s" % (type, p))
-            out.append(p); mtimes.append(mt)
+            out.append(p); mtimes.append(mt); exposures[p] = et
             continue
         # these files are newer than {earliest CT mtime}-1day.
         # first see if there are files older than {earliest CT mtime}
@@ -167,8 +170,9 @@ It uses metadata in TIFF to find the CT/OB/DF files.
                 # all files are newer than {last-CT-mtime}+1day
                 msg = 'No files within one day of CT measurement. will use %s files after one day of CT measurement' % type
                 warnings.warn(msg)
-                out = [x for _, x in sorted(mtimes, out)]
+                out = [x for _, x in sorted(zip(mtimes, out))]
                 out = out[:10]
+        # nothing good. bail out
         if len(out) == 0:
             msg = "There is no %s files either within one day of CT measurement, or after CT measurement" % type
             if fail_on_not_found: raise RuntimeError(msg)
@@ -176,6 +180,27 @@ It uses metadata in TIFF to find the CT/OB/DF files.
             return
         if len(out) < 5:
             warnings.warn("Too few %s files" % type)
+        # if there are enough files with good exposure, just return it
+        good = [f for f in out if np.isclose(exposures[f], self.exposure_time)]
+        if len(good) >= 5: return good
+        # calculate distance of exposure time and sort by distance and pick the first 10
+        distances = [abs(exposures[f]-self.exposure_time) for f in out]
+        out = [x for _, x in sorted(zip(distances, out))]
+        out = out[:10]
+        # go thru the file list, for each file that has different exposure, create a new file scaled
+        scaled_dir = os.path.join(self.workdir, '%s-scaled-by-exposure' % type)
+        if not os.path.exists(scaled_dir): os.makedirs(scaled_dir)
+        for i, f in enumerate(out):
+            et = exposures[f]
+            if np.isclose(et, self.exposure_time): continue
+            with tifffile.TiffFile(f) as tif:
+                page = tif[0]
+                data = page.asarray() * (1.*self.exposure_time/et)
+                # save a new file
+                newpath = os.path.join(scaled_dir, '%s_%s' % (i, os.path.basename(f)))
+                tifffile.imsave(newpath, data)
+                out[i] = newpath
+            continue
         return out
 
     ct_filename_template = 'at_%s.tiff'
