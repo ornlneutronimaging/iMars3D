@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# This test can only be ran after "Test_flower.py" was run
+
 import os, glob, numpy as np
 from imars3d import tilt
 

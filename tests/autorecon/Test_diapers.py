@@ -8,6 +8,6 @@ ct_file_path = "/HFIR/CG1D/IPTS-21115/raw/ct_scans/July26_2018/20180727_Huggies_
 autoreduce(
     ct_file_path,
     local_disk_partition='/SNSlocal2', 
-    clean_intermediate_files='archive',
-    outdir='/HFIR/CG1D/IPTS-21115/shared/autoreduce/CT-group-2495.test',
+    # clean_intermediate_files='archive',
+    outdir='/HFIR/CG1D/IPTS-21115/shared/autoreduce/CT-group-2495.test2',
     parallel_nodes=20)
