@@ -21,7 +21,7 @@ else
     conda install -n testenv numpy=1.14
     source activate testenv
     pip install progressbar2
-    pip install awscli
+    conda install awscli
     # pip install coveralls
     # pip install codecov
 fi
