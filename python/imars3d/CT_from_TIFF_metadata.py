@@ -39,8 +39,8 @@ def autoreduce(
     RunNo = int(meta['RunNo'])
     GroupID = int(meta['GroupID'])
     GroupSize = int(meta['GroupSize'])
+    fn = os.path.basename(ct_file_path)
     if RunNo < GroupID + GroupSize - 1:
-        fn = os.path.basename(ct_file_path)
         print("%s: Not the last file of the CT. skip" % fn)
         return
     if RunNo < GroupID + GroupSize - 1:
@@ -57,7 +57,12 @@ def autoreduce(
             import shutil
             shutil.rmtree(workdir)
     if outdir is None:
-        outdir = os.path.join(autoreduce_dir, 'CT-group-%s' % GroupID) 
+        fn2 = meta.get('FileNameStr', fn)
+        tokens = ['CT-group', str(GroupID), fn2]
+        sample_desc = meta.get('SampleDescStr')
+        if sample_desc: tokens.append(sample_desc)
+        outdirname = '-'.join(tokens)
+        outdir = os.path.join(autoreduce_dir, outdirname) 
     ct = CT(
         ct_file_path,
         workdir=workdir, outdir=outdir, 
@@ -145,6 +150,9 @@ It uses metadata in TIFF to find the CT/OB/DF files.
                 self.logger.debug("%s file %s is too old" % (type, e))
                 continue
             md = readTIFMetadata(p)
+            if 'ExposureTime' not in md:
+                print("missing ExposureTime in %s" % p)
+                continue
             et = float(md['ExposureTime'])
             if not np.isclose(et, self.exposure_time):
                 self.logger.debug("%s file %s was exposed %s seconds, but CT was exposed %s seconds" % (
