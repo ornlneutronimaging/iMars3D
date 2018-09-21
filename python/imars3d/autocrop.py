@@ -14,15 +14,17 @@ def calculateCropWindow(series):
     # make sure all numbers are smaller than 1.
     max = np.max(sm);  sm/=max
     # get background intensities
-    left = np.median(sm[:, :10])
-    top = np.median(sm[:10, :])
-    right = np.median(sm[:, -10:])
-    bottom = np.median(sm[-10:, :])
+    left = sm[:, :10];    left_median = np.median(left)
+    top = sm[:10, :];     top_medain = np.median(top)
+    right = sm[:, -10:];  right_median = np.median(right)
+    bottom = sm[-10:, :]; bottom_median = np.median(bottom)
     #
-    background_int = np.median([left, top, right, bottom])
+    background_int = np.median([left_median, top_medain, right_median, bottom_median])
     # if background is dark
-    if background_int < .05:
-        Y1, X1 = np.where(sm>0.1)
+    if background_int < .08:
+        max_bg = np.max(map(np.max, [left, top, right, bottom]))
+        max_bg = np.max( (max_bg, 0.1) )
+        Y1, X1 = np.where(sm>max_bg)
         xmin = np.min(X1); xmax = np.max(X1)
         ymin = np.min(Y1); ymax = np.max(Y1)
         return xmin, xmax, ymin, ymax

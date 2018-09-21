@@ -24,9 +24,25 @@ def test2():
     dir = os.path.abspath(dir)
     angles = np.arange(0., 10, 0.85)
     series = io.ImageFileSeries(os.path.join(dir, "20180704_Transmission_CT_%s_0080.*"), ['0010'])
+    # print autocrop.calculateCropWindow(series)
     assert np.allclose(
         autocrop.calculateCropWindow(series),
         (627, 1442, 648, 1468)
+    )
+    return
+
+
+def test2a():
+    dir = os.path.join(here, "..", "iMars3D_data_set", "autocrop", "darkboundaries")
+    dir = os.path.abspath(dir)
+    series = io.ImageFileSeries(
+        os.path.join(dir, "20180918_A49_4_CT_afterStableCycling_normalized_%7.3f.tiff"),
+        [300.300],
+        decimal_mark_replacement='.',
+    )
+    assert np.allclose(
+        autocrop.calculateCropWindow(series),
+        (767, 1309, 566, 1163),
     )
     return
 
@@ -35,6 +51,7 @@ def test3():
     dir = os.path.join(here, "..", "iMars3D_data_set", "autocrop", "dark-bottom")
     dir = os.path.abspath(dir)
     series = io.ImageFileSeries(os.path.join(dir, "sm-estimate-ave%s.tiff"), [''])
+    # print autocrop.calculateCropWindow(series)
     assert np.allclose(
         autocrop.calculateCropWindow(series),
         (0, 2047, 1163, 2047)
@@ -45,6 +62,7 @@ def test3():
 def main():
     test()
     test2()
+    test2a()
     test3()
     return
 
