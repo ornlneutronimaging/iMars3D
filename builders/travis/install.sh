@@ -14,11 +14,10 @@ else
     conda create -n testenv python=$TRAVIS_PYTHON_VERSION
     conda install -n testenv pip pytest psutil pyyaml
     conda install -n testenv numpy=1.14 scipy matplotlib astropy mpich mpi4py scikit-image 
-    conda install -n testenv -c dgursoy tomopy=0.1.15
+    conda install -n testenv -c dgursoy tomopy=0.1.15 numpy=1.14  # Sep 30, 2018. weird conda error
     # conda install -n testenv -c scikit-xray xraylib lmfit=0.8.3 netcdf4 # install from scikit-xray channel
     conda install -n testenv -c neutrons ipywe
-    conda install -n testenv -c conda-forge zeromq=4.2.1   # Jan 10, 2018. conda-forge: pyzmq 16.0.2 not compatible with latest zeromq 4.2.3
-    conda install -n testenv numpy=1.14
+    conda install -n testenv -c conda-forge zeromq=4.2.1 numpy=1.14  # Jan 10, 2018. conda-forge: pyzmq 16.0.2 not compatible with latest zeromq 4.2.3
     source activate testenv
     pip install progressbar2
     pip install awscli
