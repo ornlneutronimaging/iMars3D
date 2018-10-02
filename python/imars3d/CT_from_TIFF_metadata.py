@@ -60,7 +60,9 @@ def autoreduce(
         fn2 = meta.get('FileNameStr', fn)
         tokens = ['CT-group', str(GroupID), fn2]
         sample_desc = meta.get('SampleDescStr')
-        if sample_desc: tokens.append(sample_desc)
+        if sample_desc:
+            sample_desc = ''.join([i for i in sample_desc if ord(i) < 128 and ord(i)>31])
+            tokens.append(sample_desc)
         outdirname = '-'.join(tokens)
         outdir = os.path.join(autoreduce_dir, outdirname) 
     ct = CT(
