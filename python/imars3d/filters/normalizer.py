@@ -30,7 +30,9 @@ def average(image_collection):
         bar.update(i)
         continue
     print('\n')
-    return res/N
+    ret =  res/N
+    from .smoothing import filter_one_median
+    return filter_one_median(ret, 5)
 
 
 def normalize(ct_series, df_images, ob_images, workdir, output_img_series):
