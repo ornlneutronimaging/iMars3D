@@ -1,6 +1,6 @@
 import numpy as np
 
-def calculateCropWindow(series):
+def calculateCropWindow(series, normalize=False):
     # estimate average
     ave = estimateAverage(series)
     from . import io
@@ -12,7 +12,10 @@ def calculateCropWindow(series):
     sm = ndimage.median_filter(ave, 9) # 21)
     save(sm, "sm-estimate-ave.tiff")
     # make sure all numbers are smaller than 1.
-    max = np.max(sm);  sm/=max
+    if normalize:
+        max = np.max(sm);  sm/=max
+    else:
+        sm[sm>1] = 1
     # get background intensities
     left = sm[:, :10];    left_median = np.median(left)
     top = sm[:10, :];     top_medain = np.median(top)
@@ -28,6 +31,9 @@ def calculateCropWindow(series):
         xmin = np.min(X1); xmax = np.max(X1)
         ymin = np.min(Y1); ymax = np.max(Y1)
         return xmin, xmax, ymin, ymax
+    # there might be outliers in borders, just clear the borders out
+    sm[:, :25] = background_int;   sm[:25, :] = background_int
+    sm[:, -25:] = background_int;   sm[-25:, :] = background_int
     # find rectangle for real data
     Y, X = np.where(sm < background_int*0.95)
     ymax = Y.max(); ymin = Y.min()
