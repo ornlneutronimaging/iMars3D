@@ -19,7 +19,7 @@ else
     conda install -n testenv -c neutrons ipywe numpy=1.14 # Sep 30, 2018. weird conda error
     conda install -n testenv -c conda-forge zeromq=4.2.1 numpy=1.14  # Jan 10, 2018. conda-forge: pyzmq 16.0.2 not compatible with latest zeromq 4.2.3
     source activate testenv
-    pip install progressbar2
+    conda install progressbar2
     pip install awscli
     # pip install coveralls
     # pip install codecov
