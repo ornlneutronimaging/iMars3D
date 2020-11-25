@@ -4,6 +4,7 @@ import time
 import progressbar
 
 
+# TODO FIXME - does this test anything to do with the iMars3D library? 
 def test():
     bar = progressbar.ProgressBar(widgets=[
         progressbar.Percentage(),
