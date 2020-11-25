@@ -4,6 +4,9 @@ sudo: required
 dist: trusty
 group: deprecated-2017Q4
 
+services:
+  - xvfb
+
 language: python
 
 cache:
@@ -37,6 +40,7 @@ install:
 
 script:
   # lint the code and generate an error if a warning is introduced
+  - conda install flake8
   - flake8 . --count
 
   # run script?

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+import pytest
 import time
 import progressbar
 
@@ -16,4 +16,6 @@ def test():
         time.sleep(0.1)
     return
 
-if __name__ == '__main__': test()
+if __name__ == '__main__':
+    pytest.main([__file__])
+

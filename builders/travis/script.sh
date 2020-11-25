@@ -7,7 +7,7 @@ export PYTHONPATH=$PWD/python
 
 python builders/setup-aws-testconfig.py
 python tests/getdata.py
-python tests/imars3d/signon.py
+# python tests/imars3d/signon.py
 
 if [ ${TRAVIS_EVENT_TYPE} == "cron" ]; then
     echo "* Running CT workflow tests"
