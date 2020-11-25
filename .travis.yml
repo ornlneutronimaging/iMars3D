@@ -23,9 +23,9 @@ python:
 #
 # services:
 #
-# matrix:
-#  include:
-#    - os: linux
+matrix:
+ include:
+   - os: linux
 
 env:
    
