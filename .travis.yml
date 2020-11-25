@@ -14,9 +14,9 @@ python:
   - 2.7
 #  - 3.6
 
-branches:
-  only:
-    - master
+# branches:
+#   only:
+#     - master
 #
 # services:
 #
@@ -36,11 +36,11 @@ install:
   - ./builders/travis/install.sh
 
 script:
-  - travis_wait 90 ./builders/travis/script.sh
-
-    
   # lint the code and generate an error if a warning is introduced
   - flake8 . --count
+
+  # run script?
+  - travis_wait 90 ./builders/travis/script.sh
 
   # run iMars3D test
   - xvfb-run --server-args="-screen 0 640x480x24" --auto-servernum pytest --cov=pyrs tests --disable-pytest-warnings -vv -r w
