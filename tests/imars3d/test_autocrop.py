@@ -4,6 +4,8 @@
 import os, numpy as np
 here = os.path.dirname(__file__)
 
+import pytest
+
 import imars3d
 from imars3d import io, autocrop
 
@@ -49,4 +51,5 @@ def main():
     return
 
 
-if __name__ == '__main__': main()
+if __name__ == '__main__':
+    pytest.main([__file__])
