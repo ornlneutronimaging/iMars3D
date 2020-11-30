@@ -13,7 +13,7 @@ else
     conda config --add channels conda-forge
     conda create -n testenv python=3.6
     conda activate testenv
-    conda install -n testenv -c dgursoy -c neutrons pytest psutil pyyaml scipy matplotlib astropy mpi4py scikit-image tomopy ipywe zeromq progressbar2 awscli
+    conda install -n testenv -c dgursoy -c neutrons pytest psutil pyyaml scipy matplotlib astropy mpi4py scikit-image tomopy dxchange ipywe zeromq progressbar2 awscli
 
     # conda install -n testenv pip pytest psutil pyyaml
     # conda install -n testenv numpy=1.14 scipy matplotlib astropy mpich mpi4py scikit-image 
