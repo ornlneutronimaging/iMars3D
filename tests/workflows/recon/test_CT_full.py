@@ -21,4 +21,5 @@ def test():
     ct.recon()
     return
 
-if __name__ == '__main__': test()
+if __name__ == '__main__':
+    pytest.main([__file__])

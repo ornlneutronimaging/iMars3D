@@ -12,6 +12,7 @@ Desired Workflow. this script only have preprocessing steps: normalize, tilt cor
 * parallel beam reconstruction
 """
 
+import pytest
 import os, glob, numpy as np, sys
 from imars3d.io import ImageFileSeries, ImageFile
 
@@ -209,4 +210,5 @@ def main():
     return
 
 
-if __name__ == '__main__': main()
+if __name__ == '__main__':
+    pytest.main([__file__])

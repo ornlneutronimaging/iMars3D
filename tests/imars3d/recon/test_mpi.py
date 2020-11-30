@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import pytest
 import sys
 import os, numpy as np, imars3d
 
@@ -85,4 +86,5 @@ def main():
     return
 
 
-if __name__ == '__main__': main()
+if __name__ == '__main__':
+    pytest.main([__file__])

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import pytest
 
 datadir = 'data'
 workdir = "work"
@@ -35,4 +36,5 @@ def main():
     recon = i3.reconstruct(angles, sinograms, workdir=outdir, center=rot_center)
     return
 
-if __name__ == '__main__': main()
+if __name__ == '__main__':
+    pytest.main([__file__])

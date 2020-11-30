@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import pytest
 from imars3d.jnbui import ct_wizard
 import os
 
@@ -29,4 +30,5 @@ def main():
     return
 
 
-if __name__ == "__main__": main()
+if __name__ == "__main__":
+    pytest.main([__file__])

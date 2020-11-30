@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import pytest
 import os, numpy as np
 from imars3d import io
 from imars3d import tilt
@@ -42,6 +43,7 @@ def main():
     test_Calculator()
     return
 
-if __name__ == '__main__': main()
+if __name__ == '__main__':
+    pytest.main([__file__])
 
 # End of file

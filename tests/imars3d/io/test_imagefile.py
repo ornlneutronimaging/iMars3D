@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import pytest
 import os, numpy as np
 from imars3d import io
 
@@ -25,4 +26,5 @@ def main():
     return
 
 
-if __name__ == "__main__": main()
+if __name__ == "__main__":
+    pytest.main([__file__])

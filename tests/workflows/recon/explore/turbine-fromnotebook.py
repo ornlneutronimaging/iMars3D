@@ -1,5 +1,5 @@
 # coding: utf-8
-
+import pyteset
 import tomopy, pyfits, numpy as np, os, glob
 import matplotlib.pyplot as plt, pylab
 
@@ -107,4 +107,5 @@ pylab.show()
 print proj.shape, rec.shape
 # dump
 tomopy.write_tiff_stack(rec, fname='recon', axis=0, overwrite=True)
+
 

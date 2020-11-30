@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import pytest
 import os, numpy as np
 from imars3d import io
 dir = os.path.dirname(__file__)
@@ -14,4 +15,5 @@ def main():
     computeTilt(img0, img180, workdir="_tmp.use_centers", sigma=3, maxshift=200)
     return
 
-if __name__ == '__main__': main()
+if __name__ == '__main__':
+    pytest.main([__file__])

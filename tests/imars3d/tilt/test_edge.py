@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import pytest
 import os, numpy as np
 
 def test():
@@ -16,4 +17,5 @@ def test():
     edgeimg.save()
     return
 
-if __name__ == '__main__': test()
+if __name__ == '__main__':
+    pytest.main([__file__])
