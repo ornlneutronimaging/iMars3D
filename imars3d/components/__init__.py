@@ -7,6 +7,7 @@ Components should have the method __call__ with input and output image series
 as the parameters.
 """
 
+# FIXME it is not called
 import progressbar
 
 from .AbstractComponent import AbstractComponent
