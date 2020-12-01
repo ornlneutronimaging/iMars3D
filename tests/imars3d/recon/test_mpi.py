@@ -79,9 +79,11 @@ recon_mpi(sinograms, theta, recon_series, stepsize=1)
 
 
 def main():
-    test_recon_mpi()
-    test_recon_mpi_2cpu()
-    test_recon()
+    if DEBUG_SKIP:
+        # FIXME TODO - Temporarily disable these 3 tests
+        test_recon_mpi()
+        test_recon_mpi_2cpu()
+        test_recon()
     return
 
 
