@@ -9,7 +9,12 @@ def exec_redirect_to_stdout(cmd, shell=False):
     # from which jupyter is launched
     p = sp.Popen(args, shell=shell, stdout=sp.PIPE, stderr=sp.STDOUT)
     for c in iter(lambda: p.stdout.read(1), ''):
-        sys.stdout.write(c)
+        if isinstance(c, str):
+            # stdout.write requir string
+            sys.stdout.write(c)
+        else:
+            # stdout.buffer.write works with bytes
+            sys.stdout.buffer.write(c)
     p.communicate(); r = p.poll()
     if r: raise RuntimeError("Cmd %r failed" % cmd)
     return

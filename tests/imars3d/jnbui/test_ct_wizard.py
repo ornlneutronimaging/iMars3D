@@ -14,14 +14,20 @@ def test_wizard():
 
 def test_load():
     import pickle as pkl
-    config = pkl.load(open(os.path.join(here, 'recon-config.pkl')))
+    print('[DEBUG] Here: {}'.format(here)) 
+    test_pkl_file = os.path.join(here, 'recon-config.pkl')
+    print('[DEBUG] Pickle file: {}'.format(test_pkl_file))
+    config_file = open(os.path.join(here, 'recon-config.pkl', 'r'))
+    print('[DEBUG] config file type: {}'.format(type(config_file)))
+    config = pkl.load(config_file)
     assert config.df_dir == '/HFIR/CG1D/IPTS-15518/raw/df'
     assert config.ct_subdir == 'Derek_injec'
     assert config.ct_dir == '/HFIR/CG1D/IPTS-15518/raw/ct_scans/Derek_injec'
     assert config.ob_dir == '/HFIR/CG1D/IPTS-15518/raw/ob'
     assert config.workdir == '/SNSlocal2/lj7/derek_inj'
     assert config.outdir == '/HFIR/CG1D/IPTS-15518/shared/processed_data/derek_inj'
-    return
+    config_file.close()
+
 
 def main():
     test_wizard()
