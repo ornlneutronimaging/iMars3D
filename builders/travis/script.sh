@@ -1,4 +1,4 @@
-#!/bin/bash
+#P!/bin/bash
 
 set -e
 
@@ -16,8 +16,9 @@ if [ ${TRAVIS_EVENT_TYPE} == "cron" ]; then
     # python tests/workflows/recon/test_CT_travisCI.py test2
     echo "  - Done."
 else
-    echo "* Running unittests"
-    py.test
+    echo "* Running unittests ... skipped now"
+    # TODO FIXME - make py.test back after test
+    # py.test
     echo "  - Done."
 fi
 
