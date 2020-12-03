@@ -17,7 +17,7 @@ def test_load():
     print('[DEBUG] Here: {}'.format(here)) 
     test_pkl_file = os.path.join(here, 'recon-config.pkl')
     print('[DEBUG] Pickle file: {}'.format(test_pkl_file))
-    config_file = open(os.path.join(here, 'recon-config.pkl', 'r'))
+    config_file = open(os.path.join(here, 'recon-config.pkl'), 'r')
     print('[DEBUG] config file type: {}'.format(type(config_file)))
     config = pkl.load(config_file)
     assert config.df_dir == '/HFIR/CG1D/IPTS-15518/raw/df'
