@@ -24,10 +24,12 @@ This is intended to be run on just one node.
     algorithm = algorithm or 'gridrec'
     # algorithm='fbp',
     # lgorithm='pml_hybrid',
+    print('[DEBUG ... ...] emission = {}  ... argument is removed'.format(emission))
+    # TODO - removed emission in tomopy.recon.  need to verify
     rec = tomopy.recon(
         proj,
         theta=theta, center=center,
-        algorithm=algorithm, emission=emission,
+        algorithm=algorithm,
         ncore = 1, **kwds
     )
     # output
@@ -56,6 +58,7 @@ def recon(sinogram, theta, outpath, center=None,
         center = X/2.
     # reconstruct
     print('[DEBUG ... ...] emission = {}  ... argument is removed'.format(emission))
+    # TODO - removed emission in tomopy.recon.  need to verify
     rec = tomopy.recon(
         proj,
         theta=theta, center=center,
