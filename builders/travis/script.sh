@@ -17,8 +17,7 @@ if [ ${TRAVIS_EVENT_TYPE} == "cron" ]; then
     echo "  - Done."
 else
     echo "* Running unittests ... skipped now"
-    # TODO FIXME - make py.test back after test
-    # py.test
+    py.test
     echo "  - Done."
 fi
 
