@@ -46,6 +46,7 @@ def recon(sinogram, theta, outpath, center=None,
     """
     import tomopy, imars3d.io
     proj = [sinogram.data]
+    print('[DEBUG... ...] proj = {}'.format(proj))
     proj = np.array(proj)
     # tomopy.recon needs the shape to be
     # angles, Y, X
@@ -54,11 +55,12 @@ def recon(sinogram, theta, outpath, center=None,
     if center is None:
         center = X/2.
     # reconstruct
+    print('[DEBUG ... ...] emission = {}  ... argument is removed'.format(emission))
     rec = tomopy.recon(
         proj,
         theta=theta, center=center,
         algorithm=algorithm,
-        emission=emission,
+        # emission=emission,
         ncore = ncore,
         **kwds
     )
