@@ -16,7 +16,7 @@ if [ ${TRAVIS_EVENT_TYPE} == "cron" ]; then
     # python tests/workflows/recon/test_CT_travisCI.py test2
     echo "  - Done."
 else
-    echo "* Running unittests ... skipped now"
+    echo "* Running unittests"
     py.test
     echo "  - Done."
 fi

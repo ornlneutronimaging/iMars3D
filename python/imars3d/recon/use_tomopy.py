@@ -24,8 +24,7 @@ This is intended to be run on just one node.
     algorithm = algorithm or 'gridrec'
     # algorithm='fbp',
     # lgorithm='pml_hybrid',
-    print('[DEBUG ... ...] emission = {}  ... argument is removed'.format(emission))
-    # TODO - removed emission in tomopy.recon.  need to verify
+    # TODO FIXME - removed emission in tomopy.recon.  need to verify
     rec = tomopy.recon(
         proj,
         theta=theta, center=center,
@@ -48,7 +47,6 @@ def recon(sinogram, theta, outpath, center=None,
     """
     import tomopy, imars3d.io
     proj = [sinogram.data]
-    print('[DEBUG... ...] proj = {}'.format(proj))
     proj = np.array(proj)
     # tomopy.recon needs the shape to be
     # angles, Y, X
@@ -57,8 +55,7 @@ def recon(sinogram, theta, outpath, center=None,
     if center is None:
         center = X/2.
     # reconstruct
-    print('[DEBUG ... ...] emission = {}  ... argument is removed'.format(emission))
-    # TODO - removed emission in tomopy.recon.  need to verify
+    # TODO FIXME - removed emission in tomopy.recon.  need to verify
     rec = tomopy.recon(
         proj,
         theta=theta, center=center,
