@@ -17,7 +17,7 @@ sinograms = imars3d.io.ImageFileSeries(
 angles = np.arange(0, 182, .85)
 theta = angles * np.pi / 180.
 
-def skip_test_recon():
+def test_recon():
     from imars3d.recon.mpi import recon
     recon_template = os.path.join(outdir, "test_recon", "recon_%05i.tiff")
     recon_series = imars3d.io.ImageFileSeries(
@@ -79,12 +79,13 @@ recon_mpi(sinograms, theta, recon_series, stepsize=1)
 
 
 def main():
+    test_recon()
+
     DEBUG_SKIP = True
     if not DEBUG_SKIP:
         # FIXME TODO - Temporarily disable these 3 tests
         test_recon_mpi()
         test_recon_mpi_2cpu()
-        test_recon()
     return
 
 
