@@ -17,7 +17,7 @@ sinograms = imars3d.io.ImageFileSeries(
 angles = np.arange(0, 182, .85)
 theta = angles * np.pi / 180.
 
-def test_recon():
+def skip_test_recon():
     from imars3d.recon.mpi import recon
     recon_template = os.path.join(outdir, "test_recon", "recon_%05i.tiff")
     recon_series = imars3d.io.ImageFileSeries(
