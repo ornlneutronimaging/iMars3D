@@ -17,12 +17,13 @@ sinograms = imars3d.io.ImageFileSeries(
 angles = np.arange(0, 182, .85)
 theta = angles * np.pi / 180.
 
-def skip_test_recon():
+
+def test_recon():
     from imars3d.recon.mpi import recon
     recon_template = os.path.join(outdir, "test_recon", "recon_%05i.tiff")
     recon_series = imars3d.io.ImageFileSeries(
         recon_template,
-        mode = 'w', name = "Reconstructed", identifiers=layers,
+        mode='w', name="Reconstructed", identifiers=layers,
         )
     recon(sinograms, theta, recon_series, nodes=5)
     return

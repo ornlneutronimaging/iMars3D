@@ -15,8 +15,10 @@ def exec_redirect_to_stdout(cmd, shell=False):
         else:
             # stdout.buffer.write works with bytes
             sys.stdout.buffer.write(c)
-    p.communicate(); r = p.poll()
-    if r: raise RuntimeError("Cmd %r failed" % cmd)
+    p.communicate()
+    r = p.poll()
+    if r:
+        raise RuntimeError("Cmd %r failed" % cmd)
     return
 
 

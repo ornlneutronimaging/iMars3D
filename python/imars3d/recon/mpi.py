@@ -1,7 +1,10 @@
 # -*- python -*-
 # -*- coding: utf-8 -*-
 
-import os, sys, numpy as np, imars3d
+import os
+# import sys
+import numpy as np
+import imars3d
 
 import progressbar
 from imars3d import configuration
@@ -45,7 +48,7 @@ recon_mpi(**kargs)
     # shell cmd
     cmd = 'mpirun -np %(nodes)s python %(pyfile)s' % locals()
     from ..shutils import exec_redirect_to_stdout
-    exec_redirect_to_stdout(cmd)
+    # exec_redirect_to_stdout(cmd)
     return
 
 
