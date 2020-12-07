@@ -107,7 +107,7 @@ parallalization. sth similar to $ mpirun -np NODES python "code to call this met
     # avoid infinite loop
     loop = 0
 
-    while start < stop or loop < 10:
+    while start < stop and loop < 10:
         # update loop
         loop += 1
 
