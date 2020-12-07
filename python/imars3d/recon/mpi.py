@@ -81,6 +81,9 @@ parallalization. sth similar to $ mpirun -np NODES python "code to call this met
     # print("node %s of %s handles %s" % (rank, size, layers))
     # print("N, start, stop=%s, %s, %s" % (N, start, stop))
 
+    print(
+        '[DEBUG] recon is None = {}'.format(recon is None)
+    )
     if recon is None:
         from .use_tomopy import recon_batch_singlenode as recon
     
@@ -119,7 +122,9 @@ parallalization. sth similar to $ mpirun -np NODES python "code to call this met
             continue
         recon_series1 = recon_series[start:stop1]
         try:
-            recon(sinograms1, theta, recon_series1, center=center, **kwds)
+            print('[DEBUG] Rank {} skip recon()'.format(rank))
+            # TODO FIXME - resume recon
+            # recon(sinograms1, theta, recon_series1, center=center, **kwds)
         except:
             # logger.info("node %s of %s: recon %s:%s failed" % (rank, size, start, stop1))
             message = "node %s of %s: recon %s:%s failed" % (rank, size, start, stop1)
