@@ -7,7 +7,12 @@ def exec_redirect_to_stdout(cmd, shell=False):
     # manually pipe the output from the subprocess to sys.stdout so that
     # jupyter gets it inside the web page instead of the stdout of the terminal
     # from which jupyter is launched
+    print(f'[DEBUG] args = {args}')
+    return
     p = sp.Popen(args, shell=shell, stdout=sp.PIPE, stderr=sp.STDOUT)
+
+    print(f'[DEBUG] args = {args}')
+
     for c in iter(lambda: p.stdout.read(1), ''):
         if isinstance(c, str):
             # stdout.write requir string

@@ -124,7 +124,7 @@ parallalization. sth similar to $ mpirun -np NODES python "code to call this met
         try:
             print('[DEBUG] Rank {} skip recon()'.format(rank))
             # TODO FIXME - resume recon
-            # recon(sinograms1, theta, recon_series1, center=center, **kwds)
+            recon(sinograms1, theta, recon_series1, center=center, **kwds)
         except:
             # logger.info("node %s of %s: recon %s:%s failed" % (rank, size, start, stop1))
             message = "node %s of %s: recon %s:%s failed" % (rank, size, start, stop1)
