@@ -25,8 +25,9 @@ def test_recon():
         recon_template,
         mode='w', name="Reconstructed", identifiers=layers,
         )
-    recon(sinograms, theta, recon_series, nodes=5)
-    return
+    cmd = recon(sinograms, theta, recon_series, nodes=5)
+    print('[DEBUG] MPI command = {}'.format(cmd))
+    assert 1 == 3
 
 
 def skip_test_recon_mpi():

@@ -38,6 +38,7 @@ recon_mpi(**kargs)
     # write python code
     pycode = py_code_template % locals()
     pyfile = os.path.join(dir, "recon.py")
+    print('PyCode:\n-----\n{}\n------'.format(pycode))
     open(pyfile, 'wt').write(pycode)
     # cpus
     if not nodes:
@@ -48,8 +49,9 @@ recon_mpi(**kargs)
     # shell cmd
     cmd = 'mpirun -np %(nodes)s python %(pyfile)s' % locals()
     from ..shutils import exec_redirect_to_stdout
+    # TODO FIXME - make exec back!
     # exec_redirect_to_stdout(cmd)
-    return
+    return cmd
 
 
 def recon_mpi(
