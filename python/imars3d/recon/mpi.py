@@ -106,8 +106,9 @@ parallalization. sth similar to $ mpirun -np NODES python "code to call this met
 
     # avoid infinite loop
     loop = 0
+    print('[DEBUG... Rand {} Start recon'.format(rank))
 
-    while start < stop and loop < 10:
+    while start < stop and loop < 2:
         # update loop
         loop += 1
 
@@ -129,6 +130,7 @@ parallalization. sth similar to $ mpirun -np NODES python "code to call this met
         #     bar.update(start-start0)
         continue
     comm.Barrier()
+
     if rank == 0:
         print('\n')
     return
