@@ -4,6 +4,8 @@
 import os
 # import sys
 import numpy as np
+import tempfile
+import pickle
 import imars3d
 
 import progressbar
@@ -27,11 +29,10 @@ kargs = pickle.load(open(%(kargs_pkl)r, 'rb'))
 from imars3d.recon.mpi import recon_mpi
 recon_mpi(**kargs)
 """
-    import tempfile, pickle
+
     dir = tempfile.mkdtemp()
     # save params
     kargs_pkl = os.path.join(dir, "kargs.pkl")
-    import pickle
     kargs = dict(sinograms=sinograms, theta=theta, recon_series=recon_series)
     kargs.update(kwds)
     print('[DEBUG] To pickle:\n{}\n---------'.format(kargs))
@@ -51,7 +52,7 @@ recon_mpi(**kargs)
     cmd = 'mpirun -np %(nodes)s python %(pyfile)s' % locals()
     from ..shutils import exec_redirect_to_stdout
     # TODO FIXME - make exec back!
-    # exec_redirect_to_stdout(cmd)
+    exec_redirect_to_stdout(cmd)
     return cmd
 
 
@@ -86,34 +87,50 @@ parallalization. sth similar to $ mpirun -np NODES python "code to call this met
     # progress bar
     # for simplicity, we just report the progress at rank 0, which should be a
     # good indication of progress of all nodes any way
-    if rank==0:
-        bar = progressbar.ProgressBar(
-            widgets=[
-                "Reconstructing",
-                progressbar.Percentage(),
-                progressbar.Bar(),
-                ' [', progressbar.ETA(), '] ',
-            ],
-            max_value = stop-start,
-            **pb_config
-        )
+    if rank == 0:
+        # TODO FIXME NO BAR
+        # bar = progressbar.ProgressBar(
+        #     widgets=[
+        #         "Reconstructing",
+        #         progressbar.Percentage(),
+        #         progressbar.Bar(),
+        #         ' [', progressbar.ETA(), '] ',
+        #     ],
+        #     max_value = stop-start,
+        #     **pb_config
+        # )
         start0 = start
-    while start < stop:
+
+    if rank == 0:
+        print('[DEBUG... Init] start = {}, stop = {}'.format(start, stop))
+
+    # avoid infinite loop
+    loop = 0
+
+    while start < stop or loop < 10:
+        # update loop
+        loop += 1
+
         stop1 = min(start + stepsize, stop)
         logger.debug("node %s of %s working on %s:%s" % (rank, size, start, stop1))
         sinograms1 = sinograms[start:stop1]
-        if not len(sinograms): continue
+        if not len(sinograms):
+            continue
         recon_series1 = recon_series[start:stop1]
         try:
             recon(sinograms1, theta, recon_series1, center=center, **kwds)
         except:
-            logger.info("node %s of %s: recon %s:%s failed" % (rank, size, start, stop1))
+            # logger.info("node %s of %s: recon %s:%s failed" % (rank, size, start, stop1))
+            message = "node %s of %s: recon %s:%s failed" % (rank, size, start, stop1)
+            print('[DEBUG INFO] {}'.format(message))
         start = stop1
-        if rank==0:
-            bar.update(start-start0)
+        print('[UPDATE] Rank {} start is set to {}'.format(rank, stop1))
+        # if rank==0:
+        #     bar.update(start-start0)
         continue
     comm.Barrier()
-    if rank==0: print('\n')
+    if rank == 0:
+        print('\n')
     return
 
 
