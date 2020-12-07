@@ -18,7 +18,7 @@ angles = np.arange(0, 182, .85)
 theta = angles * np.pi / 180.
 
 
-def skip_test_recon():
+def test_recon():
     from imars3d.recon.mpi import recon
     recon_template = os.path.join(outdir, "test_recon", "recon_%05i.tiff")
     recon_series = imars3d.io.ImageFileSeries(
@@ -33,7 +33,7 @@ def skip_test_recon():
     assert 1 == 3
 
 
-def test_recon_mpi():
+def pass_test_recon_mpi():
     from imars3d.recon.mpi import recon_mpi
     recon_template = os.path.join(outdir, "test_recon_mpi", "recon_%05i.tiff")
     recon_series = imars3d.io.ImageFileSeries(
@@ -44,7 +44,7 @@ def test_recon_mpi():
     return
 
 
-def skip_test_recon_mpi_2cpu():
+def direrror_test_recon_mpi_2cpu():
     workdir = dir
     pycode = """
 import os, imars3d, numpy as np

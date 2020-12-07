@@ -13,13 +13,14 @@ def exec_redirect_to_stdout(cmd, shell=False):
 
     print(f'[DEBUG] args = {args}')
 
-    for c in iter(lambda: p.stdout.read(1), ''):
-        if isinstance(c, str):
-            # stdout.write requir string
-            sys.stdout.write(c)
-        else:
-            # stdout.buffer.write works with bytes
-            sys.stdout.buffer.write(c)
+    if False:
+        for c in iter(lambda: p.stdout.read(1), ''):
+            if isinstance(c, str):
+                # stdout.write requir string
+                sys.stdout.write(c)
+            else:
+                # stdout.buffer.write works with bytes
+                sys.stdout.buffer.write(c)
     p.communicate()
     r = p.poll()
     if r:
