@@ -34,11 +34,12 @@ recon_mpi(**kargs)
     import pickle
     kargs = dict(sinograms=sinograms, theta=theta, recon_series=recon_series)
     kargs.update(kwds)
+    print('[DEBUG] To pickle:\n{}\n---------'.format(kwds))
     pickle.dump(kargs, open(kargs_pkl, 'wb'))
     # write python code
     pycode = py_code_template % locals()
     pyfile = os.path.join(dir, "recon.py")
-    print('PyCode:\n-----\n{}\n------'.format(pycode))
+    print('[DEBUG] PyCode:\n-----\n{}\n------'.format(pycode))
     open(pyfile, 'wt').write(pycode)
     # cpus
     if not nodes:
