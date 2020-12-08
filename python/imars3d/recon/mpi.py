@@ -51,7 +51,6 @@ recon_mpi(**kargs)
     # shell cmd
     cmd = 'mpirun -np %(nodes)s python %(pyfile)s' % locals()
     from ..shutils import exec_redirect_to_stdout
-    # TODO FIXME - make exec back!
     exec_redirect_to_stdout(cmd)
     return cmd
 
@@ -108,10 +107,10 @@ parallalization. sth similar to $ mpirun -np NODES python "code to call this met
         print('[DEBUG... Init] start = {}, stop = {}'.format(start, stop))
 
     # avoid infinite loop
-    loop = 0
+    loop = -1
     print('[DEBUG... Rand {} Start recon'.format(rank))
 
-    while start < stop and loop < 2:
+    while start < stop:
         # update loop
         loop += 1
 
@@ -122,9 +121,8 @@ parallalization. sth similar to $ mpirun -np NODES python "code to call this met
             continue
         recon_series1 = recon_series[start:stop1]
         try:
-            print('[DEBUG] Rank {} skip recon()'.format(rank))
-            # TODO FIXME - resume recon
-            # recon(sinograms1, theta, recon_series1, center=center, **kwds)
+            print('[DEBUG] Rank {} Recon @ loop {}'.format(rank, loop))
+            recon(sinograms1, theta, recon_series1, center=center, **kwds)
         except:
             # logger.info("node %s of %s: recon %s:%s failed" % (rank, size, start, stop1))
             message = "node %s of %s: recon %s:%s failed" % (rank, size, start, stop1)
