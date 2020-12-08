@@ -42,7 +42,7 @@ def test_recon_mpi():
     return
 
 
-def direrror_test_recon_mpi_2cpu():
+def test_recon_mpi_2cpu():
     workdir = dir
     pycode = """
 import os, imars3d, numpy as np
