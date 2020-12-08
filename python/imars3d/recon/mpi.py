@@ -12,6 +12,10 @@ import progressbar
 from imars3d import configuration
 pb_config = configuration['progress_bar']
 
+# maximum loop avoid infinite while-loop
+# TODO FIXME - need a better value or configurable value
+MAX_LOOP = 100000
+
 
 def recon(sinograms, theta, recon_series, nodes=None, **kwds):
     """reconstruct from given sinograms by running reconstruction algorithms parallely
@@ -35,12 +39,10 @@ recon_mpi(**kargs)
     kargs_pkl = os.path.join(dir, "kargs.pkl")
     kargs = dict(sinograms=sinograms, theta=theta, recon_series=recon_series)
     kargs.update(kwds)
-    print('[DEBUG] To pickle:\n{}\n---------'.format(kargs))
     pickle.dump(kargs, open(kargs_pkl, 'wb'))
     # write python code
     pycode = py_code_template % locals()
     pyfile = os.path.join(dir, "recon.py")
-    print('[DEBUG] PyCode:\n-----\n{}\n------'.format(pycode))
     open(pyfile, 'wt').write(pycode)
     # cpus
     if not nodes:
@@ -80,9 +82,6 @@ parallalization. sth similar to $ mpirun -np NODES python "code to call this met
     # print("node %s of %s handles %s" % (rank, size, layers))
     # print("N, start, stop=%s, %s, %s" % (N, start, stop))
 
-    print(
-        '[DEBUG] recon is None = {}'.format(recon is None)
-    )
     if recon is None:
         from .use_tomopy import recon_batch_singlenode as recon
     
@@ -90,27 +89,22 @@ parallalization. sth similar to $ mpirun -np NODES python "code to call this met
     # for simplicity, we just report the progress at rank 0, which should be a
     # good indication of progress of all nodes any way
     if rank == 0:
-        # TODO FIXME NO BAR
-        # bar = progressbar.ProgressBar(
-        #     widgets=[
-        #         "Reconstructing",
-        #         progressbar.Percentage(),
-        #         progressbar.Bar(),
-        #         ' [', progressbar.ETA(), '] ',
-        #     ],
-        #     max_value = stop-start,
-        #     **pb_config
-        # )
-        start0 = start
-
-    if rank == 0:
-        print('[DEBUG... Init] start = {}, stop = {}'.format(start, stop))
+        bar = progressbar.ProgressBar(
+            widgets=[
+                "Reconstructing",
+                progressbar.Percentage(),
+                progressbar.Bar(),
+                ' [', progressbar.ETA(), '] ',
+            ],
+            max_value = stop-start,
+            **pb_config
+        )
+    start0 = start  # shall be fine to define inside if-block. Just to make flake8/pylint feel betters
 
     # avoid infinite loop
     loop = -1
-    print('[DEBUG... Rand {} Start recon'.format(rank))
 
-    while start < stop:
+    while start < stop or loop < MAX_LOOP:
         # update loop
         loop += 1
 
@@ -121,16 +115,16 @@ parallalization. sth similar to $ mpirun -np NODES python "code to call this met
             continue
         recon_series1 = recon_series[start:stop1]
         try:
-            print('[DEBUG] Rank {} Recon @ loop {}'.format(rank, loop))
             recon(sinograms1, theta, recon_series1, center=center, **kwds)
         except:
-            # logger.info("node %s of %s: recon %s:%s failed" % (rank, size, start, stop1))
-            message = "node %s of %s: recon %s:%s failed" % (rank, size, start, stop1)
-            print('[DEBUG INFO] {}'.format(message))
+            logger.info("node %s of %s: recon %s:%s failed" % (rank, size, start, stop1))
+
+        # update range
         start = stop1
-        print('[UPDATE] Rank {} start is set to {}'.format(rank, stop1))
-        # if rank==0:
-        #     bar.update(start-start0)
+
+        # update bar (rank 0)
+        if rank == 0:
+            bar.update(start-start0)
         continue
     comm.Barrier()
 
