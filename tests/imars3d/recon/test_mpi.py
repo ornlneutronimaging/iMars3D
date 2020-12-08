@@ -26,14 +26,12 @@ def test_recon():
         mode='w', name="Reconstructed", identifiers=layers,
         )
     nodes = 5
-    nodes = 1
     print('[DEBUG] {} nodes'.format(nodes))
     cmd = recon(sinograms, theta, recon_series, nodes=nodes)
     print('[DEBUG] MPI command = {}'.format(cmd))
-    assert 1 == 3
 
 
-def pass_test_recon_mpi():
+def test_recon_mpi():
     from imars3d.recon.mpi import recon_mpi
     recon_template = os.path.join(outdir, "test_recon_mpi", "recon_%05i.tiff")
     recon_series = imars3d.io.ImageFileSeries(
