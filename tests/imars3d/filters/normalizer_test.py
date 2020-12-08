@@ -19,8 +19,8 @@ def test_normalize():
     # dark field
     pattern = os.path.join(datadir, "*DF*.fits")
     dfs = io.imageCollection(pattern, name="Dark Field")
-    # open beam
-    pattern = os.path.join(datadir, "*OB*.fits") # hack
+    # open beam: DON'T CHANGE DF to OB as there is no OB
+    pattern = os.path.join(datadir, "*DF*.fits") # hack
     obs = io.imageCollection(pattern, name="Open Beam")
     # ct
     angles = np.arange(0, 52, 8.5)
