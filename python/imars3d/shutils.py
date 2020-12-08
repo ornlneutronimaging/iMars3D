@@ -8,10 +8,18 @@ def exec_redirect_to_stdout(cmd, shell=False):
     # jupyter gets it inside the web page instead of the stdout of the terminal
     # from which jupyter is launched
     p = sp.Popen(args, shell=shell, stdout=sp.PIPE, stderr=sp.STDOUT)
-    for c in iter(lambda: p.stdout.read(1), ''):
-        sys.stdout.write(c)
-    p.communicate(); r = p.poll()
-    if r: raise RuntimeError("Cmd %r failed" % cmd)
+
+    # FIXME TODO : Popen API changes from python 2.7 to 3.6.  Require further work on this
+    # FIXME: skip output temporarily
+    # for c in iter(lambda: p.stdout.read(1), ''):
+    #     if isinstance(c, str):
+    #         # stdout.write requir string
+    #         sys.stdout.write(c)
+
+    p.communicate()
+    r = p.poll()
+    if r:
+        raise RuntimeError("Cmd %r failed" % cmd)
     return
 
 

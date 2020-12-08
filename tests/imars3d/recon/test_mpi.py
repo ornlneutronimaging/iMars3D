@@ -17,15 +17,18 @@ sinograms = imars3d.io.ImageFileSeries(
 angles = np.arange(0, 182, .85)
 theta = angles * np.pi / 180.
 
+
 def test_recon():
     from imars3d.recon.mpi import recon
     recon_template = os.path.join(outdir, "test_recon", "recon_%05i.tiff")
     recon_series = imars3d.io.ImageFileSeries(
         recon_template,
-        mode = 'w', name = "Reconstructed", identifiers=layers,
+        mode='w', name="Reconstructed", identifiers=layers,
         )
-    recon(sinograms, theta, recon_series, nodes=5)
-    return
+    nodes = 5
+    print('[DEBUG] {} nodes'.format(nodes))
+    cmd = recon(sinograms, theta, recon_series, nodes=nodes)
+    print('[DEBUG] MPI command = {}'.format(cmd))
 
 
 def test_recon_mpi():
@@ -79,10 +82,9 @@ recon_mpi(sinograms, theta, recon_series, stepsize=1)
 
 
 def main():
+    test_recon()
     test_recon_mpi()
     test_recon_mpi_2cpu()
-    test_recon()
-    return
 
 
 if __name__ == '__main__': main()

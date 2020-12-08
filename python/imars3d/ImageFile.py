@@ -97,7 +97,7 @@ class NpyImageIO(AbstractImageFileIO):
 
 class TomopyImageIO(AbstractImageFileIO):
 
-    from tomopy.io import reader, writer
+    from dxchange import reader, writer
 
     @classmethod
     def dump(cls, data, path):

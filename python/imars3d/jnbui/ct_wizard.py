@@ -1,6 +1,7 @@
 # coding: utf-8
 
 
+
 def wizard(config=None, context=None):
     if context is None:
         context = Context()
@@ -13,7 +14,7 @@ def wizard(config=None, context=None):
 import os, imars3d, numpy as np, glob, time
 import ipywidgets as ipyw
 from IPython.display import display, HTML, clear_output
-from _utils import js_alert
+from imars3d.jnbui._utils import js_alert
 
 class Context:
     pass
@@ -602,7 +603,7 @@ class DFPanel(Panel):
         return
     
     def nextStep(self):
-        print "Configuration done!"
+        print("Configuration done!")
         return
 
     def remove(self):

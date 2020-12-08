@@ -1,4 +1,4 @@
-#!/bin/bash
+#P!/bin/bash
 
 set -e
 
@@ -18,6 +18,7 @@ if [ ${TRAVIS_EVENT_TYPE} == "cron" ]; then
 else
     echo "* Running unittests"
     py.test
+    # py.test tests/imars3d/recon/test_mpi.py
     echo "  - Done."
 fi
 
