@@ -7,14 +7,20 @@ def exec_redirect_to_stdout(cmd, shell=False):
     # manually pipe the output from the subprocess to sys.stdout so that
     # jupyter gets it inside the web page instead of the stdout of the terminal
     # from which jupyter is launched
-    p = sp.Popen(args, shell=shell, stdout=sp.PIPE, stderr=sp.STDOUT)
+    p = sp.Popen(
+        args,
+        shell=shell,
+        stdout=sp.PIPE,
+        stderr=sp.STDOUT,
+        encoding='utf-8'
+    )
 
     # FIXME TODO : Popen API changes from python 2.7 to 3.6.  Require further work on this
     # FIXME: skip output temporarily
-    # for c in iter(lambda: p.stdout.read(1), ''):
-    #     if isinstance(c, str):
-    #         # stdout.write requir string
-    #         sys.stdout.write(c)
+    for c in iter(lambda: p.stdout.read(1), ''):
+        if isinstance(c, str):
+            # stdout.write requir string
+            sys.stdout.write(c)
 
     p.communicate()
     r = p.poll()
