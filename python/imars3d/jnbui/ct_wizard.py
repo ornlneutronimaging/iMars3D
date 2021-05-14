@@ -268,7 +268,8 @@ class WorkDirPanel(SelectDirPanel):
         # fast disk
         import getpass
         username = getpass.getuser()
-        root = "/SNSlocal2/%s" % username
+        #root = "/SNSlocal2/%s" % username
+        root = "/SNS/snfs1/scratch/%s" % username
         if not os.path.exists(root):
             try:
                 os.makedirs(root)
