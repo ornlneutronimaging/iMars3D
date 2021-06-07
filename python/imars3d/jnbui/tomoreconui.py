@@ -6,7 +6,7 @@ from .ct_wizard import Context, Config
 import os, time
 import ipywidgets as ipyw
 from IPython.display import display
-from _utils import js_alert
+from ._utils import js_alert
 from ipywe import imageslider as ImgSlider, fileselector as flselect
 import pickle as pkl
 import logging; logger = logging.getLogger('ui')
