@@ -1,5 +1,5 @@
 # coding: utf-8
-
+from ._utils import encode
 
 
 def wizard(config=None, context=None):
@@ -67,27 +67,27 @@ class WizardPanel:
     
 class InstrumentPanel(Panel):
 
-    instruments = dict(
-        # vulcan = 'sns',
-        snap = 'sns',
-        cg1d = 'hfir',
-        )
+    instruments = {
+        # vulcan: 'sns',
+        'snap': 'sns',
+        'cg1d': 'hfir',
+    }
     
     def __init__(self, context):
         self.context = context
-        explanation = ipyw.Label("Please chose the instrument", layout=self.label_layout)
+        explanation = ipyw.Label("Please choose the instrument", layout=self.label_layout)
         # self.text = ipyw.Text(value="CG1D", description="", placeholder="instrument name")
         self.text = ipyw.Select(value="CG1D", options=[i.upper() for i in self.instruments.keys()])
-        self.ok = ipyw.Button(description='OK', layout=self.button_layout)
-        self.ok.on_click(self.validate)
+        ok = ipyw.Button(description='OK', layout=self.button_layout)
+        ok.on_click(self.validate)
         skip = ipyw.Button(description="Skip", layout=self.button_layout)
         skip.on_click(self.skip)
-        buttons = ipyw.HBox(children=(self.ok, skip))
+        buttons = ipyw.HBox(children=(ok, skip))
         self.widgets = [explanation, self.text, buttons]
         self.panel = ipyw.VBox(children=self.widgets, layout=self.layout)
         
     def validate(self, s):
-        instrument = self.text.value.encode()
+        instrument = encode(self.text.value)
         if instrument.lower() not in self.instruments.keys():
             s = "instrument %s not supported!" % instrument
             js_alert(s)
@@ -125,7 +125,7 @@ class IPTSpanel(Panel):
         self.panel = ipyw.VBox(children=self.widgets, layout=self.layout)
         
     def validate_IPTS(self, s):
-        ipts1 = self.text.value.encode()
+        ipts1 = encode(self.text.value)
         facility = self.context.config.facility
         instrument = self.context.config.instrument
         path = os.path.abspath('/%s/%s/IPTS-%s' % (facility, instrument, ipts1))
@@ -177,7 +177,7 @@ class ScanNamePanel(Panel):
             s = 'Please specify a name for your tomography scan'
             js_alert(s)
         else:
-            self.context.config.scan = v.encode()
+            self.context.config.scan = encode(v)
             self.remove()
             wd_panel = WorkDirPanel(self.context, self.context.config.scan)
             wd_panel.show()
@@ -353,7 +353,7 @@ class CTDirPanel(Panel):
         self.panel = ipyw.VBox(children=self.widgets, layout=self.layout)
         
     def validate(self, s):
-        self.context.config.ct_subdir = self.select.value.encode()
+        self.context.config.ct_subdir = encode(self.select.value)
         self.remove()
         self.nextStep()
         return
@@ -427,7 +427,7 @@ class CTSigPanel(Panel):
         return ct_sig, sample
         
     def validate(self, s):
-        self.context.config.ct_sig = self.text.value.encode()
+        self.context.config.ct_sig = encode(self.text.value)
         self.remove()
         self.nextStep()
         return
@@ -483,7 +483,7 @@ class OBPanel(Panel):
         return files
         
     def validate(self, s):
-        v = [i.encode() for i in self.select.value]
+        v = [encode(i) for i in self.select.value]
         if not v:
             js_alert("Please select at least one OB file")
             return
@@ -578,7 +578,7 @@ class DFPanel(Panel):
         return files
         
     def validate(self, s):
-        v = [i.encode() for i in self.select.value]
+        v = [encode(i) for i in self.select.value]
         if not v:
             js_alert("Please select at least one DF file")
             return
