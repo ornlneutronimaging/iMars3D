@@ -6,10 +6,11 @@ from .ct_wizard import Context, Config
 import os, time
 import ipywidgets as ipyw
 from IPython.display import display
-from ._utils import js_alert
+from ._utils import js_alert, encode
 from ipywe import imageslider as ImgSlider, fileselector as flselect
 import pickle as pkl
 import logging; logger = logging.getLogger('ui')
+
 
 class UIConfig:
     img_width = 0
@@ -19,11 +20,13 @@ class UIConfig:
     smooth_projection = False
     start_directory = None
 
+
 def createContext():
     context = Context()
     config = Config()
     context.config = config
     return context
+
 
 def wizard(context, start_dir=os.path.expanduser("~"), image_width=300, image_height=300, remove_rings_at_sinograms=False, smooth_rec=False, smooth_proj=False):
     """
@@ -94,6 +97,7 @@ class StartButtonPanel(base.Panel):
             Object (from ct_wizard.py) that stores the config
             and ct objects used in the reconstruction process   
         """
+
         self.context = context
         explanation = ipyw.Label("Do you wish to start from scratch or use a previous reconstruction configuration?", layout=self.label_layout)
         scratch_button = ipyw.Button(description="Start from Scratch",
@@ -198,7 +202,7 @@ class InstrumentPanel(base.InstrumentPanel):
     """
 
     def validate(self, s):
-        instrument = self.text.value.encode()
+        instrument = encode(self.text.value)
         if instrument.lower() not in self.instruments.keys():
             s = "instrument {} not supported!".format(instrument)
             js_alert(s)
@@ -219,7 +223,7 @@ class IPTSpanel(base.IPTSpanel):
     """
 
     def validate_IPTS(self, s):
-        ipts1 = self.text.value.encode()
+        ipts1 = encode(self.text.value)
         facility = self.context.config.facility
         instrument = self.context.config.instrument
         path = os.path.abspath('/{0}/{1}/IPTS-{2}'.format(facility, instrument, ipts1))
@@ -255,7 +259,7 @@ class ScanNamePanel(base.ScanNamePanel):
             s = 'Please specify a name for your tomography scan'
             js_alert(s)
         else:
-            self.context.config.scan = v.encode()
+            self.context.config.scan = encode(v)
             self.remove()
             wd_panel = WorkDirPanel(self.context, self.context.config.scan)
             wd_panel.show()
@@ -349,7 +353,8 @@ class DFPanel(base.DFPanel):
         # create output dir and move over there
         os.makedirs(self.context.config.outdir)
         os.chdir(self.context.config.outdir)
-        assert os.getcwd() == self.context.config.outdir
+        assert os.getcwd() == self.context.config.outdir, \
+            'Current directory {} is not selected outdir {}'.format(os.getcwd(), self.context.config.outdir)
         # copy imars3d config if it exists
         if os.path.exists(orig_imars3d_config):
             import shutil
