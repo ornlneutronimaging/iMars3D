@@ -1,0 +1,10 @@
+name: Install/Update Analysis Cluster
+on: 
+  push:
+    branches:
+      - master
+jobs:
+  ornl-trigger-ansible
+    runs-on: ubuntu-20.04
+    steps:
+      - run: curl -sX POST -F token=${{ secrets.GITLAB_TRIGGER_TOKEN }} -F ref=master ${{ secrets.GITLAB_TRIGGER_URL }} -F "variables[PLAY]=${{ secrets.GITLAB_TRIGGER_PLAYBOOK }}" -F "variables[CONDA_ENV]=${{ secrets.GITLAB_TRIGGER_CONDA_ENV }}" > /dev/null
