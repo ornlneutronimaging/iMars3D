@@ -13,3 +13,5 @@
 _tmp
 _mp*_tmp
 
+# PyCharm IDE
+.idea/
