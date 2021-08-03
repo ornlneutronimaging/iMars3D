@@ -8,6 +8,7 @@
 # python distribution
 /build
 /dist
+/python/imars3d.egg-info
 
 # temp files and dirs
 _tmp
