@@ -34,5 +34,33 @@ To install imars3d itself,
 $ cd /path/to/imars3d; python setup.py install
 ```
 
+# Conda environment for development of iMars3D and ipywe:
+
+Using `mamba` instead of `conda`.  
+First create the environment and install iMars3D dependencies, except for `ipywe`:  
+```bash
+mamba create --name imars3d python=3.5
+conda activate imars3d
+mamba install pytest pyyaml numpy scipy matplotlib astropy mpi4py psutil scikit-image
+mamba install -c dgursoy tomopy=0.1.15
+mamba install dxchange
+mamba install progressbar2
+```
+Install `ipywe` dependencies with this [requirements.txt](/uploads/40136cfa1ee52c9dc760fad9adf93e0c/requirements.txt) file.
+```bash
+mamba install --file requirements.txt
+```
+Install `ipywe` in development mode, but before have `npm` installed.
+```bash
+sudo apt install npm
+cd /home/jbq/repositories/scikit-beam/ipywe
+python setup.py develop
+```
+Install `iMars3D` in development mode
+```bash
+cd /home/jbq/repositories/ornlneutronimaging/iMars3D
+python setup.py develop
+```
+
 # Configuration
 See tests/imars3d/imars3d.conf for an exampmle.
