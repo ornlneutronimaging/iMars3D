@@ -22,8 +22,8 @@ def reconstruct(proj_fn_template, layers, theta, console_out, outdir="recon"):
     rec = tomopy.recon(
         proj,
         theta=theta, center=X/2.,
-        algorithm='gridrec', emission=False,
-        ncore = 1,
+        algorithm='gridrec',
+        ncore = 1
     )
     console_out.write("done\n"); console_out.flush()
     # output

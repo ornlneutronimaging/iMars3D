@@ -32,7 +32,7 @@ def main():
     sino = [s.data for s in sinograms[900:1100]]
     sino= np.array(sino)
     proj = np.swapaxes(sino, 0, 1)
-    rot_center = tomopy.find_center(proj, theta, emission=False, init=1024, tol=0.5)
+    rot_center = tomopy.find_center(proj, theta, init=1024, tol=0.5)
     rot_center = rot_center[0]
     # reconstruct
     recon = i3.reconstruct(angles, sinograms, workdir=outdir, center=rot_center)

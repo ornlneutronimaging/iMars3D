@@ -396,8 +396,7 @@ The default behavior can be modified by configuration file "imars3d.conf".
                 tomopy.write_center(
                     proj.copy(), theta,
                     cen_range=[X//2-DEVIATION, X//2+DEVIATION, 1.],
-                    dpath=dpath,
-                    emission=False)
+                    dpath=dpath)
         if rot_center is None:
             print("* Computing rotation center using 180deg pairs...")
             from .tilt import find_rot_center
