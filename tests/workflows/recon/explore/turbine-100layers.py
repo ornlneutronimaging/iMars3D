@@ -67,12 +67,12 @@ print(theta)
 theta *= np.pi/180.
 # calculate rotation center
 print "* finding center ..."
-rot_center = tomopy.find_center(proj, theta, emission=False, init=1024, tol=0.5)
+rot_center = tomopy.find_center(proj, theta, init=1024, tol=0.5)
 print "  done."
 print("Center of rotation: ", rot_center)
 # checking
 print proj.shape
-tomopy.write_center(proj.copy(), theta, dpath='center', emission=False)
+tomopy.write_center(proj.copy(), theta, dpath='center')
 # rot_center = tomopy.find_center_vo(proj.copy())
 # print("Center of rotation: ", rot_center)
 # plot data
@@ -96,7 +96,7 @@ rec = tomopy.recon(
     # proj[:, 600:601, :], 
     proj[:, 923:1024, :], 
     theta=theta, center=rot_center[0], 
-    algorithm='gridrec', emission=False
+    algorithm='gridrec'
 )
 print "  done."
 # plot
