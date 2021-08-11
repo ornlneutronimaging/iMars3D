@@ -17,7 +17,7 @@ Install dependencies:
 ```
 $ conda config --add channels conda-forge
 $ conda install pytest pyyaml numpy scipy matplotlib astropy mpi4py psutil scikit-image
-$ conda install -c dgursoy tomopy=0.1.15
+$ conda install -c conda-forge tomopy=1.10.1
 $ conda install -c conda-forge dxchange
 $ conda install -c conda-forge progressbar2
 ```
@@ -39,10 +39,10 @@ $ cd /path/to/imars3d; python setup.py install
 Using `mamba` instead of `conda`.  
 First create the environment and install iMars3D dependencies, except for `ipywe`:  
 ```bash
-mamba create --name imars3d python=3.5
+mamba create --name imars3d python=3.7
 conda activate imars3d
 mamba install pytest pyyaml numpy scipy matplotlib astropy mpi4py psutil scikit-image
-mamba install -c dgursoy tomopy=0.1.15
+mamba install -c conda-forge tomopy=1.10.1
 mamba install dxchange
 mamba install progressbar2
 ```
