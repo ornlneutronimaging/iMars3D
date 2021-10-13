@@ -46,7 +46,8 @@ mamba install -c dgursoy tomopy=0.1.15
 mamba install dxchange
 mamba install progressbar2
 ```
-Install `ipywe` dependencies with this [requirements.txt](/uploads/40136cfa1ee52c9dc760fad9adf93e0c/requirements.txt) file.
+Install `ipywe` dependencies with this [requirements.txt](https://github.com/ornlneutronimaging/iMars3D/files/7338852/requirements.txt)
+ file.
 ```bash
 mamba install --file requirements.txt
 ```
