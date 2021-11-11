@@ -11,7 +11,7 @@ import yaml, os
 conf_path = "imars3d.conf"
 config = dict()
 if os.path.exists(conf_path):
-    config = yaml.load(open(conf_path))
+    config = yaml.safe_load(open(conf_path))
 # logging config
 import logging.config
 logging_conf = config.get("logging")

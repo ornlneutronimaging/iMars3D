@@ -73,8 +73,8 @@ from imars3d.recon.mpi import recon_mpi
 recon_mpi(sinograms, theta, recon_series, stepsize=1)
 """
     pypath = os.path.join(outdir, "test_recon_mpi_2cpu.py")
-    open(pypath, 'wt').write(pycode)
-    
+    with open(pypath, 'wt') as ostream:
+        ostream.write(pycode)
     cmd = "mpirun -np 2 python %s" % pypath
     if os.system(cmd):
         raise RuntimeError("%s failed" % cmd)

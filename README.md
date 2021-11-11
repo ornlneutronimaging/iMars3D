@@ -39,12 +39,9 @@ $ cd /path/to/imars3d; python setup.py install
 Using `mamba` instead of `conda`.  
 First create the environment and install iMars3D dependencies, except for `ipywe`:  
 ```bash
-mamba create --name imars3d python=3.5
+mamba create --name imars3d python=3.8
 conda activate imars3d
-mamba install pytest pyyaml numpy scipy matplotlib astropy mpi4py psutil scikit-image
-mamba install -c dgursoy tomopy=0.1.15
-mamba install dxchange
-mamba install progressbar2
+mamba install pytest pyyaml numpy scipy matplotlib astropy mpi4py mpich psutil scikit-image tomopy dxchange progressbar2
 ```
 Install `ipywe` dependencies with this [requirements.txt](https://github.com/ornlneutronimaging/iMars3D/files/7338852/requirements.txt)
  file.

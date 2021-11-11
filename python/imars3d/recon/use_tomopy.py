@@ -25,6 +25,7 @@ This is intended to be run on just one node.
     # algorithm='fbp',
     # lgorithm='pml_hybrid',
     # TODO FIXME - removed emission in tomopy.recon.  need to verify
+    proj = tomopy.minus_log(proj)
     rec = tomopy.recon(
         proj,
         theta=theta, center=center,
