@@ -6,11 +6,12 @@ import numpy as np
 
 from imars3d import detector_correction
 
+thisdir = os.path.dirname(__file__)
 
 def test_retrieving_low_and_high_resolution_dead_pixels():
     
     # init final image
-    detector_config = './python/imars3d/config/detector_dead_pixels.yml'
+    detector_config = os.path.join(thisdir, '../../../python/imars3d/config/detector_dead_pixels.yml')
     
     # retrieve dead pixel values
     dead_pixels = detector_correction.retrieve_mcp_dead_pixels.RetrieveMCPDeadPixels(detector_config)
