@@ -111,13 +111,15 @@ parallalization. sth similar to $ mpirun -np NODES python "code to call this met
         stop1 = min(start + stepsize, stop)
         logger.debug("node %s of %s working on %s:%s" % (rank, size, start, stop1))
         sinograms1 = sinograms[start:stop1]
-        if not len(sinograms):
+        if not len(sinograms1):
             continue
         recon_series1 = recon_series[start:stop1]
         try:
             recon(sinograms1, theta, recon_series1, center=center, **kwds)
         except:
-            logger.info("node %s of %s: recon %s:%s failed" % (rank, size, start, stop1))
+            import traceback as tb
+            err = tb.format_exc()
+            logger.info("node %s of %s: recon %s:%s failed:\n%s" % (rank, size, start, stop1, err))
 
         # update range
         start = stop1
