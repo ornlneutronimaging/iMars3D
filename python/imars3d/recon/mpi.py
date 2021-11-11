@@ -39,11 +39,14 @@ recon_mpi(**kargs)
     kargs_pkl = os.path.join(dir, "kargs.pkl")
     kargs = dict(sinograms=sinograms, theta=theta, recon_series=recon_series)
     kargs.update(kwds)
-    pickle.dump(kargs, open(kargs_pkl, 'wb'))
+    with open(kargs_pkl, 'wb') as ostream:
+        pickle.dump(kargs, ostream)
     # write python code
     pycode = py_code_template % locals()
     pyfile = os.path.join(dir, "recon.py")
-    open(pyfile, 'wt').write(pycode)
+    with open(pyfile, 'wt') as ostream:
+        ostream.write(pycode)
+    # print(kargs_pkl, pyfile)
     # cpus
     if not nodes:
         import psutil
@@ -70,21 +73,19 @@ parallalization. sth similar to $ mpirun -np NODES python "code to call this met
     """
     import logging; logger = logging.getLogger("mpi")
     import imars3d.io
-    
+
     from mpi4py import MPI
     comm = MPI.COMM_WORLD
     size = comm.Get_size()
     rank = comm.Get_rank()
-    
     totalN = len(sinograms)
+
     N = int(np.ceil(totalN*1. / size))
     start, stop = rank*N, min(totalN, (rank+1)*N)
-    # print("node %s of %s handles %s" % (rank, size, layers))
-    # print("N, start, stop=%s, %s, %s" % (N, start, stop))
-
+    print("node %s of %s handles [%s--%s] of %s" % (rank, size, start, stop, totalN))
     if recon is None:
         from .use_tomopy import recon_batch_singlenode as recon
-    
+
     # progress bar
     # for simplicity, we just report the progress at rank 0, which should be a
     # good indication of progress of all nodes any way
