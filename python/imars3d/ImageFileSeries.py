@@ -8,9 +8,8 @@ class ImageFileSeries(base):
     """Represent a series of image files. 
     For example, a series of cif files or a series of tiff files.
     """
-    
-    
-    def __init__(self, filename_template, 
+
+    def __init__(self, filename_template,
                  identifiers=None, decimal_mark_replacement="_", mode="r", name=None):
         """
         filename_template: examples 2014*_CT*_%07.3f_*.fits
@@ -21,7 +20,6 @@ class ImageFileSeries(base):
         self._init(filename_template, identifiers, decimal_mark_replacement, mode, name)
         return
 
-
     def __getstate__(self):
         return dict(
             name = self.name,
@@ -31,10 +29,8 @@ class ImageFileSeries(base):
             decimal_mark_replacement = self.decimal_mark_replacement
             )
 
-
     def __setstate__(self, state):
         return self._init(**state)
-
 
     def _init(self, filename_template=None,
               identifiers=None, decimal_mark_replacement="_", mode="r", name=None):
@@ -49,23 +45,19 @@ class ImageFileSeries(base):
         if identifiers is None:
             identifiers = []
         base.__init__(self, mode=mode, identifiers=identifiers, name=name)
-        
         self.filename_template = filename_template
         self.decimal_mark_replacement = decimal_mark_replacement
         return
 
-    
     def getslice(self, s):
         return self.__class__(
             self.filename_template, self.identifiers[s],
             self.decimal_mark_replacement, self.mode, self.name)
 
-    
     def getImage(self, identifier):
         p = self.getFilename(identifier)
         return ImageFile(p)
-    
-        
+
     def getFilename(self, identifier):
         path_pattern = self._getPathpattern(identifier)
         # don't need to check if file exists if we are creating it
@@ -84,16 +76,14 @@ class ImageFileSeries(base):
                 self.filename_template, path_pattern, identifier, pathlist)
             import warnings
             warnings.warn(msg)
-    
+
         path = paths[0]
         return path
-    
-    
+
     def exists(self, identifier):
         assert self.mode == 'w'
         p = self._getPathpattern(identifier)
         return os.path.exists(p)
-
 
     def putImage(self, identifier, data):
         p = self._getPathpattern(identifier)
@@ -101,7 +91,6 @@ class ImageFileSeries(base):
         img.data = data
         img.save()
         return
-
 
     def removeAll(self):
         """remove all image files"""
@@ -112,7 +101,6 @@ class ImageFileSeries(base):
             continue
         return
 
-
     def _getPathpattern(self, identifier):
         path_pattern = self.filename_template % (identifier,)
         dir = os.path.dirname(path_pattern)
@@ -122,12 +110,11 @@ class ImageFileSeries(base):
         path_pattern = os.path.join(
             dir, base.replace(".", self.decimal_mark_replacement) + ext)
         return path_pattern
-    
-    
+
 
 def imageCollection(glob_pattern=None, name=None, files=None):
     """create an ImageFileSeries instance from a collection of image files
-    
+
     This is intended for a bunch of images that cannot otherwise be identified.
     This is useful for, for example, dark field images and open beam images,
     which really do not need individual access but rather a way to iterate
