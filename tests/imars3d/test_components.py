@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# This test script is to be run manually.
+# To test, uncomment the test functions in main() method one by one.
+# For the last test "test_recon", need to modify the "sinograms" variable below.
+
 # tell pytest to skip this test
 import pytest
 pytestmark = pytest.mark.skipif(True, reason="need large dataset")
@@ -56,13 +60,14 @@ intfluct_corrected_series = imars3d.io.ImageFileSeries(
 sinograms = imars3d.io.ImageFileSeries(
     os.path.join(outdir, "sinogram_%i.tiff"),
     name = "Sinogram", mode = 'w',
+    # uncomment the following when running test_con
+    # identifiers = range(1978)
 )
 # reconstructed
 recon_series = imars3d.io.ImageFileSeries(
     os.path.join(outdir, "recon_%i.tiff"),
     name = "Reconstructed", mode = 'w',
 )
-
 
 def test_gamma_filter():
     # output
@@ -113,13 +118,15 @@ def test_projection():
 def test_recon():
     from imars3d.recon.mpi import recon
     recon_series.identifiers = sinograms.identifiers
+    # recon(sinograms[:2], theta, recon_series, nodes=1)
+    # recon(sinograms[:20], theta, recon_series, nodes=5)
     recon(sinograms, theta, recon_series, nodes=20)
     return
 
 
 def main():
-    # test_gamma_filter()
-    test_normalization()
+    test_gamma_filter()
+    # test_normalization()
     # test_tiltcalc()
     # test_tiltcorr()
     # test_correct_intensity_fluctuation()
