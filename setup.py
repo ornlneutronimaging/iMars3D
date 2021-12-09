@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 # define distribution
 setup(
     name="imars3d",
-    version="0.1.2",
+    version="0.1.3",
     packages=find_packages("python", exclude=['tests', 'notebooks']),
     package_dir={'': "python"},
     test_suite='tests',
