@@ -50,3 +50,16 @@ For independent contributors, the recommended development cycle is as follows:
   * The title of the pull request should be concise and meaningful.
   * Select a reviewer for the pull request.
   * Once the pull request is approved, ping a developer from the list for merging.
+
+
+Release Cycle
+-------------
+
+
+At the beginning of every iteration (two weeks), a senior developer on duty will tag the current ``next`` branch as a new ``qa`` branch.
+A auto pipeline will be triggered to deploy the new ``qa`` branch to a testing server where the computational instrument scientists (CIS) will test the newly added features as well as bug fixes.
+Once the final approval from CIS team is given, this ``qa`` branch will be merged into ``main`` branch.
+At the beginning of every month, a auto pipeline will tag the current ``main`` if there are new features or bug fixes, along with publishing the new version to the production server for general users to use.
+
+By default, the ``next`` branch is published to a conda channel called ``neutronimaging`` whenever a feature branch is merged into ``next``.
+Similarly, the tagging of ``main`` will trigger the pipeline to publish the stable version of ``iMars3D`` to both ``conda-forge`` as well as ``PyPI``.
