@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/ornlneutronimaging/iMars3D.svg?branch=master)](https://travis-ci.org/ornlneutronimaging/iMars3D) 
+[![Build Status](https://travis-ci.org/ornlneutronimaging/iMars3D.svg?branch=master)](https://travis-ci.org/ornlneutronimaging/iMars3D)
 
 # iMars3D
 Normalization, corrections, and reconstruction (using [tomopy](https://tomopy.readthedocs.io/en/latest/)) for the Neutron Imaging Beam Lines
@@ -17,7 +17,7 @@ Install dependencies:
 ```
 $ conda config --add channels conda-forge
 $ conda install pytest pyyaml numpy scipy matplotlib astropy mpi4py psutil scikit-image
-$ conda install -c dgursoy tomopy=0.1.15
+$ conda install -c conda-forge tomopy=1.10.1
 $ conda install -c conda-forge dxchange
 $ conda install -c conda-forge progressbar2
 ```
@@ -36,12 +36,15 @@ $ cd /path/to/imars3d; python setup.py install
 
 # Conda environment for development of iMars3D and ipywe:
 
-Using `mamba` instead of `conda`.  
-First create the environment and install iMars3D dependencies, except for `ipywe`:  
+Using `mamba` instead of `conda`.
+First create the environment and install iMars3D dependencies, except for `ipywe`:
 ```bash
 mamba create --name imars3d python=3.8
 conda activate imars3d
-mamba install pytest pyyaml numpy scipy matplotlib astropy mpi4py mpich psutil scikit-image tomopy dxchange progressbar2
+mamba install pytest pyyaml numpy scipy matplotlib astropy mpi4py mpich psutil scikit-image
+mamba install -c conda-forge tomopy=1.10.1
+mamba install dxchange
+mamba install progressbar2
 ```
 Install `ipywe` dependencies with this [requirements.txt](https://github.com/ornlneutronimaging/iMars3D/files/7338852/requirements.txt)
  file.

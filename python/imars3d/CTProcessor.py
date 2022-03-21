@@ -53,17 +53,17 @@ The default behavior can be modified by configuration file "imars3d.conf".
 """
 
     __doc__ = """CT reconstruction processor
-    
+
 >>> ct = CTProcessor(ct_series, angles, dfs, obs, **kwds)
 >>> ct.preprocess()
 >>> ct.recon()
 """ + __processor_doc__
-    
+
 
     def __init__(
             self,
             ct_series, angles, dfs, obs,
-            workdir='work', outdir='out', 
+            workdir='work', outdir='out',
             parallel_preprocessing=True, parallel_nodes=None,
             clean_intermediate_files=None,
             vertical_range=None,
@@ -73,7 +73,7 @@ The default behavior can be modified by configuration file "imars3d.conf".
         self.obs = obs
         self.angles = angles
         self.theta = np.array(angles) * np.pi / 180.
-        
+
         # workdir
         if not os.path.exists(workdir):
             os.makedirs(workdir)
@@ -195,7 +195,7 @@ The default behavior can be modified by configuration file "imars3d.conf".
         else:
             xmin, ymin, xmax, ymax = crop_window
             cropped = self.crop(
-                pre, 
+                pre,
                 left=xmin, right=xmax, top=ymin, bottom=ymax)
         if self.clean_intermediate_files == 'on_the_fly':
             pre.removeAll()
@@ -222,7 +222,7 @@ The default behavior can be modified by configuration file "imars3d.conf".
                 pre, workdir=workdir)
         else:
             tilt_corrected, tilt = i3.correct_tilt(
-                pre, tilt=tilt, 
+                pre, tilt=tilt,
                 workdir=os.path.join(workdir, 'tilt-correction' ),
                 max_npairs=None, parallel=self.parallel_preprocessing)
         if self.clean_intermediate_files == 'on_the_fly':
@@ -311,7 +311,7 @@ The default behavior can be modified by configuration file "imars3d.conf".
             continue
         self.r.recon_rar_direct = corrected_ifs
         return self.r.recon_rar_direct
-            
+
 
     def correctTilt_loop(self, pre, workdir):
         # correct tilt
@@ -365,14 +365,14 @@ The default behavior can be modified by configuration file "imars3d.conf".
 
     @dec.timeit
     def reconstruct(
-            self, 
+            self,
             ct_series, workdir=None, outdir=None,
             rot_center=None, explore_rot_center=True,
             outfilename_template=None,
             remove_rings_at_sinograms=False,
             mirror=True,
             **kwds):
-        workdir = workdir or self.workdir;  
+        workdir = workdir or self.workdir;
         outdir = outdir or self.outdir
         theta = self.theta
         # preprocess
@@ -406,7 +406,7 @@ The default behavior can be modified by configuration file "imars3d.conf".
         print('* Rotation center: %s' % rot_center)
         self.rot_center = rot_center
         open(os.path.join(workdir, 'rot_center'), 'wt').write(str(rot_center))
-        # reconstruct 
+        # reconstruct
         if self.vertical_range:
             sinograms = sinograms[self.vertical_range]
         self.r.sinograms = sinograms
@@ -415,7 +415,7 @@ The default behavior can be modified by configuration file "imars3d.conf".
             angles = -np.array(angles)
         # reconstruct using original sinograms
         recon = i3.reconstruct(
-            angles, sinograms, 
+            angles, sinograms,
             workdir=outdir, filename_template=outfilename_template,
             center=rot_center,
             nodes=self.parallel_nodes,
@@ -430,7 +430,7 @@ The default behavior can be modified by configuration file "imars3d.conf".
                 parallel = self.parallel_preprocessing,
                 **remove_rings_at_sinograms)
             recon = i3.reconstruct(
-                angles, sinograms, 
+                angles, sinograms,
                 workdir=os.path.join(outdir, 'rar_sinograms'),
                 filename_template=outfilename_template,
                 center=rot_center,
@@ -462,7 +462,7 @@ def archive(workdir, outdir):
     newpath = os.path.join(outdir, 'work-%s' % now)
     # this will take a long time
     rsync(workdir, newpath)
-    # 
+    #
     import shutil
     shutil.rmtree(workdir)
     # create a soft link so that the intermediate data can still be accessed
