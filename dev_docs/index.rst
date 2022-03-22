@@ -26,3 +26,4 @@ Development Process
    :maxdepth: 2
 
    dev_process/overview
+   dev_process/release
