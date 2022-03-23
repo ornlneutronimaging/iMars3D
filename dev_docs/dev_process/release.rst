@@ -36,7 +36,7 @@ For more information on how to publish to PyPI, please refer to the official doc
 Release to Conda
 ----------------
 
-The stable version of iMars3D should be released to ``conda-forge`` channel, and the nightly version should be released to the project channel, ``neutronimaging``.
+The stable version of iMars3D should be released to `conda-forge`_ channel, and the nightly version should be released to the project channel, `neutronimaging`_.
 
 To build the nightly version, the following steps are required:
 
@@ -55,4 +55,6 @@ To build the stable version for ``conda-forge``, the following steps are require
 * Junior developers: STOP!! Contact the maintainer (one of the senior developers) to build and deploy the stable version manually.
 * Maintainer: Follow the official conda-forge `instructions`_ on adding package.
 
+.. _conda-forge: https://anaconda.org/conda-forge
+.. _neutronimaging: https://anaconda.org/neutronimaging
 .. _instructions: https://conda-forge.org/docs/maintainer/adding_pkgs.html
