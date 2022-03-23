@@ -22,7 +22,7 @@ To publish a new stable version, the following steps are required:
 
 * Checkout the ``main`` branch and make sure it is updated.
 * Increase the version number in ``setup.cfg`` if it has not been increased.
-* In the root directory of the repository, run ``python -m build`` to build the wheel.
+* In the root directory of the repository, run ``python -m build --wheel`` to build the wheel.
 
   * The wheel file will be created in the ``dist`` directory.
   * The name of the wheel should following the standard convention, i.e. ``imars3d-<version>-py3-none-any.whl``.
