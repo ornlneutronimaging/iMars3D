@@ -13,11 +13,10 @@ from .AbstractComponent import AbstractComponent
 
 
 class Smoothing(AbstractComponent):
-
     def __init__(self, **kwds):
         self.kargs = kwds
         return
-    
+
     def __call__(self, ct_series, output_series, parallel=True):
         if parallel:
             from ..filters.smoothing import filter_parallel as filter
@@ -28,26 +27,24 @@ class Smoothing(AbstractComponent):
 
 
 class Cropping(AbstractComponent):
-
     def __init__(self, box):
         self.box = box
         return
-    
+
     def __call__(self, ct_series, output_series, parallel=True):
         if parallel:
             from ..filters.cropping import filter_parallel as filter
         else:
             from ..filters.cropping import filter
-        filter(ct_series, output_series, box = self.box)
+        filter(ct_series, output_series, box=self.box)
         return
 
 
 class GammaFiltering(AbstractComponent):
-    
     def __init__(self, boxsize=5):
         self.boxsize = boxsize
         return
-    
+
     def __call__(self, ct_series, output_img_series, parallel=True):
         boxsize = self.boxsize
         if parallel:
@@ -59,14 +56,14 @@ class GammaFiltering(AbstractComponent):
 
 
 class Normalization(AbstractComponent):
-    
     def __init__(self, workdir):
         self.workdir = workdir
         return
-    
+
     def __call__(self, ct_series, df_images, ob_images, output_img_series):
         workdir = self.workdir
         from ..filters.normalizer import normalize
+
         normalize(ct_series, df_images, ob_images, workdir, output_img_series)
         return
 
@@ -76,10 +73,10 @@ from .projection import Projection, Projection_MP
 
 
 class IntensityFluctuationCorrection(AbstractComponent):
-    
+
     """The neutron beam intensity fluctuates and the simple normalization
-using the white beam measurements is not enough. This component
-should normalize the intensity using the intensities near the edges"""
+    using the white beam measurements is not enough. This component
+    should normalize the intensity using the intensities near the edges"""
 
     def __call__(self, ct_series, output_series, parallel=True):
         if parallel:
@@ -92,10 +89,11 @@ should normalize the intensity using the intensities near the edges"""
     def __call__usingtomopy(self, input_ct_series, output_ct_series):
         print("Intensity fluctuation correction...")
         import tomopy, numpy as np
+
         data = [img.data for img in input_ct_series]
         data = np.array(data)
         data2 = tomopy.normalize_bg(data)
-        data2[data2<0] = 0
+        data2[data2 < 0] = 0
         for i, identifier in enumerate(output_ct_series.identifiers):
             img = output_ct_series.getImage(identifier)
             # skip over existing result
@@ -110,11 +108,10 @@ should normalize the intensity using the intensities near the edges"""
 
 
 class RingArtifactRemoval_Kectham(AbstractComponent):
-
     def __init__(self, **kwds):
         self.kargs = kwds
         return
-    
+
     def __call__(self, sinograms, output_sinograms, parallel=True):
         if parallel:
             from ..filters.ring_artifact_removal_Ketcham import filter_parallel as filter

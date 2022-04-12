@@ -1,7 +1,7 @@
 # interface for image series
 
+
 class AbstractImageSeries(object):
-    
     def __init__(self, mode=None, identifiers=None, name=None):
         """mode: read (r) or write (w)
         identifiers: a list of identifiers, each identifies one image in the series
@@ -11,8 +11,7 @@ class AbstractImageSeries(object):
         self.nImages = len(identifiers)
         self.name = name
         return
-        
-        
+
     def __getitem__(self, i):
         if isinstance(i, slice):
             return self.getslice(i)
@@ -27,36 +26,30 @@ class AbstractImageSeries(object):
     def __len__(self):
         return len(self.identifiers)
 
-
     def iterImages(self):
         for identifier in self.identifiers:
             yield self.getImage(identifier)
         return
 
-    
     def getImage(self, identifier):
         "return an image instance"
         raise NotImplementedError
-
 
     def getData(self, identifier):
         "return a numpy array of the image data"
         img = self.getImage(identifier)
         return img.getData()
 
-
     def exists(self, identifier):
         "check whether an image exists"
         raise NotImplementedError
-    
-        
+
     def putImage(self, identifier, data):
         "write image data for one image identified by the identifier"
         raise NotImplementedError
 
 
-class ImageIterator():
-
+class ImageIterator:
     def __init__(self, imgseries):
         self.imgseries = imgseries
         self.index = 0
@@ -69,7 +62,7 @@ class ImageIterator():
         if self.index >= len(self.imgseries):
             raise StopIteration
         r = self.imgseries[self.index]
-        self.index +=1
+        self.index += 1
         return r
 
     __next__ = next

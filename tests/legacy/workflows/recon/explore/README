@@ -1,0 +1,10 @@
+Here we explore how to make a reconstruction chain.
+
+* preprocessing: $ ./preprocess.py
+ - normalization
+ - compute tilt
+ - apply tilt
+ - projection
+* reconstruction:
+ - reconstruct using mpi: $ mpirun -np 20 python recon.py
+ - gathere all results to one directory: $ python recon_gather.py

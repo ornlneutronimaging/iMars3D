@@ -4,7 +4,9 @@
 from __future__ import print_function
 import progressbar, numpy as np, os
 from imars3d import configuration
-pb_config = configuration['progress_bar']
+
+pb_config = configuration["progress_bar"]
+
 
 def average(image_collection):
     N = image_collection.nImages
@@ -16,9 +18,11 @@ def average(image_collection):
             prefix,
             progressbar.Percentage(),
             progressbar.Bar(),
-            ' [', progressbar.ETA(), '] ',
+            " [",
+            progressbar.ETA(),
+            "] ",
         ],
-        max_value = N-1,
+        max_value=N - 1,
         **pb_config
     )
     for i, im in enumerate(image_collection.iterImages()):
@@ -29,8 +33,8 @@ def average(image_collection):
             res += data
         bar.update(i)
         continue
-    print('\n')
-    return res/N
+    print("\n")
+    return res / N
 
 
 def normalize(ct_series, df_images, ob_images, workdir, output_img_series):
@@ -52,7 +56,7 @@ def normalize(ct_series, df_images, ob_images, workdir, output_img_series):
         else:
             df = np.load(df_output)
     else:
-        df = 0.
+        df = 0.0
     # open beam
     ob_output = os.path.join(workdir, "ob.npy")
     if not os.path.exists(ob_output):
@@ -68,20 +72,23 @@ def normalize(ct_series, df_images, ob_images, workdir, output_img_series):
             prefix,
             progressbar.Percentage(),
             progressbar.Bar(),
-            ' [', progressbar.ETA(), '] ',
+            " [",
+            progressbar.ETA(),
+            "] ",
         ],
-        max_value = N-1,
+        max_value=N - 1,
         **pb_config
     )
     for i, angle in enumerate(ct_series.identifiers):
         # skip over existing results
         if not output_img_series.exists(angle):
             data = np.array(ct_series.getData(angle), dtype="float32")
-            data = (data-df)/ob
+            data = (data - df) / ob
             output_img_series.putImage(angle, data)
         bar.update(i)
         continue
-    print('\n')
+    print("\n")
     return
+
 
 # End of file

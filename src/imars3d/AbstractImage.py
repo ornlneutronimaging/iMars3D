@@ -1,7 +1,7 @@
 # interface for Image data object
 
-class AbstractImage:
 
+class AbstractImage:
     @property
     def data(self):
         if not hasattr(self, "_data"):
@@ -16,21 +16,18 @@ class AbstractImage:
     def data(self):
         del self._data
 
-
     def getData(self):
         raise NotImplementedError
-        
-        
+
     def save(self):
         raise NotImplementedError
 
-        
     def plot(self):
         """plot the data"""
         import pylab
+
         pylab.imshow(self.data)
         return
-
 
     def __repr__(self):
         raise NotImplementedError

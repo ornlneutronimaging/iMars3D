@@ -3,14 +3,15 @@ from .ImageFile import ImageFile
 
 
 from .AbstractImageSeries import AbstractImageSeries as base
+
+
 class ImageFileSeries(base):
 
-    """Represent a series of image files. 
+    """Represent a series of image files.
     For example, a series of cif files or a series of tiff files.
     """
 
-    def __init__(self, filename_template,
-                 identifiers=None, decimal_mark_replacement="_", mode="r", name=None):
+    def __init__(self, filename_template, identifiers=None, decimal_mark_replacement="_", mode="r", name=None):
         """
         filename_template: examples 2014*_CT*_%07.3f_*.fits
         identifiers: a list of identifiers for images
@@ -22,25 +23,24 @@ class ImageFileSeries(base):
 
     def __getstate__(self):
         return dict(
-            name = self.name,
-            mode = self.mode,
-            filename_template = self.filename_template,
-            identifiers = self.identifiers,
-            decimal_mark_replacement = self.decimal_mark_replacement
-            )
+            name=self.name,
+            mode=self.mode,
+            filename_template=self.filename_template,
+            identifiers=self.identifiers,
+            decimal_mark_replacement=self.decimal_mark_replacement,
+        )
 
     def __setstate__(self, state):
         return self._init(**state)
 
-    def _init(self, filename_template=None,
-              identifiers=None, decimal_mark_replacement="_", mode="r", name=None):
+    def _init(self, filename_template=None, identifiers=None, decimal_mark_replacement="_", mode="r", name=None):
         """
         filename_template: examples 2014*_CT*_%07.3f_*.fits
         identifiers: a list of identifiers for images
         decimal_mark_replacement: in filenames, the "." decimal mark usually is replaced by a different symbol, often the underscore.
         mode: r or w
         """
-        if mode not in 'rw':
+        if mode not in "rw":
             raise ValueError("Invalid mode: %s" % mode)
         if identifiers is None:
             identifiers = []
@@ -51,8 +51,8 @@ class ImageFileSeries(base):
 
     def getslice(self, s):
         return self.__class__(
-            self.filename_template, self.identifiers[s],
-            self.decimal_mark_replacement, self.mode, self.name)
+            self.filename_template, self.identifiers[s], self.decimal_mark_replacement, self.mode, self.name
+        )
 
     def getImage(self, identifier):
         p = self.getFilename(identifier)
@@ -61,27 +61,33 @@ class ImageFileSeries(base):
     def getFilename(self, identifier):
         path_pattern = self._getPathpattern(identifier)
         # don't need to check if file exists if we are creating it
-        if self.mode == 'w':
+        if self.mode == "w":
             return path_pattern
         # check if file exists. this is good when reading
         # original data files from the data acqusition system
         # where file name convention is unknown
         paths = glob.glob(path_pattern)
-        if len(paths)==0:
-            raise RuntimeError("template %r no good: \npath_pattern=%r\npaths=%s" % (
-                self.filename_template, path_pattern, paths))
+        if len(paths) == 0:
+            raise RuntimeError(
+                "template %r no good: \npath_pattern=%r\npaths=%s" % (self.filename_template, path_pattern, paths)
+            )
         elif len(paths) > 1:
-            pathlist = '\n'.join(paths)
+            pathlist = "\n".join(paths)
             msg = "\ntemplate %r (path_pattern=%s) found multiple files for %s:\n%s\n" % (
-                self.filename_template, path_pattern, identifier, pathlist)
+                self.filename_template,
+                path_pattern,
+                identifier,
+                pathlist,
+            )
             import warnings
+
             warnings.warn(msg)
 
         path = paths[0]
         return path
 
     def exists(self, identifier):
-        assert self.mode == 'w'
+        assert self.mode == "w"
         p = self._getPathpattern(identifier)
         return os.path.exists(p)
 
@@ -107,8 +113,7 @@ class ImageFileSeries(base):
         basename = os.path.basename(path_pattern)
         base, ext = os.path.splitext(basename)
         # bad code
-        path_pattern = os.path.join(
-            dir, base.replace(".", self.decimal_mark_replacement) + ext)
+        path_pattern = os.path.join(dir, base.replace(".", self.decimal_mark_replacement) + ext)
         return path_pattern
 
 
@@ -126,5 +131,6 @@ def imageCollection(glob_pattern=None, name=None, files=None):
     """
     if not files:
         import glob
+
         files = glob.glob(glob_pattern)
-    return ImageFileSeries("%s", files, decimal_mark_replacement=".", mode='r', name=name)
+    return ImageFileSeries("%s", files, decimal_mark_replacement=".", mode="r", name=name)

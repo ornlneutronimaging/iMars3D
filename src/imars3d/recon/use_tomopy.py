@@ -5,33 +5,27 @@ import progressbar
 import os, sys, numpy as np
 
 
-def recon_batch_singlenode(
-        sinograms, theta, recon_series, center=None,
-        algorithm='gridrec', emission=False, **kwds):
+def recon_batch_singlenode(sinograms, theta, recon_series, center=None, algorithm="gridrec", emission=False, **kwds):
     """reconstruct from a bunch of sinograms.
-This is intended to be run on just one node.
+    This is intended to be run on just one node.
 
-    theta: sample rotation angle in radian
+        theta: sample rotation angle in radian
     """
     import tomopy, imars3d.io
+
     proj = [img.data for img in sinograms]
     proj = np.array(proj)
     proj = np.swapaxes(proj, 0, 1)
-    Y,X = proj[0].shape
+    Y, X = proj[0].shape
     if center is None:
-        center = X/2.
+        center = X / 2.0
     # reconstruct
-    algorithm = algorithm or 'gridrec'
+    algorithm = algorithm or "gridrec"
     # algorithm='fbp',
     # lgorithm='pml_hybrid',
     # TODO FIXME - removed emission in tomopy.recon.  need to verify
     proj = tomopy.minus_log(proj)
-    rec = tomopy.recon(
-        proj,
-        theta=theta, center=center,
-        algorithm=algorithm,
-        ncore = 1, **kwds
-    )
+    rec = tomopy.recon(proj, theta=theta, center=center, algorithm=algorithm, ncore=1, **kwds)
     # output
     for i, img in enumerate(recon_series):
         img.data = rec[i]
@@ -40,32 +34,33 @@ This is intended to be run on just one node.
     return
 
 
-def recon(sinogram, theta, outpath, center=None,
-          algorithm='gridrec', emission=False, ncore=1, **kwds):
+def recon(sinogram, theta, outpath, center=None, algorithm="gridrec", emission=False, ncore=1, **kwds):
     """Use tomopy to reconstruct from one sinogram
-    
+
     theta: sample rotation angles in radian
     """
     import tomopy, imars3d.io
+
     proj = [sinogram.data]
     proj = np.array(proj)
     # tomopy.recon needs the shape to be
     # angles, Y, X
     proj = np.swapaxes(proj, 0, 1)
-    Y,X = proj[0].shape
+    Y, X = proj[0].shape
     if center is None:
-        center = X/2.
+        center = X / 2.0
     # reconstruct
     # TODO FIXME - removed emission in tomopy.recon.  need to verify
     rec = tomopy.recon(
         proj,
-        theta=theta, center=center,
+        theta=theta,
+        center=center,
         algorithm=algorithm,
         # emission=emission,
-        ncore = ncore,
+        ncore=ncore,
         **kwds
     )
-    rec = rec[0] # there is only one layer
+    rec = rec[0]  # there is only one layer
     # output
     img = imars3d.io.ImageFile(path=outpath)
     img.data = rec
