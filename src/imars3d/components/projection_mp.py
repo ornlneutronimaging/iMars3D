@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import multiprocessing as mp, numpy as np, pickle, os
-import logging; logger = logging.getLogger("projection")
+import logging
+
+logger = logging.getLogger("projection")
 
 # global array
 data = None
@@ -28,13 +30,15 @@ def launch_jobs(ct_series, sinograms, num_workers=None):
     sinograms_pkl = pickle.dumps(sinograms)
     # array to hold all data
     import numpy as np
-    data = np.zeros( (N, Y, X), dtype="float32")
+
+    data = np.zeros((N, Y, X), dtype="float32")
     # read data
     for i in range(N):
         data[i, :] = ct_series[i].data
         continue
     pool = mp.Pool(num_workers)
     return pool.map(job_handler, range(Y))
+
 
 def job_handler(y):
     sinograms = pickle.loads(sinograms_pkl)
@@ -44,17 +48,22 @@ def job_handler(y):
         return y
     sino.data = data[:, y, :]
     from imars3d.filters.smoothing import filter_one_median as smooth
+
     sino.data = smooth(sino.data, 3)
     sino.save()
     return y
 
+
 def main():
     import sys
-    args, kwds = pickle.load(open(sys.argv[1], 'rb'))
+
+    args, kwds = pickle.load(open(sys.argv[1], "rb"))
     for y in launch_jobs(*args, **kwds):
         continue
     return
 
-if __name__ == '__main__': main()
+
+if __name__ == "__main__":
+    main()
 
 # End of file

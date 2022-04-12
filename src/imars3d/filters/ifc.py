@@ -2,17 +2,20 @@
 
 import numpy as np
 
-DESC = 'Intensity Fluctuation Correction'
+DESC = "Intensity Fluctuation Correction"
+
+
 def filter_parallel(ct_series, output_img_series, **kwds):
     from .batch import filter_parallel
-    return filter_parallel(
-        ct_series, output_img_series, DESC, filter_one, **kwds)
+
+    return filter_parallel(ct_series, output_img_series, DESC, filter_one, **kwds)
 
 
 def filter(ct_series, output_img_series, **kwds):
     from .batch import filter
-    return filter(
-        ct_series, output_img_series, DESC, filter_one, **kwds)
+
+    return filter(ct_series, output_img_series, DESC, filter_one, **kwds)
+
 
 def filter_one(img, sigma=3):
     """correct intensity fluctuation
@@ -20,7 +23,8 @@ def filter_one(img, sigma=3):
     - sigma: sigma for edge detection
     """
     bg = getBG(img, sigma=sigma)
-    return img/bg
+    return img / bg
+
 
 def getBG(img, debug=False, **kwds):
     # get boundary
@@ -30,13 +34,14 @@ def getBG(img, debug=False, **kwds):
     # start_row = max(0, start_row-5)
     # stop_row = min(NROWS-1, stop_row+5)
     start_cols = start_cols // 2
-    stop_cols = (stop_cols + NCOLS)//2
+    stop_cols = (stop_cols + NCOLS) // 2
     # compute bg
-    left = None; right = None
+    left = None
+    right = None
     for i, row in enumerate(img):
-        l = row[:start_cols[i]]
-        r = row[stop_cols[i]:]
-        if left is None: 
+        l = row[: start_cols[i]]
+        r = row[stop_cols[i] :]
+        if left is None:
             left = l
         else:
             left = np.concatenate((left, l))
@@ -48,8 +53,9 @@ def getBG(img, debug=False, **kwds):
     all = np.concatenate((left, right))
     if debug:
         hist, edges = np.histogram(all, bins=np.arange(0.5, 1.5, 0.01))
-        c = (edges[1:] + edges[:-1])/2
+        c = (edges[1:] + edges[:-1]) / 2
         from matplotlib import pyplot as plt
+
         plt.figure()
         plt.plot(c, hist)
         plt.savefig("hist.png")
@@ -59,11 +65,12 @@ def getBG(img, debug=False, **kwds):
 
 def getBoundary(img, debug=False, **kwds):
     from skimage import feature
+
     edge = feature.canny(img, **kwds)
     start_row = stop_row = None
-    middle_col = (edge.shape[1]-1)//2
-    start_cols = np.ones(edge.shape[0], dtype=int)*middle_col
-    stop_cols = np.ones(edge.shape[0], dtype=int)*middle_col
+    middle_col = (edge.shape[1] - 1) // 2
+    start_cols = np.ones(edge.shape[0], dtype=int) * middle_col
+    stop_cols = np.ones(edge.shape[0], dtype=int) * middle_col
     for i, row in enumerate(edge):
         isedge = row > 0
         if isedge.any():
@@ -72,7 +79,7 @@ def getBoundary(img, debug=False, **kwds):
             # set the row that starts to have object to be measured
             if start_row is None:
                 start_row = i
-            stop_row = i+1
+            stop_row = i + 1
         continue
     if debug:
         print(start_row, stop_row)
@@ -80,9 +87,10 @@ def getBoundary(img, debug=False, **kwds):
         #    print(start, stop)
         #    continue
         from matplotlib import pyplot as plt
+
         plt.figure()
-        plt.plot(start_cols, '.')
-        plt.plot(stop_cols, '.')
+        plt.plot(start_cols, ".")
+        plt.plot(stop_cols, ".")
         plt.savefig("edge.png")
         plt.close()
     return start_row, stop_row, start_cols, stop_cols

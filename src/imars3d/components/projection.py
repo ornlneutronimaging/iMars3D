@@ -4,12 +4,14 @@
 
 import progressbar
 from imars3d import configuration
-pb_config = configuration['progress_bar']
+
+pb_config = configuration["progress_bar"]
 
 
 from .AbstractComponent import AbstractComponent
-class Projection(AbstractComponent):
 
+
+class Projection(AbstractComponent):
     def __call__(self, ct_series, sinograms):
         """convert ct image series to sinogram series"""
         N = ct_series.nImages
@@ -18,19 +20,20 @@ class Projection(AbstractComponent):
         Y, X = data0.shape
         # array to hold all data
         import numpy as np
-        data = np.zeros( (N, Y, X), dtype="float32")
+
+        data = np.zeros((N, Y, X), dtype="float32")
         # read data
-        prefix = "Reading data from %r for sinogram building" % (
-            ct_series.name or "",)
-        bar = create_pbar(prefix, N-1)
+        prefix = "Reading data from %r for sinogram building" % (ct_series.name or "",)
+        bar = create_pbar(prefix, N - 1)
         for i in range(N):
             bar.update(i)
             data[i, :] = ct_series[i].data
             continue
-        # 
+        #
         prefix = "Computing sinograms from %r" % (ct_series.name or "",)
-        bar = create_pbar(prefix, Y-1)
+        bar = create_pbar(prefix, Y - 1)
         from ..filters.smoothing import filter_one_median as smooth
+
         sinograms.identifiers = range(Y)
         for y in range(Y):
             sino = sinograms[y]
@@ -45,33 +48,36 @@ class Projection(AbstractComponent):
             continue
         return
 
+
 create_pbar = lambda prefix, max: progressbar.ProgressBar(
     widgets=[
         prefix,
         progressbar.Percentage(),
         progressbar.Bar(),
-        ' [', progressbar.ETA(), '] ',
+        " [",
+        progressbar.ETA(),
+        "] ",
     ],
-    max_value = max,
+    max_value=max,
     **pb_config
 )
 
 
 class Projection_MP(AbstractComponent):
-
     def __init__(self, num_workers=None):
         self.num_workers = num_workers
         return
 
     def __call__(self, ct_series, sinograms):
         """convert ct image series to sinogram series"""
-        print ("* Projecting...")
+        print("* Projecting...")
         # get metadata for sinograms
         data0 = ct_series[0].data
         Y, X = data0.shape
         sinograms.identifiers = range(Y)
         # call multiprocessing
         import tempfile, pickle, os
+
         args = ct_series, sinograms
         tmpdir = "_mp_tmp"
         if not os.path.exists(tmpdir):
@@ -80,12 +86,13 @@ class Projection_MP(AbstractComponent):
         # save params
         args_pkl = os.path.join(dir, "args.pkl")
         allargs = args, dict(num_workers=self.num_workers)
-        pickle.dump(allargs, open(args_pkl, 'wb'))
-        # 
-        script = os.path.join(os.path.dirname(__file__), 'projection_mp.py')
-        cmd = 'python %s %s' % (script, args_pkl)
-        # 
+        pickle.dump(allargs, open(args_pkl, "wb"))
+        #
+        script = os.path.join(os.path.dirname(__file__), "projection_mp.py")
+        cmd = "python %s %s" % (script, args_pkl)
+        #
         import subprocess as sp, shlex
+
         args = shlex.split(cmd)
         sp.check_call(args, shell=False)
         return

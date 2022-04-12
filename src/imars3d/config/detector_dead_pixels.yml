@@ -12,7 +12,7 @@ detector:
                 bottom: 20
                 left: 5
                 right: 15
-                
+
         high_resolution:
             group1:
                 top: 1598
@@ -24,4 +24,3 @@ detector:
                 bottom: 1020
                 left: 1050
                 right: 1100
-                

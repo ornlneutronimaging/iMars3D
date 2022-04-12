@@ -1,5 +1,5 @@
 name: Install/Update Analysis Cluster
-on: 
+on:
   push:
     branches:
       - qa

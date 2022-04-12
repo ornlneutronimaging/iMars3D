@@ -5,7 +5,7 @@ In this script we are trying compute the tilt angle of the
 rotation axis.
 
 We use a pair of images that are 180 degrees away from each
-other. 
+other.
 They are supposed to be exact mirror images, but not
 because of the tilt.
 The rotation angle from the master image and the
@@ -37,12 +37,12 @@ from smooth import smooth
 from inputimages import f0, f180
 
 border = 5
-rotation = 30. # 45.
+rotation = 30.0  # 45.
 data0 = f0.getData()
 data0 = ndimage.rotate(data0, rotation)
 sizeY, sizeX = data0.shape
-data0 = data0[sizeY//4:sizeY*3//4, sizeX//4:sizeX*3//4]
-print data0.shape
+data0 = data0[sizeY // 4 : sizeY * 3 // 4, sizeX // 4 : sizeX * 3 // 4]
+print(data0.shape)
 # pylab.imshow(data0)
 
 data180 = f180.getData()
@@ -50,12 +50,13 @@ data180 = f180.getData()
 data180 = np.fliplr(data180)
 data180 = ndimage.rotate(data180, rotation)
 sizeY, sizeX = data180.shape
-data180 = data180[sizeY//4:sizeY*3//4, sizeX//4:sizeX*3//4]
+data180 = data180[sizeY // 4 : sizeY * 3 // 4, sizeX // 4 : sizeX * 3 // 4]
 
 
 def find_edges(data):
-    dataint = np.array(1.*data/np.max(data)*255, dtype="uint8")
+    dataint = np.array(1.0 * data / np.max(data) * 255, dtype="uint8")
     import cv2
+
     edges = cv2.Canny(dataint, 25, 50)
     # pylab.imshow(dataint)
     # pylab.imshow(edges, cmap="gray")
@@ -68,21 +69,23 @@ def fft_angles_and_intensities(image):
     """
     F = np.fft.fft2(image)
     # clean up borders
-    F[0:border,:] = 0; F[:, 0:border] = 0
-    F[-border:] = 0; F[:, -border:] = 0
+    F[0:border, :] = 0
+    F[:, 0:border] = 0
+    F[-border:] = 0
+    F[:, -border:] = 0
     # shift origin to the center of the freq-domain image
     F = np.fft.fftshift(F)
     # calculate angles
     sizey, sizex = F.shape
-    x = np.arange(0, sizex, 1.) - sizex//2
+    x = np.arange(0, sizex, 1.0) - sizex // 2
     xx = np.tile(x, sizey).reshape(F.shape)
-    y = np.arange(0, sizey, 1.) - sizey//2
+    y = np.arange(0, sizey, 1.0) - sizey // 2
     yy = np.repeat(y, sizex).reshape(F.shape)
-    rho = (xx*xx + yy*yy)**.5
+    rho = (xx * xx + yy * yy) ** 0.5
     angles = np.arctan2(yy, xx)
-    
+
     R = min(image.shape) // 2
-    bracket = (rho>0.1*R)*(rho<R)
+    bracket = (rho > 0.1 * R) * (rho < R)
     # return angles, np.abs(F)
     return angles[bracket], np.abs(F[bracket])
 
@@ -96,15 +99,15 @@ for row in range(10, 1000, 100):
 bins = 360
 
 # angles0,F0 = fft_angles_and_intensities(find_edges(data0))
-angles0,F0 = fft_angles_and_intensities(data0)
+angles0, F0 = fft_angles_and_intensities(data0)
 hist0, edges0 = np.histogram(angles0, weights=F0, bins=bins)
 
 # angles180,F180 = fft_angles_and_intensities(find_edges(data180))
-angles180,F180 = fft_angles_and_intensities(data180)
+angles180, F180 = fft_angles_and_intensities(data180)
 hist180, edges180 = np.histogram(angles180, weights=F180, bins=bins)
 
 # import pdb; pdb.set_trace()
-# 
+#
 np.save("anglespectrum0.npy", hist0)
 np.save("anglespectrum180.npy", hist180)
 

@@ -3,6 +3,7 @@
 
 # tell pytest to skip this test
 import pytest
+
 pytestmark = pytest.mark.skipif(True, reason="need large dataset")
 
 import sys
@@ -20,13 +21,14 @@ dfs = i3.io.imageCollection(pattern, name="Dark Field")
 pattern = os.path.join(datadir, "*OB*.fits")
 obs = i3.io.imageCollection(pattern, name="Open Beam")
 # ct
-angles = np.arange(0, 182, .85)
-theta = angles * np.pi / 180.
+angles = np.arange(0, 182, 0.85)
+theta = angles * np.pi / 180.0
 ct_series = i3.io.ImageFileSeries(
     os.path.join(datadir, "*CT*_%.3f_*.fits"),
-    identifiers = angles,
-    name = "CT",
+    identifiers=angles,
+    name="CT",
 )
+
 
 def test():
     normalized = i3.normalize(ct_series, dfs, obs, workdir=workdir)
@@ -36,9 +38,11 @@ def test():
     recon = i3.reconstruct(angles, sinograms, workdir=outdir)
     return
 
+
 def main():
     test()
     return
 
 
-if __name__ == '__main__': main()
+if __name__ == "__main__":
+    main()

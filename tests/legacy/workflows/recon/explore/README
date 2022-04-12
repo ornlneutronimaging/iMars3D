@@ -5,6 +5,6 @@ Here we explore how to make a reconstruction chain.
  - compute tilt
  - apply tilt
  - projection
-* reconstruction: 
+* reconstruction:
  - reconstruct using mpi: $ mpirun -np 20 python recon.py
- - gathere all results to one directory: $ python recon_gather.py 
+ - gathere all results to one directory: $ python recon_gather.py

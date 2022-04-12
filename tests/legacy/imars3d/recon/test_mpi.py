@@ -12,41 +12,51 @@ layers = range(900, 905)
 sinogram_template = os.path.join(datadir, "turbine", "sinogram_%i.tiff")
 sinograms = imars3d.io.ImageFileSeries(
     sinogram_template,
-    name = "Sinogram", identifiers = layers,
-    )
-angles = np.arange(0, 182, .85)
-theta = angles * np.pi / 180.
+    name="Sinogram",
+    identifiers=layers,
+)
+angles = np.arange(0, 182, 0.85)
+theta = angles * np.pi / 180.0
 
 
 def test_recon():
     from imars3d.recon.mpi import recon
+
     recon_template = os.path.join(outdir, "test_recon", "recon_%05i.tiff")
     recon_series = imars3d.io.ImageFileSeries(
         recon_template,
-        mode='w', name="Reconstructed", identifiers=layers,
-        )
+        mode="w",
+        name="Reconstructed",
+        identifiers=layers,
+    )
     nodes = 5
-    print('[DEBUG] {} nodes'.format(nodes))
+    print("[DEBUG] {} nodes".format(nodes))
     cmd = recon(sinograms, theta, recon_series, nodes=nodes)
-    print('[DEBUG] MPI command = {}'.format(cmd))
+    print("[DEBUG] MPI command = {}".format(cmd))
 
 
 def test_recon_mpi():
     from imars3d.recon.mpi import recon_mpi
+
     recon_template = os.path.join(outdir, "test_recon_mpi", "recon_%05i.tiff")
     recon_series = imars3d.io.ImageFileSeries(
         recon_template,
-        mode = 'w', name = "Reconstructed", identifiers=layers,
-        )
+        mode="w",
+        name="Reconstructed",
+        identifiers=layers,
+    )
     recon_mpi(sinograms, theta, recon_series, stepsize=3)
     return
 
 
 def test_recon_mpi_2cpu():
     workdir = dir
-    pycode = """
+    pycode = (
+        """
 import os, imars3d, numpy as np
-datadir = os.path.join(%(workdir)r, "..", "..", "iMars3D_data_set")""" % locals()
+datadir = os.path.join(%(workdir)r, "..", "..", "iMars3D_data_set")"""
+        % locals()
+    )
     pycode += """
 outdir = "_tmp/test_mpi/test_recon_mpi_2cpu"
 # sinogram
@@ -73,7 +83,7 @@ from imars3d.recon.mpi import recon_mpi
 recon_mpi(sinograms, theta, recon_series, stepsize=1)
 """
     pypath = os.path.join(outdir, "test_recon_mpi_2cpu.py")
-    with open(pypath, 'wt') as ostream:
+    with open(pypath, "wt") as ostream:
         ostream.write(pycode)
     cmd = "mpirun -np 2 python %s" % pypath
     if os.system(cmd):
@@ -87,4 +97,5 @@ def main():
     test_recon_mpi_2cpu()
 
 
-if __name__ == '__main__': main()
+if __name__ == "__main__":
+    main()

@@ -5,6 +5,7 @@ import os, numpy as np
 from imars3d import io
 from imars3d.filters import normalizer
 
+
 def test_average():
     dir = os.path.dirname(__file__)
     pattern = os.path.join(dir, "..", "..", "iMars3D_data_set", "turbine", "*DF*.fits")
@@ -20,23 +21,26 @@ def test_normalize():
     pattern = os.path.join(datadir, "*DF*.fits")
     dfs = io.imageCollection(pattern, name="Dark Field")
     # open beam: DON'T CHANGE DF to OB as there is no OB
-    pattern = os.path.join(datadir, "*DF*.fits") # hack
+    pattern = os.path.join(datadir, "*DF*.fits")  # hack
     obs = io.imageCollection(pattern, name="Open Beam")
     # ct
     angles = np.arange(0, 52, 8.5)
     ct_series = io.ImageFileSeries(
         os.path.join(datadir, "*CT*_%.3f_*.fits"),
-        identifiers = angles,
-        name = "CT",
+        identifiers=angles,
+        name="CT",
     )
     # output
     normalized_ct = io.ImageFileSeries(
-        "_tmp/test_normalizer/out/normalized_%.3f.npy", identifiers=angles, 
-        decimal_mark_replacement=".", mode="w", name="Normalized"
-        )
+        "_tmp/test_normalizer/out/normalized_%.3f.npy",
+        identifiers=angles,
+        decimal_mark_replacement=".",
+        mode="w",
+        name="Normalized",
+    )
     normalizer.normalize(ct_series, dfs, obs, "_tmp/test_normalizer/work", normalized_ct)
     return
-    
+
 
 def test_normalize_noDF():
     dir = os.path.dirname(__file__)
@@ -44,23 +48,26 @@ def test_normalize_noDF():
     # dark field
     dfs = None
     # open beam
-    pattern = os.path.join(datadir, "*DF*.fits") # hack
+    pattern = os.path.join(datadir, "*DF*.fits")  # hack
     obs = io.imageCollection(pattern, name="Open Beam")
     # ct
     angles = np.arange(0, 52, 8.5)
     ct_series = io.ImageFileSeries(
         os.path.join(datadir, "*CT*_%.3f_*.fits"),
-        identifiers = angles,
-        name = "CT",
+        identifiers=angles,
+        name="CT",
     )
     # output
     normalized_ct = io.ImageFileSeries(
-        "_tmp/test_normalizer/out/normalized_%.3f.npy", identifiers=angles, 
-        decimal_mark_replacement=".", mode="w", name="Normalized"
-        )
+        "_tmp/test_normalizer/out/normalized_%.3f.npy",
+        identifiers=angles,
+        decimal_mark_replacement=".",
+        mode="w",
+        name="Normalized",
+    )
     normalizer.normalize(ct_series, dfs, obs, "_tmp/test_normalizer/work", normalized_ct)
     return
-    
+
 
 def main():
     test_average()
@@ -68,6 +75,8 @@ def main():
     test_normalize_noDF()
     return
 
-if __name__ == '__main__': main()
+
+if __name__ == "__main__":
+    main()
 
 # End of file

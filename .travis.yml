@@ -24,7 +24,7 @@ branches:
 #    - os: linux
 
 env:
-   
+
 before_install:
   - rm -rf /home/travis/mc  # forcing cache creation
   - if [ -d /home/travis/mc ] ; then export USE_CACHE=yes; echo "Use cache"; else export USE_CACHE=no; fi
