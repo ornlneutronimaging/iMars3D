@@ -22,14 +22,14 @@ def test_gamma_filter():
     #
     saturation_intensity = np.iinfo(imgs_with_noise.dtype).max
     for i, j in NOISE_LOC:
-        imgs_with_noise[j, i] = saturation_intensity - np.random.randint(0, 4)
+        imgs_with_noise[0, j, i] = saturation_intensity - np.random.randint(0, 4)
     # call gamma_filter
     imgs_filtered = gamma_filter(imgs_with_noise)
     # verify results
     for i, j in NOISE_LOC:
         # all the artificial gamma saturated pixels should be replaced
         # with meaningful values (i.e. not saturated)
-        assert imgs_filtered[j, i] < saturation_intensity - 4
+        assert imgs_filtered[0, j, i] < saturation_intensity - 4
 
 
 if __name__ == "__main__":
