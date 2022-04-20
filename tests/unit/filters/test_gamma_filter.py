@@ -5,7 +5,14 @@ import skimage
 from imars3dv2.filters.gamma_filter import gamma_filter
 
 
-def test_gamma_filter():
+@pytest.mark.parametrize(
+    "use_selective_median_filter,unchanged_pixels",
+    [
+        (False, ()),
+        (True, ([0, 0], [124, 124])),
+    ],
+)
+def test_gamma_filter(use_selective_median_filter, unchanged_pixels):
     """ """
     # constants
     np.random.seed(7)
@@ -24,12 +31,15 @@ def test_gamma_filter():
     for i, j in NOISE_LOC:
         imgs_with_noise[0, j, i] = saturation_intensity - np.random.randint(0, 4)
     # call gamma_filter
-    imgs_filtered = gamma_filter(imgs_with_noise)
+    imgs_filtered = gamma_filter(imgs_with_noise, selective_median_filter=use_selective_median_filter)
     # verify results
     for i, j in NOISE_LOC:
         # all the artificial gamma saturated pixels should be replaced
         # with meaningful values (i.e. not saturated)
         assert imgs_filtered[0, j, i] < saturation_intensity - 4
+
+    for i, j in unchanged_pixels:
+        assert imgs_filtered[0, j, i] == imgs_reference[0, j, i]
 
 
 if __name__ == "__main__":
