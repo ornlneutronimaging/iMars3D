@@ -45,7 +45,3 @@ def gamma_filter(
         arrays_filtered = np.where(arrays > threshold, arrays_filtered, arrays)
     # return
     return arrays_filtered
-
-
-if __name__ == "__main__":
-    pass
