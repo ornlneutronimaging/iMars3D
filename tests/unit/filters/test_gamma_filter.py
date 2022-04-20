@@ -8,8 +8,8 @@ from imars3dv2.filters.gamma_filter import gamma_filter
 @pytest.mark.parametrize(
     "use_selective_median_filter,unchanged_pixels",
     [
-        (False, ()),
-        (True, ([0, 0], [124, 124])),
+        (False, ([173, 155], [152, 65])),
+        (True, ([173, 155], [152, 65])),
     ],
 )
 def test_gamma_filter(use_selective_median_filter, unchanged_pixels):
