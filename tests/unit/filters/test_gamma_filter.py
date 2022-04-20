@@ -27,7 +27,7 @@ def test_gamma_filter(use_selective_median_filter):
         (217, 131),  # bg, no intensity
     )
     # unchanged_pixels
-    unchanged_pixels = ([173, 155], [152, 65])
+    UNCHANGED_PIXELS = ([173, 155], [152, 65])
     #
     saturation_intensity = np.iinfo(imgs_with_noise.dtype).max
     for i, j in NOISE_LOC:
@@ -40,7 +40,7 @@ def test_gamma_filter(use_selective_median_filter):
         # with meaningful values (i.e. not saturated)
         assert imgs_filtered[0, j, i] < saturation_intensity - 4
 
-    for i, j in unchanged_pixels:
+    for i, j in UNCHANGED_PIXELS:
         assert imgs_filtered[0, j, i] == imgs_reference[0, j, i]
 
 
