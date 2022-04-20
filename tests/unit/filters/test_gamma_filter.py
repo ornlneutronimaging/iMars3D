@@ -6,13 +6,13 @@ from imars3dv2.filters.gamma_filter import gamma_filter
 
 
 @pytest.mark.parametrize(
-    "use_selective_median_filter,unchanged_pixels",
+    "use_selective_median_filter",
     [
-        (False, ([173, 155], [152, 65])),
-        (True, ([173, 155], [152, 65])),
+        (False),
+        (True),
     ],
 )
-def test_gamma_filter(use_selective_median_filter, unchanged_pixels):
+def test_gamma_filter(use_selective_median_filter):
     """ """
     # constants
     np.random.seed(7)
@@ -26,6 +26,8 @@ def test_gamma_filter(use_selective_median_filter, unchanged_pixels):
         (177, 240),  # bg, weak intensity
         (217, 131),  # bg, no intensity
     )
+    # unchanged_pixels
+    unchanged_pixels = ([173, 155], [152, 65])
     #
     saturation_intensity = np.iinfo(imgs_with_noise.dtype).max
     for i, j in NOISE_LOC:
