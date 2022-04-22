@@ -78,8 +78,8 @@ def prepare_synthetic_data():
         size=(num_bad_pixels, 2),
     )
     # generage fake darks and whites
-    num_dark = 7
-    num_white = 7
+    num_dark = 10
+    num_white = 10
     darks = np.array([generate_fake_darkfield(img, bad_pixels) for _ in range(num_dark)]).reshape(num_dark, *img.shape)
     whites = np.array([generate_fake_whitefield(img) for _ in range(num_white)]).reshape(num_white, *img.shape)
     # make synthetic projections (normalized) and raw image (non-normalized)
@@ -97,7 +97,7 @@ def test_normalization_standard():
     proj_imars3d = normalization(raw, whites, darks)
     # compare
     diff = np.absolute(proj_imars3d - proj).sum() / np.prod(proj.shape)
-    assert diff < 1e-3
+    assert diff < 0.01
 
 
 def test_normalization_bad_dark():
@@ -113,7 +113,7 @@ def test_normalization_bad_dark():
     proj_imars3d = normalization(raw, whites, darks)
     # compare
     diff = np.absolute(proj_imars3d - proj).sum() / np.prod(proj.shape)
-    assert diff < 1e-3
+    assert diff < 0.01
 
 
 if __name__ == "__main__":
