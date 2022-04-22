@@ -33,6 +33,10 @@ def normalization(
     whites = np.median(whites, axis=0)
     darks = np.median(darks, axis=0)
     # apply normalization
+    # NOTE:
+    # For pixels where dark > white, tomopy replace the value with 1e-6 on-the-fly
+    # see https://github.com/tomopy/tomopy/blob/master/source/tomopy/prep/normalize.py#L135
+    #
     arrays_normalized = tomopy.normalize(arrays, whites, darks, cutoff=cut_off, ncore=ncore)
     # return
     return arrays_normalized
