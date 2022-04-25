@@ -100,7 +100,7 @@ def test_normalization_standard():
     assert diff < 0.01
 
 
-def test_normalization_bad_dark():
+def test_normalization_bright_dark():
     """normalization routine where dark contains pixels that has higher counts
     than white due to hardware defect.
     """
