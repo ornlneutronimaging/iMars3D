@@ -27,7 +27,7 @@ def normalization(
     """
     # parse input (mostly for Tomopy)
     cut_off = None if cut_off < 0 else float(cut_off)
-    ncore = None if ncore == -1 else ncore
+    ncore = None if ncore == -1 else int(ncore)
     # use median filter to remove outliers from whites and darks
     # NOTE: this will remove the random noises coming from the environment.
     whites = np.median(whites, axis=0)
