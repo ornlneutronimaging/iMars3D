@@ -26,7 +26,7 @@ def normalization(
     @return: normalized 3D array of images, the first dimension is the rotation angle omega.
     """
     # parse input (mostly for Tomopy)
-    cut_off = None if cut_off < 0 else cut_off
+    cut_off = None if cut_off < 0 else float(cut_off)
     ncore = None if ncore == -1 else ncore
     # use median filter to remove outliers from whites and darks
     # NOTE: this will remove the random noises coming from the environment.
