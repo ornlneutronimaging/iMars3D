@@ -1,24 +1,24 @@
 #!/usr/bin/env python3
 import numpy as np
 import pytest
-from imars3dv2.filters.crop import crop, detect_slit_positions
+from imars3dv2.filters.crop import crop, detect_bounds
 
 
 def generate_fake_proj(
     img_shape: tuple,
     slit_pos: tuple,
-    intensity_bg_low: int = 910,
-    intensity_bg_high: int = 930,
-    intensity_fov_low: int = 15_000,
-    intensity_fov_high: int = 35_080,
+    intensity_outter_low: int = 910,
+    intensity_outter_high: int = 930,
+    intensity_inner_low: int = 15_000,
+    intensity_inner_high: int = 35_080,
 ):
     """
     Generate a fake projection image.
     """
     # generate background
     proj = np.random.randint(
-        low=intensity_bg_low,
-        high=intensity_bg_high,
+        low=intensity_outter_low,
+        high=intensity_outter_high,
         size=img_shape,
         dtype=np.uint16,
     )
@@ -26,13 +26,13 @@ def generate_fake_proj(
     left, right, top, bottom = slit_pos
     # generate FOV
     fov = np.random.randint(
-        low=intensity_fov_low,
-        high=intensity_fov_high,
-        size=(top - bottom, right - left),
+        low=intensity_inner_low,
+        high=intensity_inner_high,
+        size=(bottom - top + 1, right - left + 1),
         dtype=np.uint16,
     )
     # add FOV to background
-    proj[bottom:top, left:right] = fov
+    proj[top : bottom + 1, left : right + 1] = fov
     return proj
 
 
@@ -52,30 +52,44 @@ def test_crop_manual():
     assert imgstack_cropped.shape == (n_imgs, 312, 424)
 
 
-def test_auto_slit_pos_detection():
+def test_auto_detect_slit_position():
     """
-    Check the auto slit position detection.
+    check the case where slits are present, i.e I_inner > I_outer
     """
     img_shape = (512, 1024)
     slit_pos = (400, 824, 100, 412)  # left, right, top, bottom
     img = generate_fake_proj(img_shape, slit_pos)
     # auto crop
-    slit_pos_detected = detect_slit_positions(img)
-    assert slit_pos_detected == slit_pos
+    slit_pos_detected = detect_bounds(img)
+    np.testing.assert_allclose(
+        np.array(slit_pos_detected),
+        np.array(slit_pos),
+        atol=1,  # bounds off by 1 pixel is still acceptable
+    )
 
 
-def test_crop_auto_rectangular_object():
+def test_auto_detect_object_in_fov():
     """
-    Check the auto slit position detection with a rectangular object in FOV.
+    check the auto detection for an object with in the FOV without slits, i.e.
+    inner < outter
     """
     img_shape = (512, 1024)
     slit_pos = (400, 824, 100, 412)  # left, right, top, bottom
-    img = generate_fake_proj(img_shape, slit_pos)
-    # add rectangular object
-    img[200:300, 450:600] = np.iinfo(img.dtype).max - 100
+    img = generate_fake_proj(
+        img_shape,
+        slit_pos,
+        intensity_outter_low=30_000,
+        intensity_outter_high=31_000,
+        intensity_inner_low=10_000,
+        intensity_inner_high=15_000,
+    )
     # auto crop
-    slit_pos_detected = detect_slit_positions(img)
-    assert slit_pos_detected == slit_pos
+    slit_pos_detected = detect_bounds(img, expand_ratio=0)
+    np.testing.assert_allclose(
+        np.array(slit_pos_detected),
+        np.array(slit_pos),
+        atol=1,  # bounds off by 1 pixel is still acceptable
+    )
 
 
 if __name__ == "__main__":
