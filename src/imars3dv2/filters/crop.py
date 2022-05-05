@@ -61,6 +61,10 @@ def crop(
     @return: np.ndarray
         The cropped image stack.
     """
+    # NOTE: fails early if the array dimension is incorrect
+    if arrays.ndim not in (2, 3):
+        raise ValueError("Only 2D and 3D arrays are supported.")
+
     # check if crop limits (bounding box) are provided
     if -1 in crop_limit:
         crop_limit = detect_bounds(
@@ -77,8 +81,6 @@ def crop(
         return arrays[top:bottom, left:right]
     elif arrays.ndim == 3:
         return arrays[:, top:bottom, left:right]
-    else:
-        raise ValueError("Only 2D and 3D arrays are supported.")
 
 
 def detect_bounds(
