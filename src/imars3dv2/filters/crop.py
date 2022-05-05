@@ -4,7 +4,13 @@ from scipy.ndimage import median_filter
 
 
 def crop(
-    arrays: np.ndarray, crop_limit: tuple = (-1, -1, -1, -1), border_pix: int = 10, expand_ratio: float = 0.1
+    arrays: np.ndarray,
+    crop_limit: tuple = (-1, -1, -1, -1),
+    border_pix: int = 10,
+    expand_ratio: float = 0.1,
+    rel_intensity_threshold_air_or_slit: float = 0.05,
+    rel_intensity_threshold_fov: float = 0.1,
+    rel_intensity_threshold_sample: float = 0.95,
 ) -> np.ndarray:
     """
     Crop the image stack to provided limits or auto detected bound box.
@@ -43,6 +49,12 @@ def crop(
         to determine which case we are in.
     @param expand_ratio: float
         the ratio to expand the cropped region.
+    @param rel_intensity_threshold_air_or_slit: float
+        passing through keyword arguments to detect_bounds.
+    @param rel_intensity_threshold_fov: float
+        passing through keyword arguments to detect_bounds.
+    @param rel_intensity_threshold_sample: float
+        passing through keyword arguments to detect_bounds.
 
     Returns
     -------
@@ -51,7 +63,14 @@ def crop(
     """
     # check if crop limits (bounding box) are provided
     if -1 in crop_limit:
-        crop_limit = detect_bounds(arrays, border_pix, expand_ratio)
+        crop_limit = detect_bounds(
+            arrays,
+            border_pix,
+            expand_ratio,
+            rel_intensity_threshold_air_or_slit,
+            rel_intensity_threshold_fov,
+            rel_intensity_threshold_sample,
+        )
     # crop
     left, right, top, bottom = crop_limit
     if arrays.ndim == 2:
@@ -62,7 +81,14 @@ def crop(
         raise ValueError("Only 2D and 3D arrays are supported.")
 
 
-def detect_bounds(arrays: np.ndarray, border_pix: int = 10, expand_ratio: float = 0.1) -> tuple:
+def detect_bounds(
+    arrays: np.ndarray,
+    border_pix: int = 10,
+    expand_ratio: float = 0.1,
+    rel_intensity_threshold_air_or_slit: float = 0.05,
+    rel_intensity_threshold_fov: float = 0.1,
+    rel_intensity_threshold_sample: float = 0.95,
+) -> tuple:
     """
     Auto detect bounds based on intensity thresholding.
 
@@ -72,6 +98,16 @@ def detect_bounds(arrays: np.ndarray, border_pix: int = 10, expand_ratio: float 
         the width of border region to estimate the background intensity
     @param expand_ratio: float
         the ratio to expand the cropped region.
+    @param rel_intensity_threshold_air_or_slit: float
+        the relative intensity threshold to determine whether the outter boarder
+        is slit (case 1) or air (case 2).
+    @param rel_intensity_threshold_fov: float
+        the relative intensity threshold used to determine pixels within to the
+        field of view, only valid for case 1.
+    @param rel_intensity_threshold_sample: float
+        the relative intensity threshold used to determine pixels within the
+        sample region, only valid for case 2, and the value is relative to the
+        intensity of the air region (outter region in case 2).
 
     @return: tuple
         The crop limits in (left, right, top, bottom) order.
@@ -95,12 +131,12 @@ def detect_bounds(arrays: np.ndarray, border_pix: int = 10, expand_ratio: float 
     bottom = np.median(img[-border_pix:, :])
     intensity_bg = np.median([left, right, top, bottom])
 
-    if intensity_bg < 0.05:
+    if intensity_bg < rel_intensity_threshold_air_or_slit:
         # Case 1: slits in, i.e I_inner >> I_outer
         #     when the background intensity is around the bottom 5% of the
         #     total dynamic range, we select the pixels with the top 90% intensity
         #     to be the field of view.
-        ys, xs = np.where(img > 0.1)
+        ys, xs = np.where(img > rel_intensity_threshold_fov)
         dx = dy = 0.0  # no expanding needed
     else:
         # Case 2: slits out, i.e I_inner < I_outer
@@ -109,7 +145,7 @@ def detect_bounds(arrays: np.ndarray, border_pix: int = 10, expand_ratio: float 
         #     detection now is for the object within the FOV.
         #     since object will absorb neutron, selecting the lower intensity
         #     region helps us identify the rough bounding box.
-        ys, xs = np.where(img < intensity_bg * 0.95)
+        ys, xs = np.where(img < intensity_bg * rel_intensity_threshold_sample)
         #
         width = xs.max() - xs.min()
         height = ys.max() - ys.min()
