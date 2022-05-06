@@ -83,11 +83,44 @@ def test_auto_detect_object_in_fov():
         intensity_inner_low=10_000,
         intensity_inner_high=15_000,
     )
-    # auto crop
+    # auto detect
     slit_pos_detected = detect_bounds(img, expand_ratio=0)
     np.testing.assert_allclose(
         np.array(slit_pos_detected),
         np.array(slit_pos),
+        atol=1,  # bounds off by 1 pixel is still acceptable
+    )
+
+
+def test_crop_wrong_array_dim():
+    arrays = np.array([1, 2, 3])
+    with pytest.raises(ValueError):
+        crop(arrays)
+
+
+def test_auto_detect_wrong_array_dim():
+    arrays = np.array([1, 2, 3])
+    with pytest.raises(ValueError):
+        detect_bounds(arrays)
+
+
+def test_auto_detect_no_signal():
+    img_shape = (512, 1024)
+    slit_pos = (400, 824, 100, 412)  # left, right, top, bottom
+    img = generate_fake_proj(
+        img_shape,
+        slit_pos,
+        intensity_outter_low=10_000,
+        intensity_outter_high=11_000,
+        intensity_inner_low=10_000,
+        intensity_inner_high=11_000,
+    )
+    slit_pos_detected = detect_bounds(img, expand_ratio=0)
+    # since there is no signal, the detector will just return the whole image
+    # range.
+    np.testing.assert_allclose(
+        np.array(slit_pos_detected),
+        np.array([0, 1023, 0, 511]),
         atol=1,  # bounds off by 1 pixel is still acceptable
     )
 

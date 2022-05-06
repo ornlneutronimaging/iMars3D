@@ -39,26 +39,26 @@ def crop(
 
     Parameters
     -----------
-    @param arrays: np.ndarray
+    @param arrays:
         The image stack to crop. Can also be a 2D image.
-    @param crop_limit: tuple
+    @param crop_limit:
         The four limits for cropping. Default is (-1, -1, -1, -1), which will trigger
         the automatic bounds detection.
-    @param border_pix: int
+    @param border_pix:
         the width of border region to estimate the background intensity, which helps
         to determine which case we are in.
-    @param expand_ratio: float
+    @param expand_ratio:
         the ratio to expand the cropped region.
-    @param rel_intensity_threshold_air_or_slit: float
+    @param rel_intensity_threshold_air_or_slit:
         passing through keyword arguments to detect_bounds.
-    @param rel_intensity_threshold_fov: float
+    @param rel_intensity_threshold_fov:
         passing through keyword arguments to detect_bounds.
-    @param rel_intensity_threshold_sample: float
+    @param rel_intensity_threshold_sample:
         passing through keyword arguments to detect_bounds.
 
     Returns
     -------
-    @return: np.ndarray
+    @return:
         The cropped image stack.
     """
     # NOTE: fails early if the array dimension is incorrect
@@ -94,24 +94,24 @@ def detect_bounds(
     """
     Auto detect bounds based on intensity thresholding.
 
-    @param arrays: np.ndarray
+    @param arrays:
         The image stack to crop. Can also be a 2D image.
-    @param border_pix: int
+    @param border_pix:
         the width of border region to estimate the background intensity
-    @param expand_ratio: float
+    @param expand_ratio:
         the ratio to expand the cropped region.
-    @param rel_intensity_threshold_air_or_slit: float
+    @param rel_intensity_threshold_air_or_slit:
         the relative intensity threshold to determine whether the outter boarder
         is slit (case 1) or air (case 2).
-    @param rel_intensity_threshold_fov: float
+    @param rel_intensity_threshold_fov:
         the relative intensity threshold used to determine pixels within to the
         field of view, only valid for case 1.
-    @param rel_intensity_threshold_sample: float
+    @param rel_intensity_threshold_sample:
         the relative intensity threshold used to determine pixels within the
         sample region, only valid for case 2, and the value is relative to the
         intensity of the air region (outter region in case 2).
 
-    @return: tuple
+    @return:
         The crop limits in (left, right, top, bottom) order.
     """
     # generate representative image
