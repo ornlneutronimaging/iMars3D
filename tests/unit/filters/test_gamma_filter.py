@@ -45,4 +45,4 @@ def test_gamma_filter(use_selective_median_filter):
 
 
 if __name__ == "__main__":
-    pytest.main("( __file__")
+    pytest.main("__file__")
