@@ -60,7 +60,7 @@ def measure_sharpness(image: np.ndarray) -> float:
     # compute gradient
     gx, gy = np.gradient(image)
     # use norm of gradient as approximation for sharpness
-    return np.sqrt(gx ** 2 + gy ** 2).mean()
+    return np.sqrt(np.square(gx) + np.square(gy)).mean()
 
 
 def denoise(
