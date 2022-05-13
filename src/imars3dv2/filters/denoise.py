@@ -11,7 +11,7 @@ from skimage.restoration import denoise_bilateral
 
 def measure_noiseness(image: np.ndarray) -> float:
     """
-    Measure the noiseness of the image, doi:10.1006/cviu.1996.0060
+    Measure the noiseness of the image, doi:`10.1006/cviu.1996.0060 <https://doi.org/10.1006/cviu.1996.0060>`_
 
     Parameters
     ----------
