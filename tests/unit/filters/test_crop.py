@@ -126,4 +126,4 @@ def test_auto_detect_no_signal():
 
 
 if __name__ == "__main__":
-    pytest.main("( __file__")
+    pytest.main([__file__])
