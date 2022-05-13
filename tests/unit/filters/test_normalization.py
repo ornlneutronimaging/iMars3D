@@ -117,4 +117,4 @@ def test_normalization_bright_dark():
 
 
 if __name__ == "__main__":
-    pytest.main("__file__")
+    pytest.main([__file__])
