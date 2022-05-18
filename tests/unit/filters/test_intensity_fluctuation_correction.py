@@ -64,7 +64,7 @@ def test_correct_with_tomopy():
     # generate the corresponding flickering projections
     projs_flickering = generate_flickering_projections(projs_ideal)
     # perform correction
-    projs_corrected = intensity_fluctuation_correction(projs_flickering)
+    projs_corrected = intensity_fluctuation_correction(projs_flickering, air_pixels=5)
     # verify
     # NOTE: after the correction, the air region within each sinogram should be
     #       close to uniform, therefore should result in smaller variance when
@@ -75,10 +75,22 @@ def test_correct_with_tomopy():
 
 
 def test_correct_with_imars3d():
-    # NOTE:
-    #  The original imars3d method's logic is unclear, therefore cannot be verified
-    #  at the moment.
-    pass
+    # get synthetic projections
+    projs_ideal = generate_fake_projections()
+    # generate the corresponding flickering projections
+    projs_flickering = generate_flickering_projections(projs_ideal)
+    # perform correction with skimage
+    projs_corrected = intensity_fluctuation_correction(projs_flickering, air_pixels=-1)
+    # verify
+    diff_raw = projs_flickering - projs_ideal
+    diff_corrected = projs_corrected - projs_ideal
+    assert diff_corrected.var() < diff_raw.var()
+
+
+def test_incorrect_input_array():
+    projs_incorrect = np.array([1, 2, 3])
+    with pytest.raises(ValueError):
+        intensity_fluctuation_correction(projs_incorrect, air_pixels=5)
 
 
 if __name__ == "__main__":
