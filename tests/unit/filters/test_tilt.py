@@ -215,7 +215,7 @@ def test_find_180_deg_pairs():
     omegas = np.random.random(5) * np.pi
     omegas = np.array(list(omegas) + list(omegas + np.pi))
     # get the pairs
-    low_range_idx, high_range_idx = find_180_deg_pairs_idx(omegas)
+    low_range_idx, high_range_idx = find_180_deg_pairs_idx(omegas, in_degrees=False)
     # verify
     np.testing.assert_equal(low_range_idx, np.array([0, 1, 2, 3, 4]))
     np.testing.assert_equal(high_range_idx, np.array([5, 6, 7, 8, 9]))
@@ -258,20 +258,24 @@ def test_apply_tilt_correction():
 def test_tilt_correction():
     # make synthetic data
     size = 100
-    tilt_inplane = np.radians(1.0)
-    tilt_outplane = np.radians(0.0)
-    rot_axis = get_tilted_rot_axis(tilt_inplane, tilt_outplane)
     rot_axis_ideal = get_tilted_rot_axis(0, 0)
     omegas = np.linspace(0, np.pi * 2, 11)
     projs_ref = np.array([virtual_cam(two_sphere_system(omega, rot_axis_ideal, size=size)) for omega in omegas])
+    # case 1: null
+    projs_corrected = tilt_correction(projs_ref, omegas)
+    # verify
+    assert np.allclose(projs_corrected, projs_ref)
+    # case 2: small angle tilt
+    tilt_inplane = np.radians(0.5)
+    tilt_outplane = np.radians(0.0)
+    rot_axis = get_tilted_rot_axis(-tilt_inplane, tilt_outplane)
     projs_tilted = np.array([virtual_cam(two_sphere_system(omega, rot_axis, size=size)) for omega in omegas])
-    # call the one-stop-shop tilt correction
     projs_corrected = tilt_correction(projs_tilted, omegas)
     # verify
     # the corrected one should close to the ideal (non-tilted) one
-    err_tilted = np.linalg.norm(projs_tilted - projs_ref) / projs_ref.size
-    err_corrected = np.linalg.norm(projs_corrected - projs_ref) / projs_ref.size
-    assert err_tilted > err_corrected
+    diff_corrected = projs_corrected / projs_corrected.max() - projs_ref / projs_ref.max()
+    err_corrected = np.linalg.norm(diff_corrected) / projs_ref.size
+    assert err_corrected < 1e-3
 
 
 if __name__ == "__main__":
