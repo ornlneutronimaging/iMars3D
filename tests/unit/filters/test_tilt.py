@@ -4,9 +4,13 @@ import pytest
 import skimage
 import tomopy
 from scipy.spatial.transform import Rotation as R
+from skimage.transform import rotate
 from imars3dv2.filters.tilt import calculate_tilt
 from imars3dv2.filters.tilt import calculate_dissimilarity
 from imars3dv2.filters.tilt import calculate_shift
+from imars3dv2.filters.tilt import find_180_deg_pairs_idx
+from imars3dv2.filters.tilt import apply_tilt_correction
+from imars3dv2.filters.tilt import tilt_correction
 
 
 def get_tilted_rot_axis(
@@ -58,7 +62,7 @@ def two_sphere_system(
     s2_radius_rel: float = 0.06,
 ) -> np.ndarray:
     """
-    Two-sphere system rotated around given rotatino axis by given rotation angle as a 3D numpy array.
+    Two-sphere system rotated around given rotation axis by given rotation angle as a 3D numpy array.
 
     Parameter
     ---------
@@ -204,6 +208,70 @@ def test_calculate_shift():
     )
     shift_calculated = calculate_shift(projs[0], projs[1])
     assert np.isclose(shift_calculated, -84.0)
+
+
+def test_find_180_deg_pairs():
+    # prepare the input list of angles in radians
+    omegas = np.random.random(5) * np.pi
+    omegas = np.array(list(omegas) + list(omegas + np.pi))
+    # get the pairs
+    low_range_idx, high_range_idx = find_180_deg_pairs_idx(omegas)
+    # verify
+    np.testing.assert_equal(low_range_idx, np.array([0, 1, 2, 3, 4]))
+    np.testing.assert_equal(high_range_idx, np.array([5, 6, 7, 8, 9]))
+    # test incorrect input
+    omegas = np.random.random(5 * 5) * np.pi
+    omegas = omegas.reshape(5, 5)
+    with pytest.raises(ValueError):
+        low_range_idx, high_range_idx = find_180_deg_pairs_idx(omegas)
+
+
+def test_apply_tilt_correction():
+    # case 1: 2d image
+    # use stock image to speed up testing
+    img_ref = skimage.data.brain()[2, :, :]
+    tilt = 1.0  # deg
+    img_tilted = rotate(img_ref, tilt, resize=False)
+    img_corrected = apply_tilt_correction(img_tilted, tilt)
+    # verify
+    # NOTE: the rotate will alter the value due to interpolation, so it is not
+    #       possible to compare the exact values.
+    err_tilted = np.linalg.norm(img_tilted - img_ref) / img_ref.size
+    err_corrected = np.linalg.norm(img_corrected - img_ref) / img_ref.size
+    assert err_tilted > err_corrected
+    # case 2: 3d image stack
+    imgs_ref = skimage.data.brain()[:3, :, :]
+    tilt = 1.0  # deg
+    imgs_tilted = np.array([rotate(img, tilt, resize=False) for img in imgs_ref])
+    imgs_corrected = apply_tilt_correction(imgs_tilted, tilt)
+    # verify
+    # NOTE: similar as the 2d case
+    err_tilted = np.linalg.norm(imgs_tilted - imgs_ref) / img_ref.size
+    err_corrected = np.linalg.norm(imgs_corrected - imgs_ref) / img_ref.size
+    assert err_tilted > err_corrected
+    # case 3: incorrect input
+    with pytest.raises(ValueError):
+        imgs_incorrect = np.arange(10)
+        apply_tilt_correction(imgs_incorrect, tilt)
+
+
+def test_tilt_correction():
+    # make synthetic data
+    size = 100
+    tilt_inplane = np.radians(1.0)
+    tilt_outplane = np.radians(0.0)
+    rot_axis = get_tilted_rot_axis(tilt_inplane, tilt_outplane)
+    rot_axis_ideal = get_tilted_rot_axis(0, 0)
+    omegas = np.linspace(0, np.pi * 2, 11)
+    projs_ref = np.array([virtual_cam(two_sphere_system(omega, rot_axis_ideal, size=size)) for omega in omegas])
+    projs_tilted = np.array([virtual_cam(two_sphere_system(omega, rot_axis, size=size)) for omega in omegas])
+    # call the one-stop-shop tilt correction
+    projs_corrected = tilt_correction(projs_tilted, omegas)
+    # verify
+    # the corrected one should close to the ideal (non-tilted) one
+    err_tilted = np.linalg.norm(projs_tilted - projs_ref) / projs_ref.size
+    err_corrected = np.linalg.norm(projs_corrected - projs_ref) / projs_ref.size
+    assert err_tilted > err_corrected
 
 
 if __name__ == "__main__":
