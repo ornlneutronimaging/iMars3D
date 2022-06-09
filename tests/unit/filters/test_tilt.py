@@ -146,19 +146,20 @@ def test_calculate_tilt(tilt_reference):
     """
     Test the tilt correction with no tilt.
     """
-    tilt_rad = np.degrees(tilt_reference)
+    tilt_rad = np.radians(tilt_reference)
     # get the rotation axis
     # NOTE:
     # we need to tilt the image -tilt in order to get the tilt angle as + value.
     rot_aixs_tilted = get_tilted_rot_axis(tilt_inplane=-tilt_rad, tilt_outplane=0.0)
     # radiograph at 0 deg
-    img0 = virtual_cam(two_sphere_system(0, rot_aixs_tilted, size=100))
+    img0 = virtual_cam(two_sphere_system(0, rot_aixs_tilted, size=200))
     # radiograph at 180 deg
-    img180 = virtual_cam(two_sphere_system(np.pi, rot_aixs_tilted, size=100))
+    img180 = virtual_cam(two_sphere_system(np.pi, rot_aixs_tilted, size=200))
     # calculate the tilt angle
     tilt_angle = calculate_tilt(img0, img180)
     # verify
-    assert np.isclose(tilt_angle, 0.0)
+    # NOTE: tolerance is set to half a pixel at the edge of the FOV
+    assert np.isclose(tilt_angle, tilt_reference, atol=np.degrees(0.5 / 100))
 
 
 def test_calculate_dissimilarity():
@@ -171,7 +172,7 @@ def test_calculate_dissimilarity():
     # case 2: moving away from minimum increases error
     err_1 = calculate_dissimilarity(1, img0, img180)
     err_2 = calculate_dissimilarity(2, img0, img180)
-    assert err_1 > err_2
+    assert err_1 < err_2
 
 
 def test_calculate_shift():
@@ -192,6 +193,7 @@ def test_calculate_shift():
         emission=False,
         center=100,
     )
+    shift_calculated = calculate_shift(projs[0], projs[1])
     assert np.isclose(shift_calculated, 16.0)
     # case 2: negative shift
     projs = tomopy.sim.project.project(
