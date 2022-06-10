@@ -9,6 +9,7 @@ repos:
       - id: check-docstring-first
       - id: check-json
       - id: check-added-large-files
+        args: [--maxkb=4096]
       - id: check-yaml
       - id: debug-statements
       - id: requirements-txt-fixer
@@ -20,7 +21,14 @@ repos:
     hooks:
       - id: black
         args: ['--line-length=119']
-  # - repo: https://github.com/PyCQA/flake8
-  #   rev: 3.9.0
-  #   hooks:
-  #   - id: flake8
+  - repo: https://github.com/PyCQA/flake8
+    rev: 4.0.1
+    hooks:
+    - id: flake8
+      exclude: |
+        (?x)^(
+                ^src/imars3d/.+ |
+                ^tests/legacy/.+ |
+                ^docs/conf.py |
+                ^builders/.+
+            )$
