@@ -44,7 +44,7 @@ def generate_flickering_projections(
     n_projections = projections_ideal.shape[0]
     x = np.linspace(0, 0.5, int(n_projections / 2))
     x = np.vstack((x, x)).flatten()
-    intensity = (-(x ** 2) + 1) * 50_000
+    intensity = (-(x**2) + 1) * 50_000
     dynamic_range = 20_000
     # make flats
     flats = np.array(
