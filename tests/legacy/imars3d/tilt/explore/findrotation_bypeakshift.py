@@ -30,7 +30,7 @@ from scipy.optimize import curve_fit
 
 def gauss(x, *p):
     A, mu, sigma = p
-    return A * np.exp(-((x - mu) ** 2) / (2.0 * sigma ** 2))
+    return A * np.exp(-((x - mu) ** 2) / (2.0 * sigma**2))
 
 
 def poly2(x, *p):

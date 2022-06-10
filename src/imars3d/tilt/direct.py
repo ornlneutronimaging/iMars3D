@@ -42,7 +42,7 @@ def _argmin_tilt(tilts, img0, flipped_img180, shift, workdir=None):
         logfile = open(os.path.join(workdir, "log._argmin_tilt"), "wt")
     for tilt in tilts:
         diff = shift_tilt_diff(shift, tilt, img0, flipped_img180)
-        diff = np.sum(diff ** 2) / diff.size
+        diff = np.sum(diff**2) / diff.size
         if workdir:
             logfile.write("* tilt=%s, diff=%s\n" % (tilt, diff))
         diffs.append(diff)
@@ -76,7 +76,7 @@ def shift_diff(x, img1, img2):
 
 def shift_diff2(x, img1, img2):
     d = shift_diff(x, img1, img2)
-    return (d ** 2).sum() / d.size
+    return (d**2).sum() / d.size
 
 
 MAX_SHIFT = 400

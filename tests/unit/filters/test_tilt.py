@@ -107,11 +107,11 @@ def two_sphere_system(
     vol = np.zeros_like(grid_x)
     # mark the voxels of sphere 1 to be 1
     s1_dist_squared = (grid_x - s1_rel[0]) ** 2 + (grid_y - s1_rel[1]) ** 2 + (grid_z - s1_rel[2]) ** 2
-    r1_squared = s1_radius_rel ** 2
+    r1_squared = s1_radius_rel**2
     vol[s1_dist_squared < r1_squared] = 1.0
     # mark the voxels of sphere 2 to be 2
     s2_dist_squared = (grid_x - s2_rel[0]) ** 2 + (grid_y - s2_rel[1]) ** 2 + (grid_z - s2_rel[2]) ** 2
-    r2_squared = s2_radius_rel ** 2
+    r2_squared = s2_radius_rel**2
     vol[s2_dist_squared < r2_squared] = 1.0
     return vol
 
