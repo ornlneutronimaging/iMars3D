@@ -297,7 +297,7 @@ def calculate_tilt(
     Returns
     -------
     @return:
-        The in-plane tilt angle in degrees
+        The optimization results from scipy.optimize.minimize_scalar
     """
     # make the error function
     err_func = partial(calculate_dissimilarity, image0=image0, image1=image180)
