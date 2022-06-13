@@ -165,13 +165,19 @@ def calculate_shift(
     @return:
         The amount of shift in pixels
     """
-    #
+    # API documentation can be find at:
+    # https://scikit-image.org/docs/stable/api/skimage.registration.html#skimage.registration.phase_cross_correlation
     shift = phase_cross_correlation(
         reference_image=reference_image,
         moving_image=np.fliplr(moving_image),
         upsample_factor=2.0,  # upsample by 2x for subpixel accuracy
     )
-    #
+    # NOTE:
+    # the content of shift contains
+    # - shifts: ndarray, (vertical_shift, horizontal_shift)
+    # - errors: float
+    # - phasediff: float
+    # here we only care about the horizontal shift
     return shift[0][1]
 
 
