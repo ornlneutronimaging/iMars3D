@@ -177,6 +177,10 @@ def test_calculate_dissimilarity():
     err_1 = calculate_dissimilarity(1, img0, img180)
     err_2 = calculate_dissimilarity(2, img0, img180)
     assert err_1 < err_2
+    # case 3: ensure dissimilarity calculate is abelian
+    err_ab = calculate_dissimilarity(1, img0, img180)
+    err_ba = calculate_dissimilarity(-1, img180, img0)
+    assert np.isclose(err_ab, err_ba, atol=1e-4)
 
 
 def test_calculate_shift():
