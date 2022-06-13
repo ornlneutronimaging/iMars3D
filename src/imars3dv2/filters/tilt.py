@@ -6,6 +6,7 @@ import concurrent.futures as cf
 from typing import Tuple
 from functools import partial
 from scipy.optimize import minimize_scalar
+from scipy.optimize import OptimizeResult
 from skimage.transform import rotate
 from skimage.registration import phase_cross_correlation
 
@@ -55,7 +56,8 @@ def tilt_correction(
             img0 = arrays[low_idx]
             img1 = arrays[high_idx]
             jobs.append(e.submit(calculate_tilt, img0, img1, low_bound, high_bound))
-    tilts = np.array([job.result() for job in jobs])
+    # extract the tilt angles from the optimization results
+    tilts = np.array([job.result().x for job in jobs])
     # use the average of the found tilt angles
     tilt = np.mean(tilts)
     # step 3: apply the tilt correction
@@ -267,7 +269,7 @@ def calculate_tilt(
     image180: np.ndarray,
     low_bound: float = -5.0,
     high_bound: float = -5.0,
-) -> float:
+) -> OptimizeResult:
     """
     Use optimization to find the in-plane tilt angle.
 
@@ -298,4 +300,4 @@ def calculate_tilt(
         bounds=(low_bound, high_bound),
     )
     #
-    return res.x
+    return res

@@ -160,7 +160,7 @@ def test_calculate_tilt(tilt_reference):
     # radiograph at 180 deg
     img180 = virtual_cam(two_sphere_system(np.pi, rot_aixs_tilted, size=200))
     # calculate the tilt angle
-    tilt_angle = calculate_tilt(img0, img180)
+    tilt_angle = calculate_tilt(img0, img180).x
     # verify
     # NOTE: tolerance is set to half a pixel at the edge of the FOV
     assert np.isclose(tilt_angle, tilt_reference, atol=np.degrees(0.5 / 100))
