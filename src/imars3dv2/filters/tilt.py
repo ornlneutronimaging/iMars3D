@@ -261,6 +261,8 @@ def calculate_dissimilarity(
     #       around the minimum.
     diff = np.abs(img0_tmp - img180_tmp)
     err = np.power(diff, 3).sum() / (np.linalg.norm(img0_tmp) * np.linalg.norm(img180_tmp))
+    # cleanup
+    del img0_tmp, img180_tmp
     return err
 
 
