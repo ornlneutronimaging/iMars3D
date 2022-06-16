@@ -25,9 +25,9 @@ def get_synthetic_stack(
         Radiograph stack of synthetic shepp3d rotating around center at omegas locations.
     """
     # NOTE:
-    # the simulator has some rounding errors, and we need to push the input center a tiny bit
-    # off a round number to get the correct results
-    center = center + 1e-4 if center else center
+    # the simulator has some rounding errors, and we need to push the input center by half
+    # a pixel to avoid the rounding error
+    center = center + 0.5 if center else center
     shepp3d = tomopy.misc.phantom.shepp3d(size=129)
     projs = tomopy.sim.project.project(
         shepp3d,
@@ -48,15 +48,21 @@ def get_synthetic_stack(
     ],
 )
 def test_find_rotation_center(center_ref):
-    # prepare synthetic data
+    #
+    # case 0: valid input
+    # NOTE: unit of omegas is handled by find_180_deg_pairs_idx
     omegas = np.linspace(0, np.pi * 2, 181)
     projs = get_synthetic_stack(center_ref, omegas)
-    # calculate the rotation center
-    center_calc = find_rotation_center(projs, omegas)
+    center_calc = find_rotation_center(projs, omegas, in_degrees=False)
     # verify
     # NOTE:
     # answer within the same pixel should be sufficient for most cases
-    np.testing.assert_almost_equal(center_calc, center_ref)
+    np.testing.assert_almost_equal(center_calc, center_ref, decimal=1)
+    #
+    # case 1: wrong dimension
+    projs = np.random.random(100).reshape(10, 10)
+    with pytest.raises(ValueError):
+        find_rotation_center(projs, omegas)
 
 
 if __name__ == "__main__":
