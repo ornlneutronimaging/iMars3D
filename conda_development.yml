@@ -1,4 +1,4 @@
-name: imars3d-dev
+name: imars3d
 channels:
   - conda-forge
   - defaults
