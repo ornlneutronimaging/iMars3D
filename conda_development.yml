@@ -4,6 +4,7 @@ channels:
   - defaults
 dependencies:
   - black
+  - conda-build
   - pytest
   - pytest-cov
   - pre-commit
