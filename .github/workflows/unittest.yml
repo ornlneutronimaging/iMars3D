@@ -22,7 +22,7 @@ jobs:
     - name: Install testing requirements
       run: mamba env update --name test --file conda_development.yml
     - name: Install iMars3dv2 in editable mode
-      run: conda develop .
+      run: pip install -e .
     - name: Unit test with code coverage
       run: |
         python -m pytest --cov --cov-report=xml --cov-report=term tests/unit
