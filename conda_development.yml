@@ -1,0 +1,13 @@
+name: imars3d
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - black
+  - conda-build
+  - pytest
+  - pytest-cov
+  - pre-commit
+  - sphinx
+  - sphinx_rtd_theme
+  - pip
