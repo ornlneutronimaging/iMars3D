@@ -40,7 +40,10 @@ def test_remove_ring_artifact():
 def test_remove_ring_artifact_Ketcham():
     # get synthetic stack
     tomo_stack = get_synthetic_stack()
-    # add ring artifact
+    # case 0: incorrect input
+    with pytest.raises(ValueError):
+        remove_ring_artifact_Ketcham(tomo_stack)
+    # case 1: with ring artifact
     tomo_with_ring = np.array(tomo_stack)
     tomo_with_ring[:, 100, 80] *= 1.07
     tomo_with_ring[:, 100, 100] *= 1.05
