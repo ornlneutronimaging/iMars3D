@@ -17,20 +17,23 @@ def get_synthetic_stack(N_omega: int = 181) -> np.ndarray:
 def test_remove_ring_artifact():
     # get synthetic stack
     tomo_stack = get_synthetic_stack()
-    # add ring artifact
-    # randomly adding 0-4 rings to each sinogram
+    # case 0: incorrect input
+    with pytest.raises(ValueError):
+        remove_ring_artifact(tomo_stack[0, :, :])
+    # case 1: with added ring artifact
+    # randomly adding 4 rings to each sinogram
     tomo_with_ring = np.array(tomo_stack)
     for i in range(tomo_with_ring.shape[1]):
-        n_rings = np.random.randint(0, 4)
-        for _ in range(n_rings):
-            col = np.random.randint(80, 200)
-            factor = 1 + (np.random.random() - 0.5) / 10  # [0.9,1.1]
-            tomo_with_ring[:, i, col] *= factor
+        cols = np.random.randint(80, 200, 4)
+        tomo_with_ring[:, i, cols[0]] *= 1.07
+        tomo_with_ring[:, i, cols[1]] *= 1.05
+        tomo_with_ring[:, i, cols[2]] *= 0.92
+        tomo_with_ring[:, i, cols[3]] *= 0.90
+    err_no_corr = np.linalg.norm(tomo_with_ring - tomo_stack)
     # perform correction
     tomo_corr = remove_ring_artifact(tomo_with_ring)
+    err_corr = np.linalg.norm(tomo_corr - tomo_stack)
     # verify
-    err_no_corr = np.linalg.norm(tomo_with_ring - tomo_stack) / tomo_stack.size
-    err_corr = np.linalg.norm(tomo_corr - tomo_stack) / tomo_stack.size
     assert err_corr < err_no_corr
 
 
