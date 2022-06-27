@@ -4,7 +4,7 @@ from tomopy.recon.algorithm import recon as tomo_recon
 
 
 def recon(
-    sinogram: np.ndarray,
+    arrays: np.ndarray,
     theta: np.array,
     center: np.array = None,
     algorithm: str = "gridrec",
@@ -12,12 +12,12 @@ def recon(
     **kwargs
 ) -> np.ndarray:
     """
-    Perform reconstruction on a stack of sinograms
+    Perform reconstruction on a stack of tomographic data
 
     Parameters
     ----------
-    @param sinogram:
-        Input stack of sinograms
+    @param arrays:
+        Input stack of tomography data
     @param theta:
         Projection angles (in radians)
     @param center:
@@ -30,12 +30,12 @@ def recon(
     Return
     ------
     @return
-        Reconstructed sinograms
+        Reconstructed tomographic data
     """
 
-    if sinogram.ndim != 3:
-        raise ValueError("Expected input sinogram array to have 3 dimensions")
+    if arrays.ndim != 3:
+        raise ValueError("Expected input array to have 3 dimensions")
 
     # TODO: allow different backends besides tomopy
-    result = tomo_recon(sinogram, theta, center=center, algorithm=algorithm, filter_name=filter_name, **kwargs)
+    result = tomo_recon(arrays, theta, center=center, algorithm=algorithm, filter_name=filter_name, **kwargs)
     return result
