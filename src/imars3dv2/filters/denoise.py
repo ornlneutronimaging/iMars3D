@@ -3,7 +3,9 @@
 import numpy as np
 import tomopy
 import tomopy.util.mproc as mproc
-import concurrent.futures as cf
+from multiprocessing.managers import SharedMemoryManager
+from tqdm.contrib.concurrent import process_map
+from functools import partial
 from scipy.signal import convolve2d
 from scipy.ndimage import median_filter
 from skimage.restoration import denoise_bilateral
@@ -169,10 +171,25 @@ def denoise_by_bilateral(
         return denoise_by_bilateral_2d(arrays)
     elif arrays.ndim == 3:
         ncore = mproc.mp.cpu_count() if ncore == -1 else int(ncore)
-        with cf.ProcessPoolExecutor(ncore) as e:
-            jobs = [e.submit(denoise_by_bilateral_2d, array, sigma_color, sigma_spatial) for array in arrays]
-        results = [job.result() for job in jobs]
-        return np.array(results)
+        with SharedMemoryManager() as smm:
+            # create the shared memory
+            shm = smm.SharedMemory(arrays.nbytes)
+            # create a numpy array point to the shared memory
+            shm_arrays = np.ndarray(
+                arrays.shape,
+                dtype=arrays.dtype,
+                buffer=shm.buf,
+            )
+            # copy the data to the shared memory
+            np.copyto(shm_arrays, arrays)
+            # mp
+            rst = process_map(
+                partial(denoise_by_bilateral_2d, sigma_color=sigma_color, sigma_spatial=sigma_spatial),
+                [img for img in shm_arrays],
+                max_workers=ncore,
+                desc="denoise_by_bilateral",
+            )
+        return np.array(rst)
     else:
         raise ValueError("Unsupported image dimension: {}".format(arrays.ndim))
 
