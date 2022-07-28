@@ -31,12 +31,8 @@ Generally speaking, multithreading is useful for non-CPU intensive tasks as it d
 bypass the GIL (Global Interpreter Lock).
 In the case of iMars3D, multiprocessing is selected as most of the filters are computationally
 intensive.
-When using multiprocessing, the standard Numpy array is pickled and sent to the worker process via
-messaging, which is not a huge overhead when the data size is small.
-However, some of the filters in iMars3D might work on a high-resolution image, which could be expensive
-if passed via messaging.
-Hence the iMars3D (v2.0) elects to use a shared memory array (see next section) to avoid sending data
-via messaging.
+Furthermore, the shared memory array is used to avoid sending pickled Numpy array via messaging between processes,
+which further improves the overall performance.
 
 Another common request from users is the ability to see the progress of the filtering process, regardless
 of the backend implementation.
