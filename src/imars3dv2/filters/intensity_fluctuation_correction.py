@@ -4,7 +4,9 @@ import numpy as np
 import tomopy
 import tomopy.util.mproc as mproc
 from skimage import feature
-import concurrent.futures as cf
+from multiprocessing.managers import SharedMemoryManager
+from tqdm.contrib.concurrent import process_map
+from functools import partial
 
 
 def intensity_fluctuation_correction(
@@ -41,16 +43,27 @@ def intensity_fluctuation_correction(
     if air_pixels < 0:
         # auto air region detection
         ncore = mproc.mp.cpu_count() if ncore == -1 else int(ncore)
-        with cf.ProcessPoolExecutor(ncore) as e:
-            jobs = [
-                e.submit(
-                    intensity_fluctuation_correction_skimage,
-                    image,
-                    sigma,
-                )
-                for image in arrays
-            ]
-        return np.array([job.result() for job in jobs])
+        # use shared memory model and tqdm wrapper for multiprocessing
+        with SharedMemoryManager() as smm:
+            # create the shared memory
+            shm = smm.SharedMemory(arrays.nbytes)
+            # create a numpy array point to the shared memory
+            shm_arrays = np.ndarray(
+                arrays.shape,
+                dtype=arrays.dtype,
+                buffer=shm.buf,
+            )
+            # copy data
+            np.copyto(shm_arrays, arrays)
+            # map the multiprocessing calls
+            rst = process_map(
+                partial(intensity_fluctuation_correction_skimage, sigma=sigma),
+                [img for img in shm_arrays],
+                max_workers=ncore,
+                desc="intensity_fluctuation_correction",
+            )
+        #
+        return np.array(rst)
     else:
         # use tomopy process
         ncore = None if ncore == -1 else int(ncore)
