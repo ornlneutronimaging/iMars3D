@@ -3,7 +3,9 @@
 import scipy
 import numpy as np
 import tomopy.util.mproc as mproc
-import concurrent.futures as cf
+from multiprocessing.managers import SharedMemoryManager
+from tqdm.contrib.concurrent import process_map
+from functools import partial
 
 
 def remove_ring_artifact(
@@ -41,21 +43,33 @@ def remove_ring_artifact(
     # NOTE:
     # additional work is needed to avoid duplicating arrays in memory
     ncore = mproc.mp.cpu_count() if ncore == -1 else int(ncore)
-    with cf.ProcessPoolExecutor(max_workers=ncore) as executor:
-        jobs = [
-            executor.submit(
+    # use shared memory to reduce memory footprint
+    with SharedMemoryManager() as smm:
+        # create the shared memory
+        shm = smm.SharedMemory(arrays.nbytes)
+        # create a numpy array point to the shared memory
+        shm_arrays = np.ndarray(
+            arrays.shape,
+            dtype=arrays.dtype,
+            buffer=shm.buf,
+        )
+        # copy the data to the shared memory
+        np.copyto(shm_arrays, arrays)
+        # invoke mp via tqdm wrapper
+        rst = process_map(
+            partial(
                 remove_ring_artifact_Ketcham,
-                arrays[:, sino_idx, :],
-                kernel_size,
-                sub_division,
-                correction_range,
-            )
-            for sino_idx in range(arrays.shape[1])
-        ]
-    #
-    sinos_corr = [job.result() for job in jobs]
+                kernel_size=kernel_size,
+                sub_division=sub_division,
+                correction_range=correction_range,
+            ),
+            [shm_arrays[:, sino_idx, :] for sino_idx in range(shm_arrays.shape[1])],
+            max_workers=ncore,
+            desc="Removing ring artifact",
+        )
+    rst = np.array(rst)
     for i in range(arrays.shape[1]):
-        arrays[:, i, :] = sinos_corr[i]
+        arrays[:, i, :] = rst[i]
     return arrays
 
 
