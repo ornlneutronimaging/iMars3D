@@ -114,15 +114,30 @@ def apply_tilt_correction(
         return rotate(arrays, -tilt, resize=False, preserve_range=True)
     elif arrays.ndim == 3:
 
-        def tilt_correct_image(idx):
-            return rotate(arrays[idx], -tilt, resize=False, preserve_range=True)
-
         # NOTE: have to switch to threadpool as we are using a nested function
         ncore = mproc.mp.cpu_count() if ncore == -1 else int(ncore)
-        with cf.ThreadPoolExecutor(ncore) as e:
-            jobs = [e.submit(tilt_correct_image, idx) for idx in range(arrays.shape[0])]
-        arrays = np.array([job.result() for job in jobs])
-        return arrays
+        with SharedMemoryManager() as smm:
+            shm = smm.SharedMemory(arrays.nbytes)
+            shm_arrays = np.ndarray(
+                arrays.shape,
+                dtype=arrays.dtype,
+                buffer=shm.buf
+            )
+            np.copyto(shm_arrays, arrays)
+
+            rst = process_map(
+                partial(
+                    rotate,
+                    angle=-tilt,
+                    resize=False,
+                    preserve_range=True
+                ),
+                [shm_arrays[idx] for idx in range(arrays.shape[0])],
+                max_workers=ncore,
+                desc="Applying tilt corr"
+            )
+
+        return np.array(rst)
     else:
         raise ValueError("array must be a 2d/3d array")
 
