@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import tomopy.util.mproc as mproc
-import concurrent.futures as cf
 from typing import Tuple
 from functools import partial
 from scipy.optimize import minimize_scalar
