@@ -55,24 +55,16 @@ def tilt_correction(
     with SharedMemoryManager() as smm:
         # create shared memory
         shm = smm.SharedMemory(arrays.nbytes)
-        shm_arrays = np.ndarray(
-            arrays.shape,
-            dtype=arrays.dtype,
-            buffer=shm.buf
-        )
+        shm_arrays = np.ndarray(arrays.shape, dtype=arrays.dtype, buffer=shm.buf)
 
         np.copyto(shm_arrays, arrays)
 
         rst = process_map(
-            partial(
-                calculate_tilt,
-                low_bound=low_bound,
-                high_bound=high_bound
-            ),
+            partial(calculate_tilt, low_bound=low_bound, high_bound=high_bound),
             [shm_arrays[il] for il in idx_lowrange],
             [shm_arrays[ih] for ih in idx_highrange],
             max_workers=ncore,
-            desc="Calculating tilt correction"
+            desc="Calculating tilt correction",
         )
     # extract the tilt angles from the optimization results
     tilts = np.array([result.x for result in rst])
@@ -118,23 +110,14 @@ def apply_tilt_correction(
         ncore = mproc.mp.cpu_count() if ncore == -1 else int(ncore)
         with SharedMemoryManager() as smm:
             shm = smm.SharedMemory(arrays.nbytes)
-            shm_arrays = np.ndarray(
-                arrays.shape,
-                dtype=arrays.dtype,
-                buffer=shm.buf
-            )
+            shm_arrays = np.ndarray(arrays.shape, dtype=arrays.dtype, buffer=shm.buf)
             np.copyto(shm_arrays, arrays)
 
             rst = process_map(
-                partial(
-                    rotate,
-                    angle=-tilt,
-                    resize=False,
-                    preserve_range=True
-                ),
+                partial(rotate, angle=-tilt, resize=False, preserve_range=True),
                 [shm_arrays[idx] for idx in range(arrays.shape[0])],
                 max_workers=ncore,
-                desc="Applying tilt corr"
+                desc="Applying tilt corr",
             )
 
         return np.array(rst)
