@@ -2,13 +2,14 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import tomopy.util.mproc as mproc
-import concurrent.futures as cf
 from typing import Tuple
 from functools import partial
 from scipy.optimize import minimize_scalar
 from scipy.optimize import OptimizeResult
 from skimage.transform import rotate
 from skimage.registration import phase_cross_correlation
+from multiprocessing.managers import SharedMemoryManager
+from tqdm.contrib.concurrent import process_map
 
 
 def tilt_correction(
@@ -50,14 +51,22 @@ def tilt_correction(
     idx_lowrange, idx_highrange = find_180_deg_pairs_idx(omegas, in_degrees=False)
     # step 2: calculate the tilt from each pair
     ncore = mproc.mp.cpu_count() if ncore == -1 else int(ncore)
-    with cf.ProcessPoolExecutor(ncore) as e:
-        jobs = []
-        for low_idx, high_idx in zip(idx_lowrange, idx_highrange):
-            img0 = arrays[low_idx]
-            img1 = arrays[high_idx]
-            jobs.append(e.submit(calculate_tilt, img0, img1, low_bound, high_bound))
+    with SharedMemoryManager() as smm:
+        # create shared memory
+        shm = smm.SharedMemory(arrays.nbytes)
+        shm_arrays = np.ndarray(arrays.shape, dtype=arrays.dtype, buffer=shm.buf)
+
+        np.copyto(shm_arrays, arrays)
+
+        rst = process_map(
+            partial(calculate_tilt, low_bound=low_bound, high_bound=high_bound),
+            [shm_arrays[il] for il in idx_lowrange],
+            [shm_arrays[ih] for ih in idx_highrange],
+            max_workers=ncore,
+            desc="Calculating tilt correction",
+        )
     # extract the tilt angles from the optimization results
-    tilts = np.array([job.result().x for job in jobs])
+    tilts = np.array([result.x for result in rst])
     # use the average of the found tilt angles
     tilt = np.mean(tilts)
     # step 3: apply the tilt correction
@@ -96,15 +105,21 @@ def apply_tilt_correction(
         return rotate(arrays, -tilt, resize=False, preserve_range=True)
     elif arrays.ndim == 3:
 
-        def tilt_correct_image(idx):
-            return rotate(arrays[idx], -tilt, resize=False, preserve_range=True)
-
         # NOTE: have to switch to threadpool as we are using a nested function
         ncore = mproc.mp.cpu_count() if ncore == -1 else int(ncore)
-        with cf.ThreadPoolExecutor(ncore) as e:
-            jobs = [e.submit(tilt_correct_image, idx) for idx in range(arrays.shape[0])]
-        arrays = np.array([job.result() for job in jobs])
-        return arrays
+        with SharedMemoryManager() as smm:
+            shm = smm.SharedMemory(arrays.nbytes)
+            shm_arrays = np.ndarray(arrays.shape, dtype=arrays.dtype, buffer=shm.buf)
+            np.copyto(shm_arrays, arrays)
+
+            rst = process_map(
+                partial(rotate, angle=-tilt, resize=False, preserve_range=True),
+                [shm_arrays[idx] for idx in range(arrays.shape[0])],
+                max_workers=ncore,
+                desc="Applying tilt corr",
+            )
+
+        return np.array(rst)
     else:
         raise ValueError("array must be a 2d/3d array")
 
