@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import tomopy
-import concurrent.futures as cf
+from multiprocessing.managers import SharedMemoryManager
+from tqdm.contrib.concurrent import process_map
 import tomopy.util.mproc as mproc
 from tomopy.recon.rotation import find_center_pc
 from imars3dv2.filters import find_180_deg_pairs_idx
@@ -35,16 +36,26 @@ def find_rotation_center(
     idx_low, idx_hgh = find_180_deg_pairs_idx(angles, in_degrees=in_degrees)
     # process
     ncore = mproc.mp.cpu_count() if ncore == -1 else int(ncore)
-    with cf.ProcessPoolExecutor(ncore) as e:
-        # NOTE:
-        # we are using the default half pixel tolerance for find_center_pc
-        jobs = [
-            e.submit(
-                find_center_pc,
-                arrays[il],
-                arrays[lh],
-            )
-            for il, lh in zip(idx_low, idx_hgh)
-        ]
-    centers = np.array([job.result() for job in jobs])
-    return np.median(centers)
+    # use shared memory model and tqdm wrapper for multiprocessing to reduce
+    # runtime memory footprint
+    with SharedMemoryManager() as smm:
+        # create the shared memory
+        shm = smm.SharedMemory(arrays.nbytes)
+        # create a numpy array point to the shared memory
+        shm_arrays = np.ndarray(
+            arrays.shape,
+            dtype=arrays.dtype,
+            buffer=shm.buf,
+        )
+        # copy data
+        np.copyto(shm_arrays, arrays)
+        # map the multiprocessing calls
+        rst = process_map(
+            find_center_pc,
+            [shm_arrays[il] for il in idx_low],
+            [shm_arrays[ih] for ih in idx_hgh],
+            max_workers=ncore,
+            desc="Finding rotation center",
+        )
+    # use the median value
+    return np.median(rst)
