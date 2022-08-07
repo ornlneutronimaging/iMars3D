@@ -93,27 +93,28 @@ class DataLoader(ExpMeta):
     ct_loaded = param.Boolean(
         default=False,
         doc="ct stack is loaded",
-        # precedence=-1,
+        precedence=-1,
     )
+    ct_loaded_status = pn.indicators.BooleanStatus(value=False, color="success")
     ob_loaded = param.Boolean(
         default=False,
         doc="ob stack is loaded",
-        # precedence=-1,
+        precedence=-1,
     )
+    ob_loaded_status = pn.indicators.BooleanStatus(value=False, color="success")
     df_loaded = param.Boolean(
         default=False,
         doc="df stack is loaded",
-        # precedence=-1,
+        precedence=-1,
     )
+    df_loaded_status = pn.indicators.BooleanStatus(value=False, color="success")
     #
-    load_data_button = pn.widgets.Button(name="Load data", button_type="primary")
-    normalize_button = pn.widgets.Button(name="Normalize")
+    load_data_action = param.Action(lambda x: x.param.trigger("load_data_action"), label="Load Data")
+    normalize_action = param.Action(lambda x: x.param.trigger("normalize_action"), label="Normalize")
 
     def __init__(self):
         ExpMeta.__init__(self)
         self._update_proj_root()
-        #
-        self.load_data_button.on_click(self.load_to_memory)
         #
         self.ct = None
         self.ob = None
@@ -158,7 +159,8 @@ class DataLoader(ExpMeta):
         )
         return imgs
 
-    def load_to_memory(self, event):
+    @param.depends("load_data_action", watch=True)
+    def load_to_memory(self):
         self.ct = self.read_tiffs(self.radiograph_folder.value)
         self.ob = self.read_tiffs(self.openbeam.value)
         self.df = self.read_tiffs(self.darkfield.value)
@@ -166,6 +168,12 @@ class DataLoader(ExpMeta):
         self.ct_loaded = False if self.ct is None else True
         self.ob_loaded = False if self.ob is None else True
         self.df_loaded = False if self.df is None else True
+
+    @param.depends("ct_loaded", "ob_loaded", "df_loaded", watch=True)
+    def _update_data_load_status(self):
+        self.ct_loaded_status.value = self.ct_loaded
+        self.ob_loaded_status.value = self.ob_loaded
+        self.df_loaded_status.value = self.df_loaded
 
     @param.depends("ct_loaded", "ob_loaded", "df_loaded")
     def preview_pn(self):
@@ -209,7 +217,7 @@ class DataLoader(ExpMeta):
 
     def panel(self):
         #
-        expmeta_pn = ExpMeta.panel(self)
+        param_pn = ExpMeta.panel(self)
         guide_pn = pn.Card(
             pn.pane.Markdown(
                 """
@@ -222,18 +230,15 @@ class DataLoader(ExpMeta):
             collapsed=True,
         )
         #
-        action_pn = pn.Column(self.load_data_button, self.normalize_button)
+        control_pn = pn.Column(guide_pn, param_pn)
         #
-        control_pn = pn.Column(
-            guide_pn,
-            expmeta_pn,
-            pn.layout.Divider(),
-            action_pn,
-        )
+        dataload_status_pn = pn.Row(self.ct_loaded_status, self.ob_loaded_status, self.df_loaded_status)
         return pn.Row(
             control_pn,
             pn.Column(
                 self.file_selector,
+                pn.layout.Divider(),
+                dataload_status_pn,
                 self.preview_pn,
             ),
             sizing_mode="stretch_width",
