@@ -7,6 +7,8 @@ import panel as pn
 import holoviews as hv
 from holoviews import opts
 from holoviews.operation.datashader import rasterize
+from imars3dv2.filters.gamma_filter import gamma_filter
+from imars3dv2.filters.normalization import normalization
 
 pn.extension("katex", nthreads=0)
 hv.extension("bokeh")
@@ -86,10 +88,12 @@ class ExpMeta(param.Parameterized):
 
 
 class DataLoader(ExpMeta):
+    #
     proj_root = param.String(
         doc="project root directory",
         precedence=-1,  # hide facility info from viewer
     )
+    #
     ct_loaded = param.Boolean(
         default=False,
         doc="ct stack is loaded",
@@ -109,7 +113,21 @@ class DataLoader(ExpMeta):
     )
     df_loaded_status = pn.indicators.BooleanStatus(value=False, color="success")
     #
+    ct_gamma_filtered = param.Boolean(
+        default=False,
+        doc="ct stack is gamma filtered",
+        precedence=-1,
+    )
+    ct_gamma_filtered_status = pn.indicators.BooleanStatus(value=False, color="info")
+    ct_norm_filtered = param.Boolean(
+        default=False,
+        doc="ct stack is processed with normalized filter",
+        precedence=-1,
+    )
+    ct_norm_filtered_status = pn.indicators.BooleanStatus(value=False, color="info")
+    #
     load_data_action = param.Action(lambda x: x.param.trigger("load_data_action"), label="Load Data")
+    filter_gamma_action = param.Action(lambda x: x.param.trigger("filter_gamma_action"), label="GammaFilter")
     normalize_action = param.Action(lambda x: x.param.trigger("normalize_action"), label="Normalize")
 
     def __init__(self):
@@ -169,11 +187,37 @@ class DataLoader(ExpMeta):
         self.ob_loaded = False if self.ob is None else True
         self.df_loaded = False if self.df is None else True
 
+    @param.depends("filter_gamma_action", watch=True)
+    def gamma_filter(self):
+        """use default input arg for now"""
+        dtype = self.ct.data["count"].dtype
+        self.ct.data["count"] = gamma_filter(self.ct.data["count"]).astype(dtype)
+        #
+        self.ct_gamma_filtered = True
+
+    @param.depends("normalize_action", watch=True)
+    def normalize_radiograph(self):
+        self.ct.data["count"] = normalization(
+            self.ct.data["count"],
+            self.ob.data["count"],
+            self.df.data["count"],
+        )
+        self.ct_norm_filtered = True
+
+    @param.output(ct_normalized=hv.Dataset)
+    def ct_normalized(self):
+        return self.ct
+
     @param.depends("ct_loaded", "ob_loaded", "df_loaded", watch=True)
     def _update_data_load_status(self):
         self.ct_loaded_status.value = self.ct_loaded
         self.ob_loaded_status.value = self.ob_loaded
         self.df_loaded_status.value = self.df_loaded
+
+    @param.depends("ct_gamma_filtered", "ct_norm_filtered", watch=True)
+    def _update_process_status(self):
+        self.ct_gamma_filtered_status.value = self.ct_gamma_filtered
+        self.ct_norm_filtered_status.value = self.ct_norm_filtered
 
     @param.depends("ct_loaded", "ob_loaded", "df_loaded")
     def preview_pn(self):
@@ -209,10 +253,11 @@ class DataLoader(ExpMeta):
                     invert_yaxis=True,
                 )
             )
+        # NOTE: expand the tab width to match status indicator
         return pn.Tabs(
-            ("CT", ct_pn),
-            ("OB", ob_pn),
-            ("DF", df_pn),
+            ("C T", ct_pn),
+            ("O B", ob_pn),
+            ("D F", df_pn),
         )
 
     def panel(self):
@@ -232,7 +277,13 @@ class DataLoader(ExpMeta):
         #
         control_pn = pn.Column(guide_pn, param_pn)
         #
-        dataload_status_pn = pn.Row(self.ct_loaded_status, self.ob_loaded_status, self.df_loaded_status)
+        dataload_status_pn = pn.Row(
+            self.ct_loaded_status,
+            self.ob_loaded_status,
+            self.df_loaded_status,
+            self.ct_gamma_filtered_status,
+            self.ct_norm_filtered_status,
+        )
         return pn.Row(
             control_pn,
             pn.Column(
@@ -262,7 +313,7 @@ pn_app = pn.Tabs(
 )
 
 wizard = pn.template.FastListTemplate(
-    site="iMars3D reconstruction demo",
+    site="iMars3D demo",
     title="Neutron Image Reconstruction",
     logo="HFIR_SNS_logo.png",
     header_background="#00A170",
