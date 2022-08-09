@@ -125,6 +125,7 @@ class DataLoader(ExpMeta):
         self.ct = self.read_tiffs(self.radiograph_folder.value, "CT")
         self.ob = self.read_tiffs(self.openbeam.value, "OB")
         self.df = self.read_tiffs(self.darkfield.value, "DF")
+        pn.state.notifications.success("Data lading complete.", duration=3000)
 
     @param.output(
         ("ct", param.Array),
