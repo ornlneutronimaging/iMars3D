@@ -17,6 +17,7 @@ class SelectROI(param.Parameterized):
     )
     # index for viewing
     idx_active_ct = param.Integer(default=0, doc="index of active ct")
+    idx_active_sino = param.Integer(default=0, doc="index of active sinogram")
     # cmap
     colormap = param.Selector(
         default="gray",
@@ -35,6 +36,7 @@ class SelectROI(param.Parameterized):
     # ROI selection
     polys = hv.Polygons([])
     boxstream = None
+    sino_line = None
     #
     top = param.Integer(doc="top of ROI")
     bottom = param.Integer(doc="bottom of ROI")
@@ -84,15 +86,24 @@ class SelectROI(param.Parameterized):
             crop_limit=crop_limit,
         )
 
-    @param.depends("ct", "idx_active_ct", "colormap", "colormap_scale")
+    @param.depends(
+        "ct",
+        "idx_active_ct",
+        "idx_active_sino",
+        "colormap",
+        "colormap_scale",
+    )
     def ct_viewer(self):
         if self.ct is None:
             return pn.pane.Markdown("no CT to display")
         else:
+            # ct
             ct_active = self.ct[self.idx_active_ct]
             img = rasterize(hv.Image((np.arange(ct_active.shape[1]), np.arange(ct_active.shape[0]), ct_active)))
+            # sino line
+            self.sino_line = hv.HLine(self.idx_active_sino)
             return (
-                (img * self.polys)
+                (img * self.polys * self.sino_line)
                 .opts(
                     opts.Image(
                         tools=["hover"],
@@ -100,14 +111,41 @@ class SelectROI(param.Parameterized):
                         cnorm=self.colormap_scale,
                         data_aspect=1.0,
                         invert_yaxis=True,
+                        title="radiograph",
                     ),
                     opts.Polygons(
                         fill_alpha=0.2,
                         line_color="red",
                     ),
+                    opts.HLine(
+                        color="red",
+                        line_width=0.5,
+                    ),
                 )
                 .hist()
             )
+
+    @param.depends(
+        "ct",
+        "idx_active_ct",
+        "idx_active_sino",
+        "colormap",
+        "colormap_scale",
+    )
+    def sino_viewer(self):
+        # sino
+        sino_active = self.ct[:, self.idx_active_sino, :]
+        sino = rasterize(hv.Image((np.arange(sino_active.shape[1]), np.arange(sino_active.shape[0]), sino_active)))
+        return sino.opts(
+            opts.Image(
+                width=500,
+                tools=["hover"],
+                cmap=self.colormap,
+                cnorm=self.colormap_scale,
+                shared_axes=False,
+                title="sinogram",
+            ),
+        ).hist()
 
     def panel(self):
         # color map
@@ -142,8 +180,10 @@ class SelectROI(param.Parameterized):
             collapsible=True,
         )
         # intensity fluctuation control
-        #
+        # CT&Sino view
+        # -- init
         self.boxstream = streams.BoxEdit(source=self.polys, num_objects=1)
+        # -- build view
         ct_control = pn.widgets.IntSlider.from_param(
             self.param.idx_active_ct,
             start=0,
@@ -151,9 +191,20 @@ class SelectROI(param.Parameterized):
             name="CT num",
         )
         ct_tab = pn.Column(self.ct_viewer, ct_control)
-        #
+        # sino view
+        sino_control = pn.widgets.IntInput.from_param(
+            self.param.idx_active_sino,
+            start=0,
+            end=self.ct.shape[1],
+            value=self.ct.shape[1] // 2,
+            name="Sino(y) num",
+            width=80,
+        )
+        sino_tab = pn.Row(self.sino_viewer, sino_control)
+        # final app
         app = pn.Row(
             pn.Column(cmap_pn, crop_control_pn),
             ct_tab,
+            sino_tab,
         )
         return app

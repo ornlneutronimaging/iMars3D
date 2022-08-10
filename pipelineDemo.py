@@ -48,7 +48,7 @@ class Visualization(param.Parameterized):
 
 
 # build the pipeline
-pn_app = pn.pipeline.Pipeline(
+wizard = pn.pipeline.Pipeline(
     stages=[
         ("Load Data", DataLoader),
         ("Preprocess", Preprocess),
@@ -60,15 +60,15 @@ pn_app = pn.pipeline.Pipeline(
 )
 # NOTE: we have to disable the axes linking as it will try to link with
 # the "ct" viewers in the pipeline.
-pn_app.network.linked_axes = False
+wizard.network.linked_axes = False
 
 # setup via template
-wizard = pn.template.FastListTemplate(
+pn.template.FastListTemplate(
     site="iMars3D demo",
     title="Neutron Image Reconstruction",
     logo="HFIR_SNS_logo.png",
     header_background="#00A170",
-    main=pn_app,
+    main=wizard,
     # theme="dark",
     theme_toggle=True,
 ).servable()
