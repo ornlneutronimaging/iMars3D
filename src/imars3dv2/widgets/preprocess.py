@@ -29,6 +29,21 @@ class Preprocess(param.Parameterized):
     filter_gamma_action = param.Action(lambda x: x.param.trigger("filter_gamma_action"), label="GammaFilter")
     normalize_status = param.Boolean(default=False, doc="CT is normalized")
     normalize_action = param.Action(lambda x: x.param.trigger("normalize_action"), label="Normalize")
+    # index for viewing
+    idx_active_ct = param.Integer(default=0, doc="index of active ct")
+    idx_active_ob = param.Integer(default=0, doc="index of active ob")
+    idx_active_df = param.Integer(default=0, doc="index of active df")
+    # cmap
+    colormap = param.Selector(
+        default="gray",
+        objects=["gray", "viridis", "plasma"],
+        doc="colormap used for images",
+    )
+    colormap_scale = param.Selector(
+        default="linear",
+        objects=["linear", "log"],
+        doc="colormap scale for displaying images",
+    )
 
     @param.depends("filter_gamma_action", watch=True)
     def gamma_filter(self):
@@ -37,7 +52,7 @@ class Preprocess(param.Parameterized):
         self.ct = gamma_filter(self.ct).astype(dtype)
         #
         self.filter_gamma_status = True
-        pn.state.notifications.success("Gamma filter complete.", duration=3000)
+        pn.state.notifications.success("Gamma filter complete.", duration=0)
 
     @param.depends("normalize_action", watch=True)
     def normalize_radiograph(self):
@@ -47,98 +62,61 @@ class Preprocess(param.Parameterized):
             self.df,
         )
         self.normalize_status = True
-        pn.state.notifications.success("Normalization complete.", duration=3000)
+        pn.state.notifications.success("Normalization complete.", duration=0)
 
-    @param.depends("ct")
+    @param.depends("ct", "idx_active_ct", "colormap", "colormap_scale")
     def ct_viewer(self):
         if self.ct is None:
             return pn.pane.Markdown("no CT to display")
         else:
-            ds = hv.Dataset(
-                (
-                    np.arange(0, self.ct.shape[2]),
-                    np.arange(0, self.ct.shape[1]),
-                    np.arange(0, self.ct.shape[0]),
-                    self.ct,
-                ),
-                ["x", "y", "n"],
-                "count",
-            )
+            ct_active = self.ct[self.idx_active_ct]
             #
-            viewer = (
-                rasterize(
-                    ds.to(hv.Image, ["x", "y"], dynamic=True),
-                )
-                .opts(
-                    opts.Image(
-                        tools=["hover"],
-                        cmap="gray",
-                        invert_yaxis=True,
-                    )
-                )
-                .hist()
-            )
-            return viewer
+            img = rasterize(hv.Image(ct_active, bounds=(0, 0, ct_active.shape[1], ct_active.shape[0])))
+            return img.opts(
+                opts.Image(
+                    width=400,
+                    height=400,
+                    tools=["hover"],
+                    cmap=self.colormap,
+                    cnorm=self.colormap_scale,
+                ),
+            ).hist()
 
-    @param.depends("ob")
+    @param.depends("ob", "idx_active_ob", "colormap", "colormap_scale")
     def ob_viewer(self):
         if self.ob is None:
             return pn.pane.Markdown("no OB to display")
         else:
-            ds = hv.Dataset(
-                (
-                    np.arange(0, self.ob.shape[2]),
-                    np.arange(0, self.ob.shape[1]),
-                    np.arange(0, self.ob.shape[0]),
-                    self.ob,
+            ob_active = self.ob[self.idx_active_ob]
+            #
+            img = rasterize(hv.Image(ob_active, bounds=(0, 0, ob_active.shape[1], ob_active.shape[0])))
+            return img.opts(
+                opts.Image(
+                    width=400,
+                    height=400,
+                    tools=["hover"],
+                    cmap=self.colormap,
+                    cnorm=self.colormap_scale,
                 ),
-                ["x", "y", "n"],
-                "count",
-            )
-            viewer = (
-                rasterize(
-                    ds.to(hv.Image, ["x", "y"], dynamic=True),
-                )
-                .opts(
-                    opts.Image(
-                        tools=["hover"],
-                        cmap="gray",
-                        invert_yaxis=True,
-                    )
-                )
-                .hist()
-            )
-            return viewer
+            ).hist()
 
-    @param.depends("df")
+    @param.depends("df", "idx_active_df", "colormap", "colormap_scale")
     def df_viewer(self):
         if self.df is None:
             return pn.pane.Markdown("no DF to display")
         else:
-            ds = hv.Dataset(
-                (
-                    np.arange(0, self.df.shape[2]),
-                    np.arange(0, self.df.shape[1]),
-                    np.arange(0, self.df.shape[0]),
-                    self.df,
+            df_active = self.df[self.idx_active_df]
+            #
+            img = rasterize(hv.Image(df_active, bounds=(0, 0, df_active.shape[1], df_active.shape[0])))
+            return img.opts(
+                opts.Image(
+                    width=400,
+                    height=400,
+                    tools=["hover"],
+                    cmap=self.colormap,
+                    cnorm=self.colormap_scale,
                 ),
-                ["x", "y", "n"],
-                "count",
-            )
-            viewer = (
-                rasterize(
-                    ds.to(hv.Image, ["x", "y"], dynamic=True),
-                )
-                .opts(
-                    opts.Image(
-                        tools=["hover"],
-                        cmap="gray",
-                        invert_yaxis=True,
-                    )
-                )
-                .hist()
-            )
-            return viewer
+            ).hist()
 
     @param.output(param.Array)
     def get_data(self):
@@ -146,42 +124,32 @@ class Preprocess(param.Parameterized):
 
     def panel(self):
         # gamma filter
-        gf_pn = pn.Param(
-            self,
-            name="",
-            parameters=["filter_gamma_status", "filter_gamma_action"],
-            widgets={
-                "filter_gamma_status": {
-                    "widget_type": pn.widgets.BooleanStatus,
-                    "color": "success",
-                    "width": 10,
-                    "height": 10,
-                },
-                "filter_gamma_action": {
-                    "width": 80,
-                },
-            },
-            default_layout=pn.Row,
-            height=30,
+        gf_pn = pn.Row(
+            pn.widgets.BooleanStatus.from_param(
+                self.param.filter_gamma_status,
+                color="success",
+                width=10,
+                height=10,
+            ),
+            pn.widgets.Button.from_param(
+                self.param.filter_gamma_action,
+                width=80,
+            ),
+            height=50,
             width=150,
         )
         # normalize
-        nz_pn = pn.Param(
-            self,
-            name="",
-            parameters=["normalize_status", "normalize_action"],
-            widgets={
-                "normalize_status": {
-                    "widget_type": pn.widgets.BooleanStatus,
-                    "color": "success",
-                    "width": 10,
-                    "height": 10,
-                },
-                "normalize_action": {
-                    "width": 80,
-                },
-            },
-            default_layout=pn.Row,
+        nz_pn = pn.Row(
+            pn.widgets.BooleanStatus.from_param(
+                self.param.normalize_status,
+                color="success",
+                width=10,
+                height=10,
+            ),
+            pn.widgets.Button.from_param(
+                self.param.normalize_action,
+                width=80,
+            ),
         )
         # control panel
         control_pn = pn.Card(
@@ -189,15 +157,57 @@ class Preprocess(param.Parameterized):
             nz_pn,
             width=200,
             header="**Control Panel**",
-            collapsible=False,
+            collapsible=True,
+        )
+        # color map
+        cmap = pn.widgets.Select.from_param(
+            self.param.colormap,
+            name="colormap",
+        )
+        cmapscale = pn.widgets.Select.from_param(
+            self.param.colormap_scale,
+            name="colormap scale",
+        )
+        cmap_pn = pn.Card(
+            cmap,
+            cmapscale,
+            width=200,
+            header="Diaply",
+            collapsible=True,
         )
         #
+        ct_control = pn.widgets.IntSlider.from_param(
+            self.param.idx_active_ct,
+            start=0,
+            end=self.ct.shape[0],
+            name="CT num",
+        )
+        ct_tab = pn.Column(self.ct_viewer, ct_control)
+        #
+        ob_control = pn.widgets.IntSlider.from_param(
+            self.param.idx_active_ob,
+            start=0,
+            end=self.ob.shape[0],
+            name="OB num",
+        )
+        ob_tab = pn.Column(self.ob_viewer, ob_control)
+        #
+        df_control = pn.widgets.IntSlider.from_param(
+            self.param.idx_active_df,
+            start=0,
+            end=self.df.shape[0],
+            name="DF num",
+        )
+        df_tab = pn.Column(self.df_viewer, df_control)
         viewer = pn.Tabs(
-            ("CT", self.ct_viewer),
-            ("OB", self.ob_viewer),
-            ("DF", self.df_viewer),
+            ("CT", ct_tab),
+            ("OB", ob_tab),
+            ("DF", df_tab),
             sizing_mode="stretch_width",
         )
         #
-        app = pn.Row(control_pn, viewer)
+        app = pn.Row(
+            pn.Column(control_pn, cmap_pn),
+            viewer,
+        )
         return app

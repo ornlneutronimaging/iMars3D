@@ -3,8 +3,6 @@
 import param
 import panel as pn
 import holoviews as hv
-from holoviews import opts
-
 from imars3dv2.widgets.dataloading import DataLoader
 from imars3dv2.widgets.preprocess import Preprocess
 
@@ -15,14 +13,6 @@ pn.extension(
     notifications=True,
 )
 hv.extension("bokeh")
-opts.defaults(
-    opts.GridSpace(shared_xaxis=True, shared_yaxis=True),
-    opts.Image(cmap="viridis", width=400, height=400),
-    # opts.Labels(text_color='white', text_font_size='8pt', text_align='left', text_baseline='bottom'),
-    opts.Path(color="white"),
-    opts.Spread(width=600),
-    opts.Overlay(show_legend=False),
-)
 
 
 class SelectROI(param.Parameterized):
