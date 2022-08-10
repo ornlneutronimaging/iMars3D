@@ -5,7 +5,7 @@ import panel as pn
 import holoviews as hv
 from imars3dv2.widgets.dataloading import DataLoader
 from imars3dv2.widgets.preprocess import Preprocess
-
+from imars3dv2.widgets.selectroi import SelectROI
 
 pn.extension(
     "katex",
@@ -13,23 +13,6 @@ pn.extension(
     notifications=True,
 )
 hv.extension("bokeh")
-
-
-class SelectROI(param.Parameterized):
-    # container to store images
-    ct = param.Array(
-        doc="radiograph stack as numpy array",
-        precedence=-1,  # hide
-    )
-
-    @param.output(
-        ("ct", param.Array),
-    )
-    def get_data(self):
-        return self.ct
-
-    def panel(self):
-        return pn.pane.Markdown("**TBD**: Select ROI")
 
 
 class Reconstruction(param.Parameterized):
@@ -75,6 +58,9 @@ pn_app = pn.pipeline.Pipeline(
     ],
     debug=True,
 )
+# NOTE: we have to disable the axes linking as it will try to link with
+# the "ct" viewers in the pipeline.
+pn_app.network.linked_axes = False
 
 # setup via template
 wizard = pn.template.FastListTemplate(

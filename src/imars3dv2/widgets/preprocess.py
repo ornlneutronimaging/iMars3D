@@ -71,14 +71,14 @@ class Preprocess(param.Parameterized):
         else:
             ct_active = self.ct[self.idx_active_ct]
             #
-            img = rasterize(hv.Image(ct_active, bounds=(0, 0, ct_active.shape[1], ct_active.shape[0])))
+            img = rasterize(hv.Image((np.arange(ct_active.shape[1]), np.arange(ct_active.shape[0]), ct_active)))
             return img.opts(
                 opts.Image(
-                    width=400,
-                    height=400,
                     tools=["hover"],
                     cmap=self.colormap,
                     cnorm=self.colormap_scale,
+                    data_aspect=1.0,
+                    invert_yaxis=True,
                 ),
             ).hist()
 
@@ -89,14 +89,14 @@ class Preprocess(param.Parameterized):
         else:
             ob_active = self.ob[self.idx_active_ob]
             #
-            img = rasterize(hv.Image(ob_active, bounds=(0, 0, ob_active.shape[1], ob_active.shape[0])))
+            img = rasterize(hv.Image((np.arange(ob_active.shape[1]), np.arange(ob_active.shape[0]), ob_active)))
             return img.opts(
                 opts.Image(
-                    width=400,
-                    height=400,
                     tools=["hover"],
                     cmap=self.colormap,
                     cnorm=self.colormap_scale,
+                    data_aspect=1.0,
+                    invert_yaxis=True,
                 ),
             ).hist()
 
@@ -107,14 +107,14 @@ class Preprocess(param.Parameterized):
         else:
             df_active = self.df[self.idx_active_df]
             #
-            img = rasterize(hv.Image(df_active, bounds=(0, 0, df_active.shape[1], df_active.shape[0])))
+            img = rasterize(hv.Image((np.arange(df_active.shape[1]), np.arange(df_active.shape[0]), df_active)))
             return img.opts(
                 opts.Image(
-                    width=400,
-                    height=400,
                     tools=["hover"],
                     cmap=self.colormap,
                     cnorm=self.colormap_scale,
+                    data_aspect=1.0,
+                    invert_yaxis=True,
                 ),
             ).hist()
 
