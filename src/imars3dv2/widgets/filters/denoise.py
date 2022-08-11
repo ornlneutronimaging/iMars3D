@@ -7,14 +7,12 @@ from imars3dv2.filters.denoise import denoise
 
 class Denoise(param.Parameterized):
     """
-    Widget for the denoise filter from iMars3D.
+    Widget for the denoise filter from iMars3D, must have a parent widget with
+    validate ct stack.
     """
 
-    # container to store images
-    ct = param.Array(
-        doc="radiograph stack as numpy array",
-        precedence=-1,  # hide
-    )
+    #
+    parent = param.Parameter()
     # denoise
     denoise_action = param.Action(lambda x: x.param.trigger("denoise_action"), label="Execute")
     denoise_method = param.Selector(default="bilateral", objects=["bilateral", "median"], doc="denoise method")
@@ -37,17 +35,19 @@ class Denoise(param.Parameterized):
 
     @param.depends("denoise_action", watch=True)
     def apply(self):
-        self.ct = denoise(
-            arrays=self.ct,
-            method=self.denoise_method,
-            median_filter_kernel=self.denoise_median_kernel,
-            bilateral_sigma_color=self.denoise_bilateral_sigma_color,
-            bilateral_sigma_spatial=self.denoise_bilateral_sigma_spatial,
-        )
-        self.denoise_complete_status = True
-        pn.state.notifications.success("Denoise complete.", duration=3000)
+        if self.parent.ct is None:
+            pn.state.notifications.warning("no CT found")
+        else:
+            self.parent.ct = denoise(
+                arrays=self.parent.ct,
+                method=self.denoise_method,
+                median_filter_kernel=self.denoise_median_kernel,
+                bilateral_sigma_color=self.denoise_bilateral_sigma_color,
+                bilateral_sigma_spatial=self.denoise_bilateral_sigma_spatial,
+            )
+            self.denoise_complete_status = True
+            pn.state.notifications.success("Denoise complete.", duration=3000)
 
-    @param.depends("denoise_method", "denoise_complete_status")
     def panel(self, width=200):
         #
         method_selector = pn.widgets.RadioButtonGroup.from_param(self.param.denoise_method)
