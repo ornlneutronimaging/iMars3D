@@ -79,21 +79,17 @@ class Denoise(param.Parameterized):
         exec_pn = pn.Row(denoise_status, denoise_button, width=width)
         #
         if self.denoise_method == "median":
-            app = pn.Card(
+            app = pn.Column(
                 method_selector,
                 meidan_kernel_input,
                 exec_pn,
-                header="**Denoise**",
-                collapsible=True,
                 width=width,
             )
         else:
-            app = pn.Card(
+            app = pn.Column(
                 method_selector,
                 pn.Row(sigma_color_input, sigma_spatial_input, width=width),
                 exec_pn,
-                header="**Denoise**",
-                collapsible=True,
                 width=width,
             )
         return app

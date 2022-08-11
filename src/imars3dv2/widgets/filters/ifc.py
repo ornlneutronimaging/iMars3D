@@ -76,21 +76,17 @@ class IntensityFluctuationCorrection(param.Parameterized):
         )
         #
         if self.auto_detect_air:
-            app = pn.Card(
+            app = pn.Column(
                 auto_air_toggle,
                 sigma_input,
                 pn.Row(status_indicator, execute_button, width=width),
-                header="**IFC**",
-                collapsible=True,
                 width=width,
             )
         else:
-            app = pn.Card(
+            app = pn.Column(
                 auto_air_toggle,
                 air_pixel_input,
                 pn.Row(status_indicator, execute_button, width=width),
-                header="**IFC**",
-                collapsible=True,
                 width=width,
             )
         return app
