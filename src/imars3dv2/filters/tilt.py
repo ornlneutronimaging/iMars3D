@@ -16,7 +16,7 @@ def tilt_correction(
     arrays: np.ndarray,
     omegas: np.ndarray,
     low_bound: float = -5.0,
-    high_bound: float = -5.0,
+    high_bound: float = 5.0,
     cut_off_angle_deg: float = 1e-3,
     ncore: int = -1,
 ):
@@ -291,7 +291,7 @@ def calculate_tilt(
     image0: np.ndarray,
     image180: np.ndarray,
     low_bound: float = -5.0,
-    high_bound: float = -5.0,
+    high_bound: float = 5.0,
 ) -> OptimizeResult:
     """
     Use optimization to find the in-plane tilt angle.
