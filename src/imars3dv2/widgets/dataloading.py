@@ -67,7 +67,7 @@ class ExpMeta(param.Parameterized):
     def panel(self):
         return pn.Param(
             self.param,
-            name="Select instrument and input IPTS number",
+            name="Select instrument and enter IPTS number",
             widgets={
                 "instrument": pn.widgets.RadioButtonGroup,
                 "facility": {
