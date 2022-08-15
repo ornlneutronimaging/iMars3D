@@ -1,93 +1,34 @@
 #!/usr/bin/env python3
 
+import os
+import numpy as np
+import tifffile
+from pathlib import Path
 import param
 import panel as pn
 from panel.widgets import Tqdm
-import numpy as np
-import tifffile
 
 
-class ExpMeta(param.Parameterized):
-    #
-    instrument = param.Selector(default="CG1D", objects=["CG1D", "SNAP", "VENUS", "CUPID"], doc="Imageing instruments")
-    #
-    facility = param.String(
-        default="HFIR",
-        doc="facility hosting the instrument",
+class DataLoader(param.Parameterized):
+    # input from previous step
+    data_root = param.Path(
+        default=Path.home(),
+        doc="ct, ob, and df root directory, default should be proj_root/raw",
     )
-    #
-    scan_name = param.String(
-        default="my_scan",
-        doc="user defined name for given CT scan",
+    proj_root = param.String(doc="map data_root to string to avoid a FileSelector error")
+    recn_root = param.Path(
+        default=Path.home(),
+        doc="reconstruction results root, default should be proj_root/processed_data",
     )
-    #
-    output_folder_name = param.String(
-        default="my_recon",
-        doc="output directory name for reconstruction results",
+    temp_root = param.Path(
+        default=Path.home() / Path("tmp"),
+        doc="intermedia results save location",
     )
-    #
-    IPTS = param.Integer(
-        default=0,
-        bounds=(0, 100_000_000),
-        doc="experiment ID, a.k.a IPTS number",
+    recn_name = param.String(
+        default="myrecon",
+        doc="reconstruction results folder name",
     )
-    #
-    proj_root = param.String(
-        doc="project root directory",
-    )
-
-    @param.depends("IPTS", watch=True)
-    def _update_default_scan_name(self):
-        if self.scan_name == "my_scan":
-            self.scan_name = f"scan_{self.IPTS}"
-
-    @param.depends("IPTS", "scan_name", watch=True)
-    def _update_default_output_folder_name(self):
-        if self.output_folder_name == "my_recon":
-            if self.scan_name == "my_scan":
-                self.output_folder_name = f"recon_{self.IPTS}"
-            else:
-                self.output_folder_name = f"recon_{self.scan_name}"
-
-    @param.depends("instrument", watch=True)
-    def _update_facility(self):
-        if self.instrument in ("CG1D"):
-            self.facility = "HFIR"
-        elif self.instrument in ("SNAP", "VENUS"):
-            self.facility = "SNS"
-        elif self.instrument in ("CUPID"):
-            self.facility = "STS"
-        else:
-            self.facility = "???"
-
-    @param.depends("instrument", "IPTS", watch=True)
-    def _update_proj_root(self):
-        self.proj_root = f"~/tmp/{self.facility}/{self.instrument}/IPTS-{self.IPTS}"
-
-    def panel(self):
-        return pn.Param(
-            self.param,
-            name="Select instrument and enter IPTS number",
-            widgets={
-                "instrument": pn.widgets.RadioButtonGroup,
-                "facility": {
-                    "name": "facility",
-                    "widget_type": pn.widgets.StaticText,
-                },
-                "IPTS": {
-                    "widget_type": pn.widgets.LiteralInput,
-                    "placeholder": "Enter your experiment IPTS number",
-                },
-                "proj_root": {
-                    "name": "project root",
-                    "widget_type": pn.widgets.StaticText,
-                },
-            },
-        )
-
-
-class DataLoader(ExpMeta):
-    # container to store images
+    # data container
     ct = param.Array(
         doc="radiograph stack as numpy array",
         precedence=-1,  # hide
@@ -96,44 +37,51 @@ class DataLoader(ExpMeta):
         doc="open beam stack as numpy array",
         precedence=-1,  # hide
     )
-    df = param.Array(
-        doc="dark field stack as numpy array",
+    dc = param.Array(
+        doc="dark current stack as numpy array",
         precedence=-1,  # hide
     )
-    # actions/buttons
-    load_data_action = param.Action(lambda x: x.param.trigger("load_data_action"), label="Load Data")
-    progress_bar = Tqdm(width=500, align="end")
+    omegas = param.Array(
+        doc="rotation angles in degress derived from tiff filename.",
+    )
+    # load data action
+    load_data_action = param.Action(lambda x: x.param.trigger("load_data_action"))
+    progress_bar = Tqdm(width=300, align="end")
+
+    @param.depends("data_root")
+    def _update_proj_root(self):
+        self.proj_root = str(self.data_root)
 
     @param.depends("proj_root")
     def file_selector(self):
         self.radiograph_folder = pn.widgets.FileSelector(
-            directory=self.proj_root,
+            directory=self.data_root,
             name="Radiographs(CT)",
         )
         self.openbeam = pn.widgets.FileSelector(
-            directory=f"{self.proj_root}",
+            directory=self.data_root,
             name="Open-beam(OB)",
         )
-        self.darkfield = pn.widgets.FileSelector(
-            directory=f"{self.proj_root}",
-            name="Dark-field(DF)",
+        self.darkcurrent = pn.widgets.FileSelector(
+            directory=self.data_root,
+            name="Dark-current(DC)",
         )
-        return pn.Tabs(self.radiograph_folder, self.openbeam, self.darkfield)
+        return pn.Tabs(self.radiograph_folder, self.openbeam, self.darkcurrent)
 
     @param.depends("load_data_action", watch=True)
     def load_data(self):
+        # avoid threading issue
+        self.ct_files = self.radiograph_folder.value
+        self.ob_files = self.openbeam.value
+        self.dc_files = self.darkcurrent.value
+        # extract the rotation angles from radiograph filenames
+        self.omegas = np.array(list(map(self.get_angle_from_file, self.ct_files)))
+        # get the image array
         self.ct = self.read_tiffs(self.radiograph_folder.value, "CT")
         self.ob = self.read_tiffs(self.openbeam.value, "OB")
-        self.df = self.read_tiffs(self.darkfield.value, "DF")
+        self.dc = self.read_tiffs(self.darkcurrent.value, "DC")
+        #
         pn.state.notifications.success("Data lading complete.", duration=3000)
-
-    @param.output(
-        ("ct", param.Array),
-        ("ob", param.Array),
-        ("df", param.Array),
-    )
-    def get_date(self):
-        return self.ct, self.ob, self.df
 
     def read_tiffs(self, filelist, desc):
         if len(filelist) == 0:
@@ -143,11 +91,39 @@ class DataLoader(ExpMeta):
             data.append(tifffile.imread(me))
         return np.array(data)
 
+    def get_angle_from_file(self, filename):
+        """extract rotation angle in degrees"""
+        return float(".".join(os.path.basename(filename).split("_")[4:6]))
+
+    @param.output(
+        ("ct", param.Array),
+        ("ob", param.Array),
+        ("dc", param.Array),
+        ("omegas", param.Array),
+        ("recn_root", param.Path),
+        ("temp_root", param.Path),
+        ("recn_name", param.String),
+    )
+    def output(self):
+        return (
+            self.ct,
+            self.ob,
+            self.dc,
+            self.omegas,
+            self.recn_root,
+            self.temp_root,
+            self.recn_name,
+        )
+
     def panel(self):
-        expmeta_pn = ExpMeta.panel(self)
-        app = pn.Row(
-            expmeta_pn,
+        return pn.Column(
+            pn.widgets.Button.from_param(
+                self.param.load_data_action,
+                name="Load All",
+                width=80,
+                button_type="primary",
+            ),
             self.file_selector,
+            self.progress_bar,
             sizing_mode="stretch_width",
         )
-        return pn.Column(app, self.progress_bar, sizing_mode="stretch_width")
