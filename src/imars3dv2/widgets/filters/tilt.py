@@ -15,7 +15,6 @@ class TiltCorrection(param.Parameterized):
     #
     parent = param.Parameter()
     #
-    omegas = param.Range(default=(0, np.pi * 2), doc="omega start and end in radians")
     tilt_search_bounds = param.Range(default=(-5.0, 5.0), doc="tilt angle search range")
     cut_off_angle_deg = param.Number(default=1e-3, doc="ignore tilt angle below this value")
     #
@@ -27,12 +26,10 @@ class TiltCorrection(param.Parameterized):
         if self.parent.ct is None:
             pn.state.notifications.warning("no CT found", duration=3000)
         else:
-            # create omega array
-            omegas = np.linspace(self.omegas[0], self.omegas[1], self.parent.ct.shape[0])
             # perform tilt correction
             self.parent.ct = tilt_correction(
                 arrays=self.parent.ct,
-                omegas=omegas,
+                omegas=np.radians(self.parent.omegas),
                 low_bound=self.tilt_search_bounds[0],
                 high_bound=self.tilt_search_bounds[1],
                 cut_off_angle_deg=self.cut_off_angle_deg,
@@ -44,10 +41,6 @@ class TiltCorrection(param.Parameterized):
 
     def panel(self, width=200):
         #
-        omegas_input = pn.widgets.LiteralInput.from_param(
-            self.param.omegas,
-            name="omega (rad)",
-        )
         tilt_search_bounds_input = pn.widgets.LiteralInput.from_param(
             self.param.tilt_search_bounds,
             name="tilt search range (deg)",
@@ -67,7 +60,6 @@ class TiltCorrection(param.Parameterized):
         )
         #
         app = pn.Column(
-            omegas_input,
             tilt_search_bounds_input,
             cutoff_angle_input,
             pn.Row(status_indicator, execute_button, width=width),

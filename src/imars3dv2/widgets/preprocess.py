@@ -4,14 +4,24 @@ import param
 import panel as pn
 import holoviews as hv
 import numpy as np
+import datetime
+import os
+import dxchange
+from holoviews import streams
 from holoviews import opts
 from holoviews.operation.datashader import rasterize
-from imars3dv2.filters.gamma_filter import gamma_filter
-from imars3dv2.filters.normalization import normalization
+from pathlib import Path
+from imars3dv2.widgets.filters.gamma_filter import GammaFilter
+from imars3dv2.widgets.filters.normalization import Normalization
+from imars3dv2.widgets.filters.denoise import Denoise
+from imars3dv2.widgets.filters.ifc import IntensityFluctuationCorrection
+from imars3dv2.widgets.filters.tilt import TiltCorrection
+from imars3dv2.widgets.filters.ring_removal import RemoveRingArtifact
 
 
 class Preprocess(param.Parameterized):
-    # container to store images
+    # -- Input data from previous step
+    # data container
     ct = param.Array(
         doc="radiograph stack as numpy array",
         precedence=-1,  # hide
@@ -20,19 +30,29 @@ class Preprocess(param.Parameterized):
         doc="open beam stack as numpy array",
         precedence=-1,  # hide
     )
-    df = param.Array(
-        doc="dark field stack as numpy array",
+    dc = param.Array(
+        doc="dark current stack as numpy array",
         precedence=-1,  # hide
     )
-    # actions
-    filter_gamma_status = param.Boolean(default=False, doc="CT is gamma filtered")
-    filter_gamma_action = param.Action(lambda x: x.param.trigger("filter_gamma_action"), label="GammaFilter")
-    normalize_status = param.Boolean(default=False, doc="CT is normalized")
-    normalize_action = param.Action(lambda x: x.param.trigger("normalize_action"), label="Normalize")
+    omegas = param.Array(
+        doc="rotation angles in degress derived from tiff filename.",
+    )
+    recn_root = param.Path(
+        default=Path.home(),
+        doc="reconstruction results root, default should be proj_root/processed_data",
+    )
+    temp_root = param.Path(
+        default=Path.home() / Path("tmp"),
+        doc="intermedia results save location",
+    )
+    recn_name = param.String(
+        default="myrecon",
+        doc="reconstruction results folder name",
+    )
     # index for viewing
     idx_active_ct = param.Integer(default=0, doc="index of active ct")
     idx_active_ob = param.Integer(default=0, doc="index of active ob")
-    idx_active_df = param.Integer(default=0, doc="index of active df")
+    idx_active_dc = param.Integer(default=0, doc="index of active dc")
     # cmap
     colormap = param.Selector(
         default="gray",
@@ -41,124 +61,251 @@ class Preprocess(param.Parameterized):
     )
     colormap_scale = param.Selector(
         default="linear",
-        objects=["linear", "log"],
+        objects=["linear", "log", "eq_hist"],
         doc="colormap scale for displaying images",
     )
+    frame_width = param.Integer(default=500, doc="viewer frame size")
+    #
+    ct_checkpoint_action = param.Action(lambda x: x.param.trigger("ct_checkpoint_action"), label="Checkpoint")
+    # filters
+    gamma_filter = GammaFilter()
+    norm_filter = Normalization()
+    denoise_filter = Denoise()
+    ifc_filter = IntensityFluctuationCorrection()
+    tilt_correction_filter = TiltCorrection()
+    remove_ring_filter = RemoveRingArtifact()
 
-    @param.depends("filter_gamma_action", watch=True)
-    def gamma_filter(self):
-        """use default input arg for now"""
-        dtype = self.ct.dtype
-        self.ct = gamma_filter(self.ct).astype(dtype)
-        #
-        self.filter_gamma_status = True
-        pn.state.notifications.success("Gamma filter complete.", duration=0)
-
-    @param.depends("normalize_action", watch=True)
-    def normalize_radiograph(self):
-        self.ct = normalization(
+    @param.output(
+        ("ct", param.Array),
+        ("omegas", param.Array),
+        ("recn_root", param.Path),
+        ("temp_root", param.Path),
+        ("recn_name", param.String),
+    )
+    def output(self):
+        return (
             self.ct,
-            self.ob,
-            self.df,
+            self.omegas,
+            self.recn_root,
+            self.temp_root,
+            self.recn_name,
         )
-        self.normalize_status = True
-        pn.state.notifications.success("Normalization complete.", duration=0)
 
-    @param.depends("ct", "idx_active_ct", "colormap", "colormap_scale")
+    @param.depends("ct_checkpoint_action", watch=True)
+    def save_checkpoint(self):
+        if self.ct is None:
+            pn.state.warning("No CT to save")
+        else:
+            # make dir
+            chk_root = datetime.datetime.now().isoformat().replace(":", "_")
+            savedirname = f"{self.temp_root}/{self.recn_name}/{chk_root}"
+            os.makedirs(savedirname)
+            # save the current CT
+            dxchange.writer.write_tiff_stack(
+                data=self.ct,
+                fname=f"{savedirname}/chk.tiff",
+                axis=0,
+                digit=5,
+            )
+            # save omega list as well
+            np.save(
+                file=f"{savedirname}/omegas.py",
+                arr=self.omegas,
+            )
+
+    def cross_hair_view(self, x, y):
+        return (hv.HLine(y) * hv.VLine(x)).opts(
+            opts.HLine(
+                color="yellow",
+                line_width=0.5,
+            ),
+            opts.VLine(
+                color="yellow",
+                line_width=0.5,
+            ),
+        )
+
+    def _sino_view(self, x, y):
+        #
+        sino = hv.Image(
+            (
+                np.arange(self.ct.shape[2]),
+                np.arange(self.ct.shape[0]),
+                self.ct[:, int(y), :],
+            ),
+            kdims=["x", "ω"],
+            vdims=["count"],
+        )
+        return (sino * hv.VLine(x) * hv.HLine(self.idx_active_ct)).opts(
+            opts.Image(
+                frame_width=self.frame_width,
+                tools=["hover"],
+                cmap=self.colormap,
+                cnorm=self.colormap_scale,
+                invert_yaxis=True,
+                xaxis=None,
+                yaxis=None,
+                title="sinogram",
+            ),
+            opts.VLine(
+                color="yellow",
+                line_width=0.5,
+            ),
+            opts.HLine(
+                color="yellow",
+                line_width=0.5,
+            ),
+        )
+
+    def _ct_active_view(self):
+        ct_active = self.ct[self.idx_active_ct]
+        return hv.Image(
+            (
+                np.arange(ct_active.shape[1]),
+                np.arange(ct_active.shape[0]),
+                ct_active,
+            ),
+            kdims=["x", "y"],
+            vdims=["count"],
+        ).opts(
+            opts.Image(
+                frame_width=self.frame_width,
+                tools=["hover"],
+                cmap=self.colormap,
+                cnorm=self.colormap_scale,
+                data_aspect=1.0,
+                invert_yaxis=True,
+                xaxis=None,
+                yaxis=None,
+            )
+        )
+
+    def _ob_active_view(self):
+        ob_active = self.ob[self.idx_active_ob]
+        return hv.Image(
+            (
+                np.arange(ob_active.shape[1]),
+                np.arange(ob_active.shape[0]),
+                ob_active,
+            ),
+            kdims=["x", "y"],
+            vdims=["count"],
+        ).opts(
+            opts.Image(
+                frame_width=self.frame_width,
+                tools=["hover"],
+                cmap=self.colormap,
+                cnorm=self.colormap_scale,
+                data_aspect=1.0,
+                invert_yaxis=True,
+                xaxis=None,
+                yaxis=None,
+            )
+        )
+
+    def _dc_active_view(self):
+        dc_active = self.dc[self.idx_active_dc]
+        return hv.Image(
+            (
+                np.arange(dc_active.shape[1]),
+                np.arange(dc_active.shape[0]),
+                dc_active,
+            ),
+            kdims=["x", "y"],
+            vdims=["count"],
+        ).opts(
+            opts.Image(
+                frame_width=self.frame_width,
+                tools=["hover"],
+                cmap=self.colormap,
+                cnorm=self.colormap_scale,
+                data_aspect=1.0,
+                invert_yaxis=True,
+                xaxis=None,
+                yaxis=None,
+            )
+        )
+
+    @param.depends(
+        "frame_width",
+        "idx_active_ct",
+        "colormap",
+        "colormap_scale",
+    )
     def ct_viewer(self):
         if self.ct is None:
             return pn.pane.Markdown("no CT to display")
-        else:
-            ct_active = self.ct[self.idx_active_ct]
-            #
-            img = rasterize(hv.Image((np.arange(ct_active.shape[1]), np.arange(ct_active.shape[0]), ct_active)))
-            return img.opts(
-                opts.Image(
-                    tools=["hover"],
-                    cmap=self.colormap,
-                    cnorm=self.colormap_scale,
-                    data_aspect=1.0,
-                    invert_yaxis=True,
-                ),
-            ).hist()
+        # ct image object
+        img = self._ct_active_view()
+        # cross-hair pointer
+        crosshair = streams.PointerXY(x=0, y=0, source=img)
+        crosshair_dmap = hv.DynamicMap(self.cross_hair_view, streams=[crosshair])
+        # sinogram view as dynamic map
+        sino_dmap = hv.DynamicMap(self._sino_view, streams=[crosshair])
+        #
+        viewer = rasterize(img.hist() * crosshair_dmap + sino_dmap).cols(1)
+        #
+        save_ct_button = pn.widgets.Button.from_param(
+            self.param.ct_checkpoint_action,
+            name="Save CT",
+            width=self.frame_width // 4,
+            align="center",
+        )
+        ct_num_control = pn.widgets.IntSlider.from_param(
+            self.param.idx_active_ct,
+            start=0,
+            end=self.ct.shape[0],
+            name="CT num",
+            width=self.frame_width // 2,
+        )
+        ct_control = pn.Row(save_ct_button, ct_num_control)
+        return pn.Column(ct_control, viewer)
 
-    @param.depends("ob", "idx_active_ob", "colormap", "colormap_scale")
+    @param.depends(
+        "frame_width",
+        "idx_active_ob",
+        "colormap",
+        "colormap_scale",
+    )
     def ob_viewer(self):
         if self.ob is None:
             return pn.pane.Markdown("no OB to display")
-        else:
-            ob_active = self.ob[self.idx_active_ob]
-            #
-            img = rasterize(hv.Image((np.arange(ob_active.shape[1]), np.arange(ob_active.shape[0]), ob_active)))
-            return img.opts(
-                opts.Image(
-                    tools=["hover"],
-                    cmap=self.colormap,
-                    cnorm=self.colormap_scale,
-                    data_aspect=1.0,
-                    invert_yaxis=True,
-                ),
-            ).hist()
-
-    @param.depends("df", "idx_active_df", "colormap", "colormap_scale")
-    def df_viewer(self):
-        if self.df is None:
-            return pn.pane.Markdown("no DF to display")
-        else:
-            df_active = self.df[self.idx_active_df]
-            #
-            img = rasterize(hv.Image((np.arange(df_active.shape[1]), np.arange(df_active.shape[0]), df_active)))
-            return img.opts(
-                opts.Image(
-                    tools=["hover"],
-                    cmap=self.colormap,
-                    cnorm=self.colormap_scale,
-                    data_aspect=1.0,
-                    invert_yaxis=True,
-                ),
-            ).hist()
-
-    @param.output(param.Array)
-    def get_data(self):
-        return self.ct
-
-    def panel(self):
-        # gamma filter
-        gf_pn = pn.Row(
-            pn.widgets.BooleanStatus.from_param(
-                self.param.filter_gamma_status,
-                color="success",
-                width=10,
-                height=10,
-            ),
-            pn.widgets.Button.from_param(
-                self.param.filter_gamma_action,
-                width=80,
-            ),
-            height=50,
-            width=150,
+        # no need for fancy viewer tools for OB
+        img = self._ob_active_view()
+        viewer = rasterize(img.hist())
+        #
+        ob_control = pn.widgets.IntSlider.from_param(
+            self.param.idx_active_ob,
+            start=0,
+            end=self.ob.shape[0],
+            name="OB num",
+            width=self.frame_width // 2,
         )
-        # normalize
-        nz_pn = pn.Row(
-            pn.widgets.BooleanStatus.from_param(
-                self.param.normalize_status,
-                color="success",
-                width=10,
-                height=10,
-            ),
-            pn.widgets.Button.from_param(
-                self.param.normalize_action,
-                width=80,
-            ),
+        return pn.Column(ob_control, viewer)
+
+    @param.depends(
+        "frame_width",
+        "idx_active_dc",
+        "colormap",
+        "colormap_scale",
+    )
+    def dc_viewer(self):
+        if self.dc is None:
+            return pn.pane.Markdown("no DC to display")
+        #
+        img = self._dc_active_view()
+        viewer = rasterize(img.hist())
+        #
+        dc_control = pn.widgets.IntSlider.from_param(
+            self.param.idx_active_dc,
+            start=0,
+            end=self.dc.shape[0],
+            name="DC num",
+            width=self.frame_width // 2,
         )
-        # control panel
-        control_pn = pn.Card(
-            gf_pn,
-            nz_pn,
-            width=200,
-            header="**Control Panel**",
-            collapsible=True,
-        )
+        return pn.Column(dc_control, viewer)
+
+    def plot_control(self, width=80):
         # color map
         cmap = pn.widgets.Select.from_param(
             self.param.colormap,
@@ -168,46 +315,50 @@ class Preprocess(param.Parameterized):
             self.param.colormap_scale,
             name="colormap scale",
         )
-        cmap_pn = pn.Card(
+        framewidth = pn.widgets.LiteralInput.from_param(
+            self.param.frame_width,
+            name="frame width",
+        )
+        plot_pn = pn.Card(
             cmap,
             cmapscale,
-            width=200,
+            framewidth,
+            width=width,
             header="Diaply",
             collapsible=True,
         )
-        #
-        ct_control = pn.widgets.IntSlider.from_param(
-            self.param.idx_active_ct,
-            start=0,
-            end=self.ct.shape[0],
-            name="CT num",
-        )
-        ct_tab = pn.Column(self.ct_viewer, ct_control)
-        #
-        ob_control = pn.widgets.IntSlider.from_param(
-            self.param.idx_active_ob,
-            start=0,
-            end=self.ob.shape[0],
-            name="OB num",
-        )
-        ob_tab = pn.Column(self.ob_viewer, ob_control)
-        #
-        df_control = pn.widgets.IntSlider.from_param(
-            self.param.idx_active_df,
-            start=0,
-            end=self.df.shape[0],
-            name="DF num",
-        )
-        df_tab = pn.Column(self.df_viewer, df_control)
-        viewer = pn.Tabs(
-            ("CT", ct_tab),
-            ("OB", ob_tab),
-            ("DF", df_tab),
-            sizing_mode="stretch_width",
+        return plot_pn
+
+    def panel(self):
+        # side panel width
+        width = self.frame_width // 2
+        # filters panel
+        self.gamma_filter.parent = self
+        self.norm_filter.parent = self
+        self.denoise_filter.parent = self
+        self.ifc_filter.parent = self
+        self.tilt_correction_filter.parent = self
+        self.remove_ring_filter.parent = self
+        filters_pn = pn.Accordion(
+            ("Gamma", self.gamma_filter.panel(width=width)),
+            ("Normalization", self.norm_filter.panel(width=width)),
+            ("Denoise", self.denoise_filter.panel(width=width)),
+            ("IFC", self.ifc_filter.panel(width=width)),
+            ("Tilt correction", self.tilt_correction_filter.panel(width=width)),
+            ("Ring removal", self.remove_ring_filter.panel(width=width)),
+            width=int(width * 1.1),  # expand a little bit due to using Accordion
         )
         #
-        app = pn.Row(
-            pn.Column(control_pn, cmap_pn),
-            viewer,
+        side_pn = pn.Column(
+            self.plot_control(width=int(width * 1.1)),
+            filters_pn,
         )
+        #
+        view_pn = pn.Tabs(
+            ("CT", self.ct_viewer),
+            ("OB", self.ob_viewer),
+            ("DC", self.dc_viewer),
+        )
+        #
+        app = pn.Row(side_pn, view_pn)
         return app

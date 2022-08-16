@@ -74,6 +74,8 @@ class SelectROI(param.Parameterized):
 
     @param.output(
         ("ct", param.Array),
+        ("ob", param.Array),
+        ("dc", param.Array),
         ("omegas", param.Array),
         ("recn_root", param.Path),
         ("temp_root", param.Path),
@@ -82,6 +84,8 @@ class SelectROI(param.Parameterized):
     def output(self):
         return (
             self.ct,
+            self.ob,
+            self.dc,
             self.omegas,
             self.recn_root,
             self.temp_root,

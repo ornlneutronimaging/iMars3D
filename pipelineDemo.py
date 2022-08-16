@@ -3,9 +3,11 @@
 import param
 import panel as pn
 import holoviews as hv
+from imars3dv2.widgets.metadata import MetaData
 from imars3dv2.widgets.dataloading import DataLoader
-from imars3dv2.widgets.preprocess import Preprocess
 from imars3dv2.widgets.selectroi import SelectROI
+from imars3dv2.widgets.preprocess import Preprocess
+
 
 pn.extension(
     "katex",
@@ -50,9 +52,10 @@ class Visualization(param.Parameterized):
 # build the pipeline
 wizard = pn.pipeline.Pipeline(
     stages=[
+        ("Metadata", MetaData),
         ("Load Data", DataLoader),
-        ("Preprocess", Preprocess),
         ("ROI selection", SelectROI),
+        ("Preprocess", Preprocess),
         ("Reconstruction", Reconstruction),
         ("Visualization", Visualization),
     ],
