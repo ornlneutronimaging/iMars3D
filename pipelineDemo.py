@@ -7,6 +7,7 @@ from imars3dv2.widgets.metadata import MetaData
 from imars3dv2.widgets.dataloading import DataLoader
 from imars3dv2.widgets.selectroi import SelectROI
 from imars3dv2.widgets.preprocess import Preprocess
+from imars3dv2.widgets.reconstruction import Reconstruction
 
 
 pn.extension(
@@ -15,27 +16,6 @@ pn.extension(
     notifications=True,
 )
 hv.extension("bokeh")
-
-
-class Reconstruction(param.Parameterized):
-    # container to store images
-    ct = param.Array(
-        doc="radiograph stack as numpy array",
-        precedence=-1,  # hide
-    )
-    recon = param.Array(
-        doc="reconstruction results as numpy array",
-        precedence=-1,  # hide
-    )
-
-    @param.output(
-        ("recon", param.Array),
-    )
-    def get_data(self):
-        return self.recon
-
-    def panel(self):
-        return pn.pane.Markdown("**TBD**: Reconstruction")
 
 
 class Visualization(param.Parameterized):
