@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import param
 import panel as pn
 import holoviews as hv
 from imars3dv2.widgets.metadata import MetaData
@@ -8,6 +7,7 @@ from imars3dv2.widgets.dataloading import DataLoader
 from imars3dv2.widgets.selectroi import SelectROI
 from imars3dv2.widgets.preprocess import Preprocess
 from imars3dv2.widgets.reconstruction import Reconstruction
+from imars3dv2.widgets.visualization import Visualization
 
 
 pn.extension(
@@ -16,17 +16,6 @@ pn.extension(
     notifications=True,
 )
 hv.extension("bokeh")
-
-
-class Visualization(param.Parameterized):
-    # container to store images
-    recon = param.Array(
-        doc="reconstruction results as numpy array",
-        precedence=-1,  # hide
-    )
-
-    def panel(self):
-        return pn.pane.Markdown("**TBD**: Visualization")
 
 
 # build the pipeline
