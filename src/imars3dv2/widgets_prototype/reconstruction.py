@@ -11,27 +11,19 @@ from holoviews import streams
 from holoviews import opts
 from holoviews.operation.datashader import rasterize
 from pathlib import Path
-from imars3dv2.widgets.filters.gamma_filter import GammaFilter
-from imars3dv2.widgets.filters.normalization import Normalization
-from imars3dv2.widgets.filters.denoise import Denoise
-from imars3dv2.widgets.filters.ifc import IntensityFluctuationCorrection
-from imars3dv2.widgets.filters.tilt import TiltCorrection
-from imars3dv2.widgets.filters.ring_removal import RemoveRingArtifact
+from imars3dv2.filters.recon import recon
+from imars3dv2.widgets_prototype.filters.rotation import FindRotationCenter
 
 
-class Preprocess(param.Parameterized):
-    # -- Input data from previous step
-    # data container
+class Reconstruction(param.Parameterized):
+    """
+    Panel for conduction guided reconstruction with iMars3D.
+    """
+
+    # -- data container
+    # ** input data from previous step
     ct = param.Array(
         doc="radiograph stack as numpy array",
-        precedence=-1,  # hide
-    )
-    ob = param.Array(
-        doc="open beam stack as numpy array",
-        precedence=-1,  # hide
-    )
-    dc = param.Array(
-        doc="dark current stack as numpy array",
         precedence=-1,  # hide
     )
     omegas = param.Array(
@@ -39,7 +31,7 @@ class Preprocess(param.Parameterized):
     )
     recn_root = param.Path(
         default=Path.home(),
-        doc="reconstruction results root, default should be proj_root/processed_data",
+        doc="reconstruction results root, default should be proj_root/shared/processed_data",
     )
     temp_root = param.Path(
         default=Path.home() / Path("tmp"),
@@ -49,10 +41,39 @@ class Preprocess(param.Parameterized):
         default="myrecon",
         doc="reconstruction results folder name",
     )
-    # index for viewing
+    # ** output reconstruction results
+    recon = param.Array(
+        doc="reconstruction results as numpy array",
+        precedence=-1,  # hide
+    )
+    # reconstruction control
+    algorithm = param.Selector(
+        default="gridrec",
+        objects=[
+            "fbp",
+            "gridrec",
+            "art",
+            "bart",
+            "mlem",
+            "osem",
+            "ospml_hybrid",
+            "ospml_quad",
+            "pml_hybrid",
+            "pml_quad",
+            "sirt",
+            "tv",
+            "grad",
+            "tikh",
+        ],
+        doc="algorithm provided by tomopy",
+    )
+    post_recon_filter = param.Selector(
+        default="hann",
+        objects=["none", "shepp", "cosine", "hann", "hamming", "ramlak", "parzen", "butterworth"],
+        doc="post recon filter",
+    )
+    # -- viewer
     idx_active_ct = param.Integer(default=0, doc="index of active ct")
-    idx_active_ob = param.Integer(default=0, doc="index of active ob")
-    idx_active_dc = param.Integer(default=0, doc="index of active dc")
     # cmap
     colormap = param.Selector(
         default="gray",
@@ -64,32 +85,45 @@ class Preprocess(param.Parameterized):
         objects=["linear", "log", "eq_hist"],
         doc="colormap scale for displaying images",
     )
+    # image size
     frame_width = param.Integer(default=500, doc="viewer frame size")
-    #
+    # check point
     ct_checkpoint_action = param.Action(lambda x: x.param.trigger("ct_checkpoint_action"), label="Checkpoint")
-    # filters
-    gamma_filter = GammaFilter()
-    norm_filter = Normalization()
-    denoise_filter = Denoise()
-    ifc_filter = IntensityFluctuationCorrection()
-    tilt_correction_filter = TiltCorrection()
-    remove_ring_filter = RemoveRingArtifact()
+    # rotation center
+    rotation_center_finder = FindRotationCenter()
+    #
+    execute = param.Action(lambda x: x.param.trigger("execute"), label="Execute")
+    status = param.Boolean(default=False, doc="Ring removal completion status")
+    # save recon results
+    recon_save = param.Action(lambda x: x.param.trigger("recon_save"), label="Checkpoint")
+
+    @param.depends("execute", watch=True)
+    def apply(self):
+        # sanity check
+        if self.ct is None:
+            pn.state.warning("no CT found!")
+            return
+        if self.omegas is None:
+            pn.state.warning("no omegas provided")
+            return
+        #
+        self.recon = recon(
+            arrays=self.ct,
+            theta=np.radians(self.omegas),
+            center=self.rotation_center_finder.rot_center,
+            algorithm=self.algorithm,
+            filter_name=self.post_recon_filter,
+        )
+        #
+        self.status = True
+        #
+        pn.state.notifications.success("Reconstruction complete.", duration=3000)
 
     @param.output(
-        ("ct", param.Array),
-        ("omegas", param.Array),
-        ("recn_root", param.Path),
-        ("temp_root", param.Path),
-        ("recn_name", param.String),
+        ("recon", param.Array),
     )
     def output(self):
-        return (
-            self.ct,
-            self.omegas,
-            self.recn_root,
-            self.temp_root,
-            self.recn_name,
-        )
+        return self.recon
 
     @param.depends("ct_checkpoint_action", watch=True)
     def save_checkpoint(self):
@@ -112,6 +146,31 @@ class Preprocess(param.Parameterized):
                 file=f"{savedirname}/omegas.py",
                 arr=self.omegas,
             )
+
+    @param.depends("recon_save", watch=True)
+    def save_reconstruction_results(self):
+        if self.recon is None:
+            pn.state.warning("No reconstruction results to save")
+        else:
+            # make dir
+            chk_root = datetime.datetime.now().isoformat().replace(":", "_")
+            savedirname = f"{self.recn_root}/{self.recn_name}/{chk_root}"
+            os.makedirs(savedirname)
+            # save the current CT
+            dxchange.writer.write_tiff_stack(
+                data=self.recon,
+                fname=f"{savedirname}/recon.tiff",
+                axis=0,
+                digit=5,
+            )
+            # save omega list as well
+            np.save(
+                file=f"{savedirname}/omegas.py",
+                arr=self.omegas,
+            )
+            # save the rotation center
+            with open(f"{savedirname}/rot_center.txt", "w") as f_rotcnt:
+                f_rotcnt.write(f"{self.rotation_center_finder.rot_center}")
 
     def cross_hair_view(self, x, y):
         return (hv.HLine(y) * hv.VLine(x)).opts(
@@ -180,52 +239,6 @@ class Preprocess(param.Parameterized):
             )
         )
 
-    def _ob_active_view(self):
-        ob_active = self.ob[self.idx_active_ob]
-        return hv.Image(
-            (
-                np.arange(ob_active.shape[1]),
-                np.arange(ob_active.shape[0]),
-                ob_active,
-            ),
-            kdims=["x", "y"],
-            vdims=["count"],
-        ).opts(
-            opts.Image(
-                frame_width=self.frame_width,
-                tools=["hover"],
-                cmap=self.colormap,
-                cnorm=self.colormap_scale,
-                data_aspect=1.0,
-                invert_yaxis=True,
-                xaxis=None,
-                yaxis=None,
-            )
-        )
-
-    def _dc_active_view(self):
-        dc_active = self.dc[self.idx_active_dc]
-        return hv.Image(
-            (
-                np.arange(dc_active.shape[1]),
-                np.arange(dc_active.shape[0]),
-                dc_active,
-            ),
-            kdims=["x", "y"],
-            vdims=["count"],
-        ).opts(
-            opts.Image(
-                frame_width=self.frame_width,
-                tools=["hover"],
-                cmap=self.colormap,
-                cnorm=self.colormap_scale,
-                data_aspect=1.0,
-                invert_yaxis=True,
-                xaxis=None,
-                yaxis=None,
-            )
-        )
-
     @param.depends(
         "frame_width",
         "idx_active_ct",
@@ -263,47 +276,76 @@ class Preprocess(param.Parameterized):
 
     @param.depends(
         "frame_width",
-        "idx_active_ob",
+        "recon",
         "colormap",
         "colormap_scale",
     )
-    def ob_viewer(self):
-        if self.ob is None:
-            return pn.pane.Markdown("no OB to display")
-        # no need for fancy viewer tools for OB
-        img = self._ob_active_view()
-        viewer = rasterize(img.hist())
+    def recon_viewer(self):
+        if self.recon is None:
+            return pn.pane.Markdown("no recontruction results to display")
         #
-        ob_control = pn.widgets.IntSlider.from_param(
-            self.param.idx_active_ob,
-            start=0,
-            end=self.ob.shape[0],
-            name="OB num",
-            width=self.frame_width // 2,
+        ds = hv.Dataset(
+            (
+                np.arange(self.recon.shape[2]),
+                np.arange(self.recon.shape[1]),
+                np.arange(self.recon.shape[0]),
+                self.recon,
+            ),
+            ["x", "z", "y"],
+            "intensity",
         )
-        return pn.Column(ob_control, viewer)
+        img = ds.to(hv.Image, ["x", "z"], dynamic=True).opts(
+            opts.Image(
+                frame_width=self.frame_width,
+                tools=["hover"],
+                cmap=self.colormap,
+                cnorm=self.colormap_scale,
+                data_aspect=1.0,
+                invert_yaxis=True,
+                xaxis=None,
+                yaxis=None,
+            )
+        )
+        #
+        save_recon_button = pn.widgets.Button.from_param(
+            self.param.recon_save,
+            name="Save Reconstruction",
+            width=self.frame_width // 4,
+            align="center",
+        )
+        return pn.Column(save_recon_button, rasterize(img.hist()))
 
-    @param.depends(
-        "frame_width",
-        "idx_active_dc",
-        "colormap",
-        "colormap_scale",
-    )
-    def dc_viewer(self):
-        if self.dc is None:
-            return pn.pane.Markdown("no DC to display")
-        #
-        img = self._dc_active_view()
-        viewer = rasterize(img.hist())
-        #
-        dc_control = pn.widgets.IntSlider.from_param(
-            self.param.idx_active_dc,
-            start=0,
-            end=self.dc.shape[0],
-            name="DC num",
-            width=self.frame_width // 2,
+    def recon_panel(self, width=200):
+        # methods
+        algorithm_select = pn.widgets.Select.from_param(
+            self.param.algorithm,
+            name="Algorithm",
+            width=int(width / 1.2),
         )
-        return pn.Column(dc_control, viewer)
+        filter_select = pn.widgets.Select.from_param(
+            self.param.post_recon_filter,
+            name="PostReconFilter",
+            width=int(width / 1.2),
+        )
+        # action
+        status_indicator = pn.widgets.BooleanStatus.from_param(
+            self.param.status,
+            color="success",
+        )
+        execute_button = pn.widgets.Button.from_param(
+            self.param.execute,
+            width=width // 2,
+        )
+        action_pn = pn.Row(status_indicator, execute_button, width=width)
+        #
+        recon_panel = pn.WidgetBox(
+            "**Reconstruction control**",
+            algorithm_select,
+            filter_select,
+            action_pn,
+            width=width,
+        )
+        return recon_panel
 
     def plot_control(self, width=80):
         # color map
@@ -330,35 +372,25 @@ class Preprocess(param.Parameterized):
         return plot_pn
 
     def panel(self):
-        # side panel width
+        # rotation center finder
+        self.rotation_center_finder.parent = self
+        # -- side panel
         width = self.frame_width // 2
-        # filters panel
-        self.gamma_filter.parent = self
-        self.norm_filter.parent = self
-        self.denoise_filter.parent = self
-        self.ifc_filter.parent = self
-        self.tilt_correction_filter.parent = self
-        self.remove_ring_filter.parent = self
-        filters_pn = pn.Accordion(
-            ("Gamma", self.gamma_filter.panel(width=width)),
-            ("Normalization", self.norm_filter.panel(width=width)),
-            ("Denoise", self.denoise_filter.panel(width=width)),
-            ("IFC", self.ifc_filter.panel(width=width)),
-            ("Tilt correction", self.tilt_correction_filter.panel(width=width)),
-            ("Ring removal", self.remove_ring_filter.panel(width=width)),
-            width=int(width * 1.1),  # expand a little bit due to using Accordion
+        rotcnt_pn = pn.WidgetBox(
+            "Rotation Center",
+            self.rotation_center_finder.panel(width=width),
         )
-        #
         side_pn = pn.Column(
-            self.plot_control(width=int(width * 1.1)),
-            filters_pn,
+            self.plot_control(width=width),
+            rotcnt_pn,
+            self.recon_panel(width=width),
+            width=int(width * 1.1),
         )
-        #
-        view_pn = pn.Tabs(
+        # -- viewer
+        viewer = pn.Tabs(
             ("CT", self.ct_viewer),
-            ("OB", self.ob_viewer),
-            ("DC", self.dc_viewer),
+            ("Recon", self.recon_viewer),
         )
         #
-        app = pn.Row(side_pn, view_pn)
+        app = pn.Row(side_pn, viewer)
         return app
