@@ -158,7 +158,7 @@ class Reconstruction(param.Parameterized):
             os.makedirs(savedirname)
             # save the current CT
             dxchange.writer.write_tiff_stack(
-                data=self.ct,
+                data=self.recon,
                 fname=f"{savedirname}/recon.tiff",
                 axis=0,
                 digit=5,
