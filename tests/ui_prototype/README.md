@@ -3,7 +3,7 @@ In order to run Paywright tests, follow the latest installation guide at: https:
 
 If the link is unavailable, then there are a couple commands that you will run to setup Playwright. Open your terminal and run the following commands (Note: It doesn't matter which directory you are in for this step):
 
-`pip install pytest-playwright` 
+`pip install pytest-playwright`
 
 `playwright install`
 
@@ -47,7 +47,7 @@ More information can be found in the Playwright docs: https://playwright.dev/pyt
 
 # Writing Tests
 ## Basics
-Like other Web GUI testing frameworks the basic workflow of writing a test in Playwright is to specify a "locator" (which is essentially a function that searches for specific elements on a web page and then returns that element), and then performing an action with the returned element. After an action is performed, you then write assertions that check to make sure that the functionality is working as intended. For example, say that there is a button on the web page with the text "Click me". Your locator would search for an element with the text "Click me" and upon finding that button return it. After you have a reference to that button you can simulate clicking that button. And then afterwards, you would check that the click performed it's expected function. Like if that button were supposed to turn the color of the background of the page to red, then you could use another locator to get the backround and check to see if it's color is red. 
+Like other Web GUI testing frameworks the basic workflow of writing a test in Playwright is to specify a "locator" (which is essentially a function that searches for specific elements on a web page and then returns that element), and then performing an action with the returned element. After an action is performed, you then write assertions that check to make sure that the functionality is working as intended. For example, say that there is a button on the web page with the text "Click me". Your locator would search for an element with the text "Click me" and upon finding that button return it. After you have a reference to that button you can simulate clicking that button. And then afterwards, you would check that the click performed it's expected function. Like if that button were supposed to turn the color of the background of the page to red, then you could use another locator to get the backround and check to see if it's color is red.
 
 ## Playwright Specifics
 By default, Playwright has a Pytest fixture that sets up a browser and page object for each of your tests. Fixtures are essentially functions that you can reuse to do various things like setting and cleaning up tests easier, performing generic actions that should be shared across tests, etc. A basic test can start like this:
@@ -98,4 +98,4 @@ Playwright has a useful feature to save *a lot* of time when writing tests calle
 
 `playwright codegen playwright.dev`
 
-After you are finished you can copy the code into whatever file that you want, and even do things like change the language. More information is found here: https://playwright.dev/python/docs/codegen. 
+After you are finished you can copy the code into whatever file that you want, and even do things like change the language. More information is found here: https://playwright.dev/python/docs/codegen.
