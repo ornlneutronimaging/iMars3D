@@ -9,6 +9,8 @@ If the link is unavailable, then there are a couple commands that you will run t
 
 This should download the necessary packages including all of the currently available browsers for your system. Not all browsers are guranteed to work on every system, but at the very least, Chromium should be available for testing.
 
+For running the tests in this directory, a file "0001.tif" needs to be copied into your home directory. Personally, I sourced a file from: https://github.com/ornlneutronimaging/testing_data
+
 # Running Tests
 In order to run tests, in your terminal, navigate to the directory that contains your tests files. There, you can simply use pytest.
 
