@@ -67,7 +67,7 @@ def test_region_selection_values(page: Page):
 
     # Click on image canvas
     page.locator("div:nth-child(2) > div:nth-child(2) > div > div > div:nth-child(5)").first.click()
-    
+
     # Get data values from point on image that was selected
     x_val = float(page.locator("span[data-value]").nth(0).inner_text())
     y_val = float(page.locator("span[data-value]").nth(1).inner_text())
