@@ -1,0 +1,62 @@
+# this will reproduce the version from tags to match versioningit
+{% set version_tag = environ.get('GIT_DESCRIBE_TAG', '0.0.0') %}
+{% set version_number = environ.get('GIT_DESCRIBE_NUMBER', '0') | string %}
+{% set version_number = '_' + version_number if version_number != '0' else '' %}
+
+{% set version = version_tag + version_number %}
+
+package:
+  name: "imars3d"
+  version: {{ version }}
+
+source:
+  path: ..
+
+build:
+  noarch: python
+  string: py{{py}}
+  script: {{ PYTHON }} -m pip install . --no-deps --ignore-installed -vvv
+
+requirements:
+  host:
+    - python
+    - versioningit
+
+  build:
+    - configparser
+    - mantid-total-scattering-python-wrapper
+    - mantidworkbench
+    - periodictable
+    - psutil
+    - python
+    - pystog
+    - setuptools
+    - simplejson
+    - versioningit
+
+  run:
+    - configparser
+    - mantid-total-scattering-python-wrapper
+    - mantidworkbench
+    - periodictable
+    - psutil
+    - python
+    - pystog
+    - simplejson
+
+test:
+  imports:
+    - imars3d
+
+about:
+  home: https://github.com/neutrons/imars3d
+  license: GPL (version 3)
+  license_family: GPL3
+  license_file: ../LICENSE
+  summary: ADvanced DIffraction Environment
+
+extra:
+  recipe-maintainers:
+    - JeanBilheux
+    - marshallmcdonnell
+    - peterfpeterson

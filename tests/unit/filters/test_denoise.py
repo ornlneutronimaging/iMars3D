@@ -5,12 +5,12 @@ import skimage
 from unittest import mock
 from skimage.util import random_noise
 
-from imars3dv2.filters.denoise import measure_noiseness
-from imars3dv2.filters.denoise import measure_sharpness
-from imars3dv2.filters.denoise import denoise
-from imars3dv2.filters.denoise import denoise_by_median
-from imars3dv2.filters.denoise import denoise_by_bilateral
-from imars3dv2.filters.denoise import denoise_by_bilateral_2d
+from imars3d.filters.denoise import measure_noiseness
+from imars3d.filters.denoise import measure_sharpness
+from imars3d.filters.denoise import denoise
+from imars3d.filters.denoise import denoise_by_median
+from imars3d.filters.denoise import denoise_by_bilateral
+from imars3d.filters.denoise import denoise_by_bilateral_2d
 
 
 np.random.seed(0)

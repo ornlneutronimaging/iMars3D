@@ -6,7 +6,7 @@ from multiprocessing.managers import SharedMemoryManager
 from tqdm.contrib.concurrent import process_map
 import tomopy.util.mproc as mproc
 from tomopy.recon.rotation import find_center_pc
-from imars3dv2.filters import find_180_deg_pairs_idx
+from imars3d.filters import find_180_deg_pairs_idx
 
 
 def find_rotation_center(

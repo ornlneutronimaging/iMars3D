@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 import skimage
 from scipy.ndimage import gaussian_filter
-from imars3dv2.filters.normalization import normalization
+from imars3d.filters.normalization import normalization
 
 
 def generate_fake_darkfield(

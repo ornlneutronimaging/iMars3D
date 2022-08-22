@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 import tomopy
-from imars3dv2.filters.intensity_fluctuation_correction import intensity_fluctuation_correction
+from imars3d.filters.intensity_fluctuation_correction import intensity_fluctuation_correction
 
 np.random.seed(0)
 

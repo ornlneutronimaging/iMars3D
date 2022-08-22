@@ -4,3 +4,18 @@ build-backend = "setuptools.build_meta"
 
 [tool.black]
 line-length = 119
+
+[tool.versioningit.vcs]
+method = "git"
+default-tag = "5.0.0"
+
+[tool.versioningit.next-version]
+method = "minor"
+
+[tool.versioningit.format]
+distance = "{next_version}.dev{distance}"
+dirty = "{version}+d{build_date:%Y%m%d}"
+distance-dirty = "{next_version}.dev{distance}+d{build_date:%Y%m%d%H%M}"
+
+[tool.versioningit.write]
+file = "imars3d/_version.py"
