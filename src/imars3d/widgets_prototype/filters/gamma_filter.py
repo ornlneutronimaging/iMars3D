@@ -2,7 +2,7 @@
 
 import param
 import panel as pn
-from imars3dv2.filters.gamma_filter import gamma_filter
+from imars3d.filters.gamma_filter import gamma_filter
 
 
 class GammaFilter(param.Parameterized):

@@ -1,6 +1,6 @@
 import param
 import panel as pn
-from imars3dv2.filters.rotation import find_rotation_center
+from imars3d.filters.rotation import find_rotation_center
 
 
 class FindRotationCenter(param.Parameterized):

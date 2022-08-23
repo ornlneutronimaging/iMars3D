@@ -44,8 +44,8 @@ def test_measure_sharpness():
     assert sharpness_ref < sharpness_noisy
 
 
-@mock.patch("imars3dv2.filters.denoise.denoise_by_median")
-@mock.patch("imars3dv2.filters.denoise.denoise_by_bilateral")
+@mock.patch("imars3d.filters.denoise.denoise_by_median")
+@mock.patch("imars3d.filters.denoise.denoise_by_bilateral")
 def test_denoise(mock_denoise_by_bilateral, mock_denoise_by_median):
     _, img_noisy = generate_fake_noisy_image()
     # test call to median method

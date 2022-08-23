@@ -3,7 +3,7 @@
 import param
 import panel as pn
 import numpy as np
-from imars3dv2.filters.tilt import tilt_correction
+from imars3d.filters.tilt import tilt_correction
 
 
 class TiltCorrection(param.Parameterized):

@@ -9,7 +9,7 @@ import dxchange
 from holoviews import opts
 from holoviews import streams
 from pathlib import Path
-from imars3dv2.filters.crop import crop
+from imars3d.filters.crop import crop
 
 
 class SelectROI(param.Parameterized):

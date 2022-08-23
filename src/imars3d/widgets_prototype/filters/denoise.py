@@ -2,7 +2,7 @@
 
 import param
 import panel as pn
-from imars3dv2.filters.denoise import denoise
+from imars3d.filters.denoise import denoise
 
 
 class Denoise(param.Parameterized):

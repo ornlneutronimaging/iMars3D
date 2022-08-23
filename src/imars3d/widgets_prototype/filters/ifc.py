@@ -2,7 +2,7 @@
 
 import param
 import panel as pn
-from imars3dv2.filters.intensity_fluctuation_correction import intensity_fluctuation_correction
+from imars3d.filters.intensity_fluctuation_correction import intensity_fluctuation_correction
 
 
 class IntensityFluctuationCorrection(param.Parameterized):

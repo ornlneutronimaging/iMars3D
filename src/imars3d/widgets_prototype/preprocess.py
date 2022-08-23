@@ -11,12 +11,12 @@ from holoviews import streams
 from holoviews import opts
 from holoviews.operation.datashader import rasterize
 from pathlib import Path
-from imars3dv2.widgets_prototype.filters.gamma_filter import GammaFilter
-from imars3dv2.widgets_prototype.filters.normalization import Normalization
-from imars3dv2.widgets_prototype.filters.denoise import Denoise
-from imars3dv2.widgets_prototype.filters.ifc import IntensityFluctuationCorrection
-from imars3dv2.widgets_prototype.filters.tilt import TiltCorrection
-from imars3dv2.widgets_prototype.filters.ring_removal import RemoveRingArtifact
+from imars3d.widgets_prototype.filters.gamma_filter import GammaFilter
+from imars3d.widgets_prototype.filters.normalization import Normalization
+from imars3d.widgets_prototype.filters.denoise import Denoise
+from imars3d.widgets_prototype.filters.ifc import IntensityFluctuationCorrection
+from imars3d.widgets_prototype.filters.tilt import TiltCorrection
+from imars3d.widgets_prototype.filters.ring_removal import RemoveRingArtifact
 
 
 class Preprocess(param.Parameterized):

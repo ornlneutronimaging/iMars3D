@@ -11,8 +11,8 @@ from holoviews import streams
 from holoviews import opts
 from holoviews.operation.datashader import rasterize
 from pathlib import Path
-from imars3dv2.filters.recon import recon
-from imars3dv2.widgets_prototype.filters.rotation import FindRotationCenter
+from imars3d.filters.recon import recon
+from imars3d.widgets_prototype.filters.rotation import FindRotationCenter
 
 
 class Reconstruction(param.Parameterized):
