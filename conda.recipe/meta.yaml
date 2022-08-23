@@ -12,6 +12,11 @@ package:
 source:
   path: ..
 
+# source:
+#   git_rev: next
+#   git_url: https://github.com/ornlneutronimaging/iMars3D
+
+
 build:
   noarch: python
   string: py{{py}}
@@ -23,40 +28,29 @@ requirements:
     - versioningit
 
   build:
-    - configparser
-    - mantid-total-scattering-python-wrapper
-    - mantidworkbench
-    - periodictable
-    - psutil
     - python
-    - pystog
     - setuptools
-    - simplejson
-    - versioningit
+    - astropy
+    - tomopy
+    - dxchange
+    - pooch
 
   run:
-    - configparser
-    - mantid-total-scattering-python-wrapper
-    - mantidworkbench
-    - periodictable
-    - psutil
     - python
-    - pystog
-    - simplejson
+    - tomopy
+    - numpy
+    - pyyaml
+    - scipy
+    - matplotlib
+    - mpi4py
+    - psutil
+    - scikit-image
+    - dxchange
+    - progressbar2
 
 test:
   imports:
     - imars3d
 
 about:
-  home: https://github.com/neutrons/imars3d
-  license: GPL (version 3)
-  license_family: GPL3
-  license_file: ../LICENSE
-  summary: ADvanced DIffraction Environment
-
-extra:
-  recipe-maintainers:
-    - JeanBilheux
-    - marshallmcdonnell
-    - peterfpeterson
+  home: https://github.com/ornlneutronimaging/iMars3D
