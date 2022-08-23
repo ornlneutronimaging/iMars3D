@@ -15,6 +15,7 @@ dependencies:
   - datashader
   - hvplot
   - build
+  - toml
   - pip:
     - versioningit
     - check-wheel-contents

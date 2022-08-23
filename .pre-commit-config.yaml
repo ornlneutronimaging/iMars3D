@@ -30,5 +30,6 @@ repos:
                 ^src/imars3d/.+ |
                 ^tests/legacy/.+ |
                 ^docs/conf.py |
-                ^builders/.+
+                ^builders/.+ |
+                ^conda.recipe/meta.yaml
             )$
