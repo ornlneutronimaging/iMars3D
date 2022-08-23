@@ -12,9 +12,9 @@ repos:
         args: [--maxkb=4096]
       - id: check-yaml
         exclude: |
-        (?x)^(
-                ^conda.recipe/meta.yaml
-            )$
+          (?x)^(
+                  ^conda.recipe/meta.yaml
+              )$
       - id: debug-statements
       - id: requirements-txt-fixer
       - id: check-merge-conflict
