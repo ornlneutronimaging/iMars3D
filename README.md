@@ -7,7 +7,7 @@
 
 # iMars3D
 
-A Python 3 Library used for 
+A Python 3 Library used for
 normalization, corrections, and reconstruction (using [tomopy](https://tomopy.readthedocs.io/en/latest/)) of the Neutron Imaging Beam Lines
 
 # Install
