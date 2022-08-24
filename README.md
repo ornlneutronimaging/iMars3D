@@ -1,7 +1,7 @@
 <!-- Badges -->
 
-<!-- We dont use travis anymore, maybe remove this entirely? -->
-<!-- [![Build Status](https://travis-ci.org/ornlneutronimaging/iMars3D.svg?branch=master)](https://travis-ci.org/ornlneutronimaging/iMars3D) -->
+![Build Status](https://github.com/ornlneutronimaging/iMars3D/actions/workflows/ornl-prod.yml/badge.svg)
+![Unittest Status](https://github.com/ornlneutronimaging/iMars3D/actions/workflows/unittest.yml/badge.svg?branch=next)
 
 <!-- End Badges -->
 
