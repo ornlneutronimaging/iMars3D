@@ -42,11 +42,9 @@ requirements:
     - pyyaml
     - scipy
     - matplotlib
-    - mpi4py
-    - psutil
     - scikit-image
     - dxchange
-    - progressbar2
+    - tqdm
 
 test:
   imports:
