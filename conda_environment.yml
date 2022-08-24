@@ -14,3 +14,8 @@ dependencies:
   - bokeh
   - datashader
   - hvplot
+  - build
+  - toml
+  - pip:
+    - versioningit
+    - check-wheel-contents

@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 import tomopy
-from imars3dv2.filters.recon import recon
+from imars3d.filters.recon import recon
 
 
 def test_recon():

@@ -7,8 +7,8 @@ import panel as pn
 import holoviews as hv
 from holoviews import opts
 from holoviews.operation.datashader import rasterize
-from imars3dv2.filters.gamma_filter import gamma_filter
-from imars3dv2.filters.normalization import normalization
+from imars3d.filters.gamma_filter import gamma_filter
+from imars3d.filters.normalization import normalization
 
 pn.extension("katex", nthreads=0)
 hv.extension("bokeh")

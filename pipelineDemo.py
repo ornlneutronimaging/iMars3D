@@ -2,12 +2,12 @@
 
 import panel as pn
 import holoviews as hv
-from imars3dv2.widgets_prototype.metadata import MetaData
-from imars3dv2.widgets_prototype.dataloading import DataLoader
-from imars3dv2.widgets_prototype.selectroi import SelectROI
-from imars3dv2.widgets_prototype.preprocess import Preprocess
-from imars3dv2.widgets_prototype.reconstruction import Reconstruction
-from imars3dv2.widgets_prototype.visualization import Visualization
+from imars3d.widgets_prototype.metadata import MetaData
+from imars3d.widgets_prototype.dataloading import DataLoader
+from imars3d.widgets_prototype.selectroi import SelectROI
+from imars3d.widgets_prototype.preprocess import Preprocess
+from imars3d.widgets_prototype.reconstruction import Reconstruction
+from imars3d.widgets_prototype.visualization import Visualization
 
 
 pn.extension(

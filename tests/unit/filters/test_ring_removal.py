@@ -2,8 +2,8 @@
 import numpy as np
 import pytest
 import tomopy
-from imars3dv2.filters.ring_removal import remove_ring_artifact
-from imars3dv2.filters.ring_removal import remove_ring_artifact_Ketcham
+from imars3d.filters.ring_removal import remove_ring_artifact
+from imars3d.filters.ring_removal import remove_ring_artifact_Ketcham
 
 
 def get_synthetic_stack(N_omega: int = 181) -> np.ndarray:

@@ -1,6 +1,1 @@
-# -*- python -*-
-# -*- coding: utf-8 -*-
-
-from . import gamma_filtering
-
-# End of file
+from .tilt import find_180_deg_pairs_idx
