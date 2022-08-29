@@ -52,3 +52,6 @@ test:
 
 about:
   home: https://github.com/ornlneutronimaging/iMars3D
+  license: BSD (version 3)
+  license_family: BSD
+  license_file: ../LICENSE
