@@ -41,7 +41,6 @@ requirements:
     - numpy
     - pyyaml
     - scipy
-    - matplotlib
     - scikit-image
     - dxchange
     - tqdm
