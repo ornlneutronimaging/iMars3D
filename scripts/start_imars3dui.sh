@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-panel serve ../src/imars3d/ui/wizard.py
+python3 -m panel serve imars3dui.py
