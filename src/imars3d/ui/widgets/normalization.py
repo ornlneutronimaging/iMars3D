@@ -2,7 +2,7 @@
 
 import param
 import panel as pn
-from imars3d.filters.normalization import normalization
+from imars3d.backend.preparation.normalization import normalization
 
 
 class Normalization(param.Parameterized):

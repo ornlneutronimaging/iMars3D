@@ -2,7 +2,7 @@
 
 import param
 import panel as pn
-from imars3d.filters.ring_removal import remove_ring_artifact
+from imars3d.backend.corrections.ring_removal import remove_ring_artifact
 
 
 class RemoveRingArtifact(param.Parameterized):
