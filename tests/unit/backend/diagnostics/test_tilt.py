@@ -5,12 +5,12 @@ import skimage
 import tomopy
 from scipy.spatial.transform import Rotation as R
 from skimage.transform import rotate
-from imars3d.filters.tilt import calculate_tilt
-from imars3d.filters.tilt import calculate_dissimilarity
-from imars3d.filters.tilt import calculate_shift
-from imars3d.filters.tilt import find_180_deg_pairs_idx
-from imars3d.filters.tilt import apply_tilt_correction
-from imars3d.filters.tilt import tilt_correction
+from imars3d.backend.diagnostics.tilt import calculate_tilt
+from imars3d.backend.diagnostics.tilt import calculate_dissimilarity
+from imars3d.backend.diagnostics.tilt import calculate_shift
+from imars3d.backend.diagnostics.tilt import find_180_deg_pairs_idx
+from imars3d.backend.diagnostics.tilt import apply_tilt_correction
+from imars3d.backend.diagnostics.tilt import tilt_correction
 
 
 def get_tilted_rot_axis(

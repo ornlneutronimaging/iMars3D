@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import numpy as np
 import pytest
-from imars3d.filters.crop import crop, detect_bounds
+from imars3d.backend.morph.crop import crop, detect_bounds
 
 
 def generate_fake_proj(

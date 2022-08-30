@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 import tomopy
-from imars3d.filters.rotation import find_rotation_center
+from imars3d.backend.diagnostics.rotation import find_rotation_center
 
 
 def get_synthetic_stack(

@@ -5,12 +5,12 @@ import skimage
 from unittest import mock
 from skimage.util import random_noise
 
-from imars3d.filters.denoise import measure_noiseness
-from imars3d.filters.denoise import measure_sharpness
-from imars3d.filters.denoise import denoise
-from imars3d.filters.denoise import denoise_by_median
-from imars3d.filters.denoise import denoise_by_bilateral
-from imars3d.filters.denoise import denoise_by_bilateral_2d
+from imars3d.backend.corrections.denoise import measure_noiseness
+from imars3d.backend.corrections.denoise import measure_sharpness
+from imars3d.backend.corrections.denoise import denoise
+from imars3d.backend.corrections.denoise import denoise_by_median
+from imars3d.backend.corrections.denoise import denoise_by_bilateral
+from imars3d.backend.corrections.denoise import denoise_by_bilateral_2d
 
 
 np.random.seed(0)
@@ -44,8 +44,8 @@ def test_measure_sharpness():
     assert sharpness_ref < sharpness_noisy
 
 
-@mock.patch("imars3d.filters.denoise.denoise_by_median")
-@mock.patch("imars3d.filters.denoise.denoise_by_bilateral")
+@mock.patch("imars3d.backend.corrections.denoise.denoise_by_median")
+@mock.patch("imars3d.backend.corrections.denoise.denoise_by_bilateral")
 def test_denoise(mock_denoise_by_bilateral, mock_denoise_by_median):
     _, img_noisy = generate_fake_noisy_image()
     # test call to median method

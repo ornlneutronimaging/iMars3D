@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 import skimage
-from imars3d.filters.gamma_filter import gamma_filter
+from imars3d.backend.corrections.gamma_filter import gamma_filter
 
 
 @pytest.mark.parametrize(
