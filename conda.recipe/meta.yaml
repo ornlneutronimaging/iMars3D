@@ -44,7 +44,7 @@ about:
 outputs:
   - name: imars3d.backend
     source:
-      path: ../src/imars3d/backend
+      path: ../imars3d/backend
     build:
       noarch: python
       string: py{{py}}
@@ -78,7 +78,7 @@ outputs:
     # script: some_build_script.sh
   - name: imars3d.ui
     source:
-        path: ../src/imars3d/ui
+        path: ../imars3d/ui
     build:
       noarch: python
       string: py{{py}}
@@ -105,6 +105,13 @@ outputs:
         - scikit-image
         - dxchange
         - tqdm
+        - panel
+        - param
+        - pyvista
+        - holoviews
+        - bokeh
+        - datashader
+        - hvplot
 
     test:
       imports:
