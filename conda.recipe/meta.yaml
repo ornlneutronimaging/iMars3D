@@ -6,7 +6,7 @@
 {% set version = version_tag + version_number %}
 
 package:
-  name: "imars3d"
+  name: imars3d
   version: {{ version }}
 
 source:
@@ -17,33 +17,19 @@ source:
 #   git_url: https://github.com/ornlneutronimaging/iMars3D
 
 
-build:
-  noarch: python
-  string: py{{py}}
-  script: {{ PYTHON }} -m pip install . --no-deps --ignore-installed -vvv
+# build:
+#   noarch: python
+#   string: py{{py}}
+#   script: {{ PYTHON }} -m pip install . --no-deps --ignore-installed -vvv
 
 requirements:
   host:
     - python
-    - versioningit
-
-  build:
-    - python
-    - setuptools
-    - astropy
-    - tomopy
-    - dxchange
-    - pooch
 
   run:
-    - python
-    - tomopy
-    - numpy
-    - pyyaml
-    - scipy
-    - scikit-image
-    - dxchange
-    - tqdm
+    - imars3d.backend
+    - imars3d.ui
+
 
 test:
   imports:
@@ -54,3 +40,73 @@ about:
   license: BSD (version 3)
   license_family: BSD
   license_file: ../LICENSE
+
+outputs:
+  - name: imars3d.backend
+    source:
+      path: ../src/imars3d/backend
+    build:
+      noarch: python
+      string: py{{py}}
+      script: {{ PYTHON }} -m pip install . --no-deps --ignore-installed -vvv
+    requirements:
+      host:
+        - python
+        - versioningit
+
+      build:
+        - python
+        - setuptools
+        - astropy
+        - tomopy
+        - dxchange
+        - pooch
+
+      run:
+        - python
+        - tomopy
+        - numpy
+        - pyyaml
+        - scipy
+        - scikit-image
+        - dxchange
+        - tqdm
+
+    test:
+      imports:
+        - imars3d
+    # script: some_build_script.sh
+  - name: imars3d.ui
+    source:
+        path: ../src/imars3d/ui
+    build:
+      noarch: python
+      string: py{{py}}
+      script: {{ PYTHON }} -m pip install . --no-deps --ignore-installed -vvv
+    requirements:
+      host:
+        - python
+        - versioningit
+
+      build:
+        - python
+        - setuptools
+        - astropy
+        - tomopy
+        - dxchange
+        - pooch
+
+      run:
+        - python
+        - tomopy
+        - numpy
+        - pyyaml
+        - scipy
+        - scikit-image
+        - dxchange
+        - tqdm
+
+    test:
+      imports:
+        - imars3d
+    # script: some_other_build_script.sh
