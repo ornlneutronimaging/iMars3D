@@ -45,3 +45,5 @@ jobs:
           if [ "${IS_RC}" = "true" ]; then CONDA_LABEL="rc"; fi
           echo pushing ${{ github.ref }} with label $CONDA_LABEL
           anaconda upload --label $CONDA_LABEL conda.recipe/noarch/imars3d-*.tar.bz2
+          anaconda upload --label $CONDA_LABEL conda.recipe/noarch/imars3d.ui-*.tar.bz2
+          anaconda upload --label $CONDA_LABEL conda.recipe/noarch/imars3d.backend-*.tar.bz2
