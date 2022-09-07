@@ -40,7 +40,11 @@ jobs:
         auto-update-conda: true
         mamba-version: "*"
         environment-file: conda_environment.yml
-    - name: Install Wheel
-      run: python -m build --no-isolation --wheel
+    - name: Build Wheel Backend
+      run: python -m build --no-isolation --wheel ./src/imars3d/backend/
+    - name: Build Wheel UI
+      run: python -m build --no-isolation --wheel ./src/imars3d/ui/
+      # W009/W002: Multiple Top Level Directories(decided subpackage file structure)
+      # / Duplicate file check ignore(empty files are all the same)
     - name: Check Wheel Contents
-      run: check-wheel-contents .
+      run: check-wheel-contents --ignore W009,W002 .
