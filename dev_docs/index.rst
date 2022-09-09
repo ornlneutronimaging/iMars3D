@@ -27,4 +27,5 @@ Development Process
 
    dev_process/overview
    dev_process/environment
+   dev_process/ui_developmentGuide
    dev_process/release
