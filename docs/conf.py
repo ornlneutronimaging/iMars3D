@@ -10,6 +10,8 @@ import param
 param.parameterized.docstring_signature = False
 param.parameterized.docstring_describe_params = False
 
+# imars3d is installed via pip by rtd, so we need to expose the subpackage
+# for autodoc to find it.
 sys.path.insert(0, os.path.abspath("../src/imars3d"))
 
 # -- Project information -----------------------------------------------------

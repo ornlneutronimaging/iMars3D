@@ -12,6 +12,7 @@ Welcome to iMars3D's documentation!
 
    users/index
    users/tutorial/index
+   api/modules
    developer/index
    releasenotes/index
 

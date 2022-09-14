@@ -3,6 +3,7 @@ channels:
   - conda-forge
   - defaults
 dependencies:
+  - pip
   - astropy
   - tomopy
   - dxchange
@@ -16,11 +17,7 @@ dependencies:
   - hvplot
   - build
   - toml
-  - pip:
-    - versioningit
-    - check-wheel-contents
   - black
-  - build
   - versioningit
   - conda-build
   - pytest
@@ -28,3 +25,6 @@ dependencies:
   - pre-commit
   - sphinx
   - sphinx_rtd_theme
+  - pip:
+    - versioningit
+    - check-wheel-contents
