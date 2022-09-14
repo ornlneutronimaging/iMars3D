@@ -54,7 +54,7 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 # a list of builtin themes.
 #
 html_theme = "sphinx_rtd_theme"  # "alabaster"
-html_static_path = ["_static"]
+# html_static_path = ["_static"]
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
