@@ -13,7 +13,9 @@ copyright = "2022, SCSE@ORNL"
 author = "SCSE@ORNL"
 
 # The short X.Y version
-version = versioningit.get_version("../src/imars3d/backend/_version.py")
+# NOTE: need to specify the location of the pyproject.toml file instead of the
+#       location of the source tree
+version = versioningit.get_version("..")
 # The full version, including alpha/beta/rc tags
 release = ".".join(version.split(".")[:-1])
 

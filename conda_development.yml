@@ -3,11 +3,28 @@ channels:
   - conda-forge
   - defaults
 dependencies:
+  - astropy
+  - tomopy
+  - dxchange
+  - pooch
+  - panel
+  - param
+  - pyvista
+  - holoviews
+  - bokeh
+  - datashader
+  - hvplot
+  - build
+  - toml
+  - pip:
+    - versioningit
+    - check-wheel-contents
   - black
+  - build
+  - versioningit
   - conda-build
   - pytest
   - pytest-cov
   - pre-commit
   - sphinx
   - sphinx_rtd_theme
-  - pip
