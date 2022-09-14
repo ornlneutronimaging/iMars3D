@@ -10,7 +10,10 @@ Welcome to iMars3D's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-
+   users/index
+   users/tutorial/index
+   developer/index
+   releasenotes/index
 
 Indices and tables
 ==================
