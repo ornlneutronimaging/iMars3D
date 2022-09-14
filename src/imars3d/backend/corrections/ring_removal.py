@@ -21,20 +21,19 @@ def remove_ring_artifact(
 
     Parameters
     ----------
-    @param arrays:
+    arrays:
         Input radiograph stack.
-    @param kernel_size:
+    kernel_size:
         The size of the kernel (moving window) during local smoothing with median filter.
-    @param sub_division:
+    sub_division:
         Sub-dividing the sinogram into subsections (along rotation angle axis).
-    @param correction_range:
+    correction_range:
         Multiplicative correction factor is capped within given range.
-    @param ncore:
+    ncore:
         Number of cores to use for parallel processing.
 
     Returns
     -------
-    @return:
         Radiograph stack with ring artifact removed.
     """
     # sanity check
@@ -84,18 +83,17 @@ def remove_ring_artifact_Ketcham(
 
     Parameters
     ----------
-    @param sinogram:
+    sinogram:
         Input sinogram.
-    @param kernel_size:
+    kernel_size:
         The size of the kernel (moving window) during local smoothing via median filter.
-    @param sub_division:
+    sub_division:
         Sub-dividing the sinogram into subsections (along rotation angle axis).
-    @param correction_range:
+    correction_range:
         Multiplicative correction factor is capped within given range.
 
     Returns
     -------
-    @return:
         Sinogram with ring artifact removed.
 
     NOTE

@@ -16,15 +16,20 @@ def normalization(
 
     Parameters
     ----------
-    @param arrays: 3D array of images, the first dimension is the rotation angle omega.
-    @param flats: 3D array of flat field images (aka flat field, open beam), axis=0 is the image number axis.
-    @param darks: 3D array of dark field images, axis=0 is the image number axis.
-    @param cut_off: Permitted maximum value for the normalized data, originated from tomopy, negative values means no cutoff.
-    @param ncore: number of cores to use for parallel processing, default is -1, which means using all available cores.
+    arrays:
+        3D array of images, the first dimension is the rotation angle omega.
+    flats:
+        3D array of flat field images (aka flat field, open beam), axis=0 is the image number axis.
+    darks:
+        3D array of dark field images, axis=0 is the image number axis.
+    cut_off:
+        Permitted maximum value for the normalized data, originated from tomopy, negative values means no cutoff.
+    ncore:
+        number of cores to use for parallel processing, default is -1, which means using all available cores.
 
     Returns
     -------
-    @return: normalized 3D array of images, the first dimension is the rotation angle omega.
+        normalized 3D array of images, the first dimension is the rotation angle omega.
     """
     # parse input (mostly for Tomopy)
     cut_off = None if cut_off < 0 else float(cut_off)

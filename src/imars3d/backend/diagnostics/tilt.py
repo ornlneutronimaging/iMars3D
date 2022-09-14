@@ -25,24 +25,23 @@ def tilt_correction(
 
     Parameters
     ----------
-    @param arrays:
+    arrays:
         The radiograph stack fro tilt correction
-    @param omegas:
+    omegas:
         The list of omega angles in radians (follow tomopy convention)
-    @param low_bound:
+    low_bound:
         The lower bound of the tilt angle search space
-    @param high_bound:
+    high_bound:
         The upper bound of the tilt angle search space
-    @param cut_off_angle_deg:
+    cut_off_angle_deg:
         The angle in degrees to cut off the rotation axis tilt correction, i.e.
         skip applying tilt correction for tilt angles that are too small.
-    @param ncore:
+    ncore:
         Number of cores to use for parallel median filtering, default is -1,
         which means using all available cores.
 
     Returns
     -------
-    @return:
         The tilt corrected array
     """
     if arrays.ndim != 3:
@@ -88,16 +87,15 @@ def apply_tilt_correction(
 
     Parameters
     ----------
-    @param arrays:
+    arrays:
         The array for tilt correction
-    @param tilt:
+    tilt:
         The rotation axis tilt angle in degrees
-    @param ncore:
+    ncore:
         Number of cores to use for parallel median filtering, default is -1, which means using all available cores.
 
     Returns
     -------
-    @return:
         The tilt corrected array
     """
     # dimensionality check
@@ -134,16 +132,15 @@ def find_180_deg_pairs_idx(
 
     Parameters
     ----------
-    @param angles:
+    angles:
         The list of angles as a 1d array.
-    @param atol:
+    atol:
         The absolute tolerance in degree for the 180 degree pairs.
-    @param in_degrees:
+    in_degrees:
         Whether the angles are in degrees or radians, default is in degrees.
 
     Returns
     -------
-    @return:
         The indices of the 180 degree pairs (low_range, high_range)
     """
     # ensure correct dimension
@@ -170,14 +167,13 @@ def calculate_shift(
 
     Parameters
     ----------
-    @param reference_image:
+    reference_image:
         The reference image, often the radiograph taken at omega (< 180 deg)
-    @param moving_image:
+    moving_image:
         The moving image, often the radiograph taken at omega + 180 deg
 
     Returns
     -------
-    @return:
         The amount of shift in pixels
     """
     # API documentation can be find at:
@@ -207,32 +203,30 @@ def calculate_dissimilarity(
 
     Parameters
     ----------
-    @param tilt:
+    tilt:
         The tilt angle in degrees.
-    @param image0:
+    image0:
         The first image for comparison, which is often the radiograph taken at
         omega (< 180 deg)
-    @param image1:
+    image1:
         The second image for comparison, which is often the radiograph taken at
         omega + 180 deg
 
     Returns
     -------
-    @return:
         The p3-norm based dissimilarity between the two images
 
     NOTE
     ----
-    1. The rotation of an image is carried out by scikit-image, which is using
-       bilinear interpolation (order=1) by default. This introduces the following
-       artifacts:
-         - The image is slightly distorted at a non-zero tilt angle, therefore
-           perfect matching pairs with a tilted angles greater than 2.0 might
-           return a non-zero dissimilarity.
-    2. In case of non-centered rotation axis, the image cropped to ensure only
-       both images have the object in the center of FOV, however this might fail
-       if the object is partially out of the FOV in both images as the image
-       registration does not work for two different partials of the same object.
+        1. The rotation of an image is carried out by scikit-image, which is using
+        bilinear interpolation (order=1) by default. This introduces artifacts:
+        the image is slightly distorted at a non-zero tilt angle, therefore
+        perfect matching pairs with a tilted angles greater than 2.0 might return a non-zero dissimilarity.
+
+        2. In case of non-centered rotation axis, the image cropped to ensure only
+        both images have the object in the center of FOV, however this might fail
+        if the object is partially out of the FOV in both images as the image
+        registration does not work for two different partials of the same object.
     """
     # calculate the relative shift
     shift_val = calculate_shift(image0, image1)
@@ -298,20 +292,19 @@ def calculate_tilt(
 
     Parameters
     ----------
-    @param image0:
+    image0:
         The first image for comparison, which is often the radiograph taken at
         omega (< 180 deg)
-    @param image180:
+    image180:
         The second image for comparison, which is often the radiograph taken at
         omega + 180 deg
-    @param low_bound:
+    low_bound:
         The lower bound of the tilt angle search space
-    @param high_bound:
+    high_bound:
         The upper bound of the tilt angle search space
 
     Returns
     -------
-    @return:
         The optimization results from scipy.optimize.minimize_scalar
     """
     # make the error function

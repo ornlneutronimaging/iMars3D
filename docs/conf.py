@@ -2,8 +2,15 @@
 #
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
-
+import os
+import sys
 import versioningit
+import param
+
+param.parameterized.docstring_signature = False
+param.parameterized.docstring_describe_params = False
+
+sys.path.insert(0, os.path.abspath("../src/imars3d"))
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -24,6 +31,7 @@ release = ".".join(version.split(".")[:-1])
 
 extensions = [
     "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
     "sphinx.ext.doctest",
     "sphinx.ext.todo",
     "sphinx.ext.coverage",
@@ -31,6 +39,8 @@ extensions = [
     "sphinx.ext.ifconfig",
     "sphinx.ext.viewcode",
     "sphinx.ext.githubpages",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.napoleon",
 ]
 templates_path = ["_templates"]
 
@@ -54,6 +64,12 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 # a list of builtin themes.
 #
 html_theme = "sphinx_rtd_theme"  # "alabaster"
+autosummary_generate = True
+
+# Napoleon settings
+napoleon_google_docstring = False
+napoleon_numpy_docstring = True
+
 html_static_path = ["_static"]
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.

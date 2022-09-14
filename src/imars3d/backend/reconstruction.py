@@ -16,20 +16,19 @@ def recon(
 
     Parameters
     ----------
-    @param arrays:
+    arrays:
         Input stack of tomography data
-    @param theta:
+    theta:
         Projection angles (in radians)
-    @param center:
+    center:
         Rotation center
-    @param algorithm:
+    algorithm:
         Name of reconstruction algorithm
-    @param filter_name:
+    filter_name:
         Name of filter used for reconstruction
 
     Return
     ------
-    @return
         Reconstructed tomographic data
     """
 

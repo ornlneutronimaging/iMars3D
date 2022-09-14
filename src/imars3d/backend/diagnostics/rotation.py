@@ -20,15 +20,15 @@ def find_rotation_center(
 
     Parameters
     ----------
-    @param arrays: 3D array of images, the first dimension is the rotation angle omega
-    @param angles: array of angles in degrees or radians, which must match the order of arrays
-    @param in_degrees: whether angles are in degrees or radians, default is True (degrees)
-    @param atol_deg: tolerance for the search of 180 deg paris, default is 0.1 degrees
-    @param ncore: number of cores to use for parallel median filtering, default is -1, which means using all available cores.
+    arrays: 3D array of images, the first dimension is the rotation angle omega
+    angles: array of angles in degrees or radians, which must match the order of arrays
+    in_degrees: whether angles are in degrees or radians, default is True (degrees)
+    atol_deg: tolerance for the search of 180 deg paris, default is 0.1 degrees
+    ncore: number of cores to use for parallel median filtering, default is -1, which means using all available cores.
 
     Returns
     -------
-    @return: rotation center in pixels
+        rotation center in pixels
     """
     # sanity check input
     if arrays.ndim != 3:
