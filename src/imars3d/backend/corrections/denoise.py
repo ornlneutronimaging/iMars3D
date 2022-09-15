@@ -17,12 +17,11 @@ def measure_noiseness(image: np.ndarray) -> float:
 
     Parameters
     ----------
-    @param image:
+    image:
         The image to measure the noiseness of.
 
     Returns
     -------
-    @return:
         The noiseness of the image.
     """
     # rescale to [0, 255]
@@ -49,12 +48,11 @@ def measure_sharpness(image: np.ndarray) -> float:
 
     Parameters
     ----------
-    @param image:
+    image:
         The image to measure the sharpness of.
 
     Returns
     -------
-    @return:
         The sharpness of the image.
     """
     # rescale to [0, 255]
@@ -78,22 +76,21 @@ def denoise(
 
     Parameters
     ----------
-    @param arrays:
+    arrays:
         The image stack to denoise.
-    @param method:
+    method:
         The denoise method to use.
-    @param median_filter_kernel:
+    median_filter_kernel:
         The kernel size of the median filter, only valid for 'median' method.
-    @param bilateral_sigma_color:
+    bilateral_sigma_color:
         The sigma of the color/gray space, only valid for 'bilateral' method.
-    @param bilateral_sigma_spatial:
+    bilateral_sigma_spatial:
         The sigma of the spatial space, only valid for 'bilateral' method.
-    @param ncore:
+    ncore:
         The number of cores to use for parallel processing, default is -1, which means using all available cores.
 
     Returns
     -------
-    @return:
         The denoised image stack.
     """
     if method == "median":
@@ -114,16 +111,15 @@ def denoise_by_median(
 
     Parameters
     ----------
-    @param arrays:
+    arrays:
         The image stack to denoise.
-    @param median_filter_kernel:
+    median_filter_kernel:
         The kernel size of the median filter.
-    @param ncore:
+    ncore:
         The number of cores to use for parallel processing, default is -1, which means using all available cores.
 
     Returns
     -------
-    @return:
         The denoised image stack.
     """
     if arrays.ndim == 2:
@@ -150,18 +146,17 @@ def denoise_by_bilateral(
 
     Parameters
     ----------
-    @param arrays:
+    arrays:
         The image stack to denoise.
-    @param sigma_color:
+    sigma_color:
         Standard deviation for grayvalue/color distance (radiometric similarity).
-    @param sigma_spatial:
+    sigma_spatial:
         Standard deviation for range distance.
-    @param ncore:
+    ncore:
         The number of cores to use for parallel processing, default is -1, which means using all available cores.
 
     Returns
     -------
-    @return:
         The denoised image stack.
     """
     # NOTE:
@@ -204,16 +199,15 @@ def denoise_by_bilateral_2d(
 
     Parameters
     ----------
-    @param array_2d:
+    array_2d:
         The image to denoise.
-    @param sigma_color:
+    sigma_color:
         Standard deviation for grayvalue/color distance (radiometric similarity).
-    @param sigma_spatial:
+    sigma_spatial:
         Standard deviation for range distance.
 
     Returns
     -------
-    @return:
         The denoised image.
     """
     # NOTE:

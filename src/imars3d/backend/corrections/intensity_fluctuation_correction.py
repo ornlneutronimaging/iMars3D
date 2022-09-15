@@ -20,20 +20,19 @@ def intensity_fluctuation_correction(
 
     Parameters
     ----------
-    @param arrays:
+    arrays:
         The image/radiograph stack to correct for beam intensity fluctuation.
-    @param air_pixels:
+    air_pixels:
         Number of pixels at each boundary to calculate the scaling factor. When a negative number
         is given, the auto air region detection will be used instead of tomopy.
-    @param sigma:
+    sigma:
         The standard deviation of the Gaussian filter, only valid when using the auto air region
         detection via canny edge detection from skimage.
-    @param ncore:
+    ncore:
         The number of cores to use for parallel processing, default is -1, which means using all available cores.
 
     Returns
     -------
-    @return:
         The corrected image/radiograph stack.
     """
     # validation
@@ -77,24 +76,25 @@ def intensity_fluctuation_correction_skimage(
     """
     Correct for intensity fluctuation in the radiograph using skimage to auto
     detect the air region (adapted from iMars3dv1.filter.ifc).
-    NOTE:
-    This method here is assuming the beam is decaying uniformly over time whereas
-    the tomopy version is assuming different region decays slightly different, hence
-    the linear interpolation between left and right air pixels.
-    In most cases, a uniform decay is a good approximation as neutron beam tends
-    to be very stable.
 
     Parameters
     ----------
-    @param image:
+    image:
         The image/radiograph (2D) to correct for beam intensity fluctuation.
-    @param sigma:
+    sigma:
         The standard deviation of the Gaussian filter for the canny edge detection.
 
     Returns
     -------
-    @return:
         The corrected image/radiograph (2D).
+
+    Notes
+    -----
+        This method here is assuming the beam is decaying uniformly over time whereas
+        the tomopy version is assuming different region decays slightly different, hence
+        the linear interpolation between left and right air pixels.
+        In most cases, a uniform decay is a good approximation as neutron beam tends
+        to be very stable.
     """
     # get boundary
     # NOTE:

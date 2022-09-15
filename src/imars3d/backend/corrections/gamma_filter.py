@@ -20,17 +20,24 @@ def gamma_filter(
 
     Parameters
     ----------
-    @param arrays: 3D array of images, the first dimension is the rotation angle omega
-    @param threshold: threshold for saturation, default is -1, which means using the internally defined threshold (see source code)
-    @param median_kernel: size of the median filter kernel, default is 5
-    @param axis: axis along which to chunk the array for parallel median filtering, default is 0.
-    @param ncore: number of cores to use for parallel median filtering, default is -1, which means using all available cores.
-    @param selective_median_filter: whether to use selective median filtering, default is True.
-    @param diff_tomopy: threshold passed to tomopy for median filter based outlier detection. Negative values will use the internal default value (see source code).
+    arrays:
+        3D array of images, the first dimension is the rotation angle omega
+    threshold:
+        threshold for saturation, default is -1, which means using the internally defined threshold (see source code)
+    median_kernel:
+        size of the median filter kernel, default is 5
+    axis:
+        axis along which to chunk the array for parallel median filtering, default is 0.
+    ncore:
+        number of cores to use for parallel median filtering, default is -1, which means using all available cores.
+    selective_median_filter:
+        whether to use selective median filtering, default is True.
+    diff_tomopy:
+        threshold passed to tomopy for median filter based outlier detection. Negative values will use the internal default value (see source code).
 
     Returns
     -------
-    @return: corrected 3D array of images, the first dimension is the rotation angle omega
+        corrected 3D array of images, the first dimension is the rotation angle omega
     """
     # parse input
     saturation_intensity = np.iinfo(arrays.dtype).max
