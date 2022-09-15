@@ -8,13 +8,7 @@ build:
 sphinx:
   builder: html
   configuration: docs/conf.py
-  fail_on_warning: true
-
-python:
-  # Install our python package before building the docs
-  install:
-    - method: pip
-      path: .
+  fail_on_warning: false
 
 conda:
-  environment: conda_development.yml
+  environment: docs/development_rtd.yml

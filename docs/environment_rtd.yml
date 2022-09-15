@@ -1,10 +1,8 @@
-name: imars3d
+name: imars3d_rtd
 channels:
   - conda-forge
-  - defaults
 dependencies:
   - pip
-  - numpy
   - astropy
   - tomopy
   - dxchange
@@ -18,13 +16,5 @@ dependencies:
   - hvplot
   - build
   - toml
-  - black
-  - conda-build
-  - pytest
-  - pytest-cov
-  - pre-commit
-  - sphinx
-  - sphinx_rtd_theme
   - pip:
     - versioningit
-    - check-wheel-contents
