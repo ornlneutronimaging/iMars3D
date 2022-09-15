@@ -11,4 +11,4 @@ sphinx:
   fail_on_warning: false
 
 conda:
-  environment: docs/development_rtd.yml
+  environment: docs/environment_rtd.yml
