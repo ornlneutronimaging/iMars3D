@@ -5,6 +5,9 @@ yaml-files:
   - '*.yml'
   - '.yamllint'
 
+ignore: |
+  conda.recipe/meta.yaml
+
 rules:
   braces: enable
   brackets: enable
@@ -25,7 +28,9 @@ rules:
     indent-sequences: consistent
   key-duplicates: enable
   key-ordering: disable
-  line-length: enable
+  line-length:
+    max: 256
+    level: warning
   new-line-at-end-of-file: enable
   new-lines: enable
   octal-values: disable
