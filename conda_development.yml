@@ -28,3 +28,4 @@ dependencies:
   - pip:
     - versioningit
     - check-wheel-contents
+    - yamllint
