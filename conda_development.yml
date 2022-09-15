@@ -4,6 +4,7 @@ channels:
   - defaults
 dependencies:
   - pip
+  - numpy <= 1.21
   - astropy
   - tomopy
   - dxchange
