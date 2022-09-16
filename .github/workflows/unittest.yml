@@ -45,3 +45,24 @@ jobs:
         run: python -m build --no-isolation --wheel
       - name: Check Wheel Contents
         run: check-wheel-contents .
+
+  build-conda:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-update-conda: true
+          mamba-version: "*"
+          environment-file: conda_environment.yml
+      - name: Install testing requirements
+        run: mamba env update --name test --file conda_development.yml
+      - name: Build Conda Package
+        run: |
+          conda build --output-folder . -c conda-forge .
+      - name: Verify Conda Package
+        run: |
+          conda verify noarch/imars3d*.tar.bz2
