@@ -1,7 +1,6 @@
 <!-- Badges -->
 
-![Build Status](https://github.com/ornlneutronimaging/iMars3D/actions/workflows/ornl-prod.yml/badge.svg)
-![Unittest Status](https://github.com/ornlneutronimaging/iMars3D/actions/workflows/unittest.yml/badge.svg?branch=next)
+![Build Status](https://github.com/ornlneutronimaging/iMars3D/actions/workflows/actions.yml/badge.svg)
 [![Documentation Status](https://readthedocs.org/projects/imars3d/badge/?version=latest)](https://imars3d.readthedocs.io/en/latest/?badge=latest)
 
 <!-- End Badges -->
