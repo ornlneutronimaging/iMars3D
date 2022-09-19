@@ -20,6 +20,7 @@ dependencies:
   - toml
   - black
   - conda-build
+  - conda-verify
   - pytest
   - pytest-cov
   - pre-commit
