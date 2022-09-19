@@ -66,3 +66,33 @@ jobs:
       - name: Verify Conda Package
         run: |
           conda verify noarch/imars3d*.tar.bz2
+
+  trigger-deploy:
+    runs-on: ubuntu-22.04
+    needs: [linux, build-conda]
+    # only trigger deploys from protected branches
+    if: ${{ github.ref_protected || github.ref_type == 'tag' }}
+    steps:
+      - name: Determine Environment
+        uses: neutrons/branch-mapper@main
+        id: conda_env_name
+        with:
+          prefix: imars3d
+
+      - name: Trigger deploy
+        id: trigger
+        uses: eic/trigger-gitlab-ci@v2
+        with:
+          url: https://code.ornl.gov
+          token: ${{ secrets.GITLAB_TRIGGER_TOKEN }}
+          project_id: 11848
+          ref_name: main
+          variables: |
+            PLAY="update"
+            CONDA_ENV="${{ steps.conda_env_name.outputs.name }}"
+
+      - name: Annotate commit
+        uses: peter-evans/commit-comment@v2
+        with:
+          body: |
+            GitLab pipeline for ${{ steps.conda_env_name.outputs.name }} has been submitted for this commit: ${{ steps.trigger.outputs.web_url }}
