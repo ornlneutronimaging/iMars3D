@@ -1,0 +1,16 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+"User" -> "UI" : start
+"User" -> "UI" : select options
+"User" -> "UI" : press "Run"
+"UI"   -> "UI" : generate JSON
+"UI"   -> "Workflow" : call
+"UI"   -> "Workflow" : pass JSON
+"Workflow" -> "Workflow" : parse JSON
+"Workflow" -> "Backend" : call
+"Backend" -> "Backend": load_data()
+
+@enduml

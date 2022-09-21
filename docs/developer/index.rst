@@ -8,5 +8,6 @@ Development Guide
    environment
    multiprocessing.rst
    ui_developmentGuide
+   workflow
    ui_test
    release
