@@ -14,6 +14,8 @@ Roles:
 * ``UI``
 * Workflow Manager (a.k.a ``Workflow``)
 * ``Backend``
+* ``Logger``
+* ``Filesystem``
 
 .. image:: media/load_data.png
     :width: 800px
