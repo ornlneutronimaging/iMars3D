@@ -1,0 +1,17 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+"User" -> "UI" : Select files in\nwidget File Selector
+"User" -> "UI" : press "Run"
+"UI"   -> "UI" : generate JSON
+"UI"   -> "Engine" : call
+"UI"   -> "Engine" : pass JSON
+"Engine" -> "Engine" : parse JSON
+"Engine" -> "Backend" : call
+"Backend"  -> "Backend": load_data(**params)
+"Backend"  -> "Renderer": invoke
+"Renderer" -> "UI":  PNG
+
+@enduml

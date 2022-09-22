@@ -13,10 +13,12 @@ To setup a local development environment, the developers should follow the steps
 
 * Install ``anaconda`` via either standard ``anaconda`` or ``miniconda``.
 * Clone the repository and make a feature branch based off ``next``.
-* Create a new virtual environment with ``conda env create -f environment.yml``.
+* Create a new virtual environment with ``conda env create -f conda_development.yml``.
 * Activate the virtual environment with ``conda activate imars3d``.
 
-If additional dependencies are added to the package, make sure update the corresponding environment file, ``environment.yml``.
+Update file ``conda_environment.yml`` if dependencies are added to the package,
+except if those dependencies are needed only for testing. In this case, update
+file ``conda_development.yml``.
 
 
 Access Development Version on Analysis Cluster
