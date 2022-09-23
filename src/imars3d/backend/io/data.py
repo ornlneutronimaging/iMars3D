@@ -16,9 +16,9 @@ from tqdm.contrib.concurrent import process_map
 
 
 # setup module level logger
-logger = param.get_logger()
+logger = param.get_logger(__name__)
 logger.name = __name__
-metadata_dict = {
+METADATA_DICT = {
     65026: "ManufacturerStr:Andor",  # [ct, ob, dc]
     65027: "ExposureTime:70.000000",  # [ct, ob, dc]
     65068: "MotSlitHR.RBV:10.000000",  # APERTURE_HR, [ct, ob]
