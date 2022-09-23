@@ -47,11 +47,11 @@ class load_data(param.ParameterizedFunction):
     dc_dir: Optional[str]
         directory contains dark currents
     ct_fnmatch: Optional[str]
-        Unix shells-style wild card ("*.tiff") for selecting radiographs
+        Unix shells-style wild card (``*.tiff``) for selecting radiographs
     ob_fnmatch: Optional[str]
-        Unix shells-style wild card ("*.tiff") for selecting open beams
+        Unix shells-style wild card (``*.tiff``) for selecting open beams
     dc_fnmatch: Optional[str]
-        Unix shells-style wild card ("*.tiff") for selecting dark current
+        Unix shells-style wild card (``*.tiff``) for selecting dark current
     max_workers: Optional[int]
         maximum number of processes allowed during loading, default to use as many as possible.
 
