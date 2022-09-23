@@ -30,7 +30,7 @@ def test_data():
     tifffile.imwrite("20191030_expname_0080_010_020_1960.tiff", data)
     # -- bad tiff name, but with metadata
     ex_tags = [
-        (65039, 's', 0, "RotationActual:0.1", True),
+        (65039, "s", 0, "RotationActual:0.1", True),
     ]
     for i in range(3):
         tifffile.imwrite(
@@ -41,12 +41,12 @@ def test_data():
 
     # synthetic fits data
     hdu = fits.PrimaryHDU(data)
-    hdu.writeto('test.fits')
+    hdu.writeto("test.fits")
     yield
 
     # remove the test data
-    list(map(os.remove, map(str,glob.glob("*.tiff"))))
-    list(map(os.remove, map(str,glob.glob("*.fits"))))
+    list(map(os.remove, map(str, glob.glob("*.tiff"))))
+    list(map(os.remove, map(str, glob.glob("*.fits"))))
 
 
 @mock.patch("imars3d.backend.io.data._extract_rotation_angles", return_value=4)
@@ -81,7 +81,7 @@ def test_forgiving_reader():
     goodReader = lambda x: x
     assert _forgiving_reader(filename="test", reader=goodReader) == "test"
     # incorrect usage, but bypass the exception
-    badReader = lambda x: x/0
+    badReader = lambda x: x / 0
     assert _forgiving_reader(filename="test", reader=badReader) is None
 
 

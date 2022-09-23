@@ -19,19 +19,19 @@ from tqdm.contrib.concurrent import process_map
 logger = param.get_logger()
 logger.name = __name__
 metadata_dict = {
-    65026: 'ManufacturerStr:Andor',  # [ct, ob, dc]
-    65027: 'ExposureTime:70.000000',  # [ct, ob, dc]
-    65068: 'MotSlitHR.RBV:10.000000',  # APERTURE_HR, [ct, ob]
-    65070: 'MotSlitHL.RBV:20.000000',  # APERTURE_HL, [ct, ob]
-    65066: 'MotSlitVT.RBV:10.000000',  # APERTURE_VT, [ct, ob]
-    65068: 'MotSlitHR.RBV:10.000000',  # APERTURE_VB, [ct, ob]
+    65026: "ManufacturerStr:Andor",  # [ct, ob, dc]
+    65027: "ExposureTime:70.000000",  # [ct, ob, dc]
+    65068: "MotSlitHR.RBV:10.000000",  # APERTURE_HR, [ct, ob]
+    65070: "MotSlitHL.RBV:20.000000",  # APERTURE_HL, [ct, ob]
+    65066: "MotSlitVT.RBV:10.000000",  # APERTURE_VT, [ct, ob]
+    65068: "MotSlitHR.RBV:10.000000",  # APERTURE_VB, [ct, ob]
 }
 
 
 class load_data(param.ParameterizedFunction):
     """
     Load data with given input
-    
+
     Parameters
     ---------
     ct_files: str
@@ -77,6 +77,7 @@ class load_data(param.ParameterizedFunction):
         Currently, we are using a forgiving reader to load the image where a corrupted file
         will not block reading other data.
     """
+
     #
     ct_files = param.List(doc="list of all ct files to load")
     ob_files = param.List(doc="list of all ob files to load")
@@ -115,32 +116,32 @@ class load_data(param.ParameterizedFunction):
         elif sigs == {"files"}:
             logger.debug("Load by file list")
             ct, ob, dc = _load_by_file_list(
-                    ct_files=params.get("ct_files"),
-                    ob_files=params.get("ob_files"),
-                    dc_files=params.get("dc_files", []),  # it is okay to skip dc
-                    ct_fnmatch=params.get("ct_fnmatch", "*"),  # incase None got leaked here
-                    ob_fnmatch=params.get("ob_fnmatch", "*"),
-                    dc_fnmatch=params.get("dc_fnmatch", "*"),
-                )
-            ct_files=params.get("ct_files")
+                ct_files=params.get("ct_files"),
+                ob_files=params.get("ob_files"),
+                dc_files=params.get("dc_files", []),  # it is okay to skip dc
+                ct_fnmatch=params.get("ct_fnmatch", "*"),  # incase None got leaked here
+                ob_fnmatch=params.get("ob_fnmatch", "*"),
+                dc_fnmatch=params.get("dc_fnmatch", "*"),
+            )
+            ct_files = params.get("ct_files")
         elif sigs == {"dir"}:
             logger.debug("Load by directory")
             ct_files, ob_files, dc_files = _get_filelist_by_dir(
-                    ct_dir=params.get("ct_dir"),
-                    ob_dir=params.get("ob_dir"),
-                    dc_dir=params.get("dc_dir", []),  # it is okay to skip dc
-                    ct_fnmatch=params.get("ct_fnmatch", "*"),  # incase None got leaked here
-                    ob_fnmatch=params.get("ob_fnmatch", "*"),
-                    dc_fnmatch=params.get("dc_fnmatch", "*"),
-                )
+                ct_dir=params.get("ct_dir"),
+                ob_dir=params.get("ob_dir"),
+                dc_dir=params.get("dc_dir", []),  # it is okay to skip dc
+                ct_fnmatch=params.get("ct_fnmatch", "*"),  # incase None got leaked here
+                ob_fnmatch=params.get("ob_fnmatch", "*"),
+                dc_fnmatch=params.get("dc_fnmatch", "*"),
+            )
             ct, ob, dc = _load_by_file_list(
-                    ct_files=ct_files,
-                    ob_files=ob_files,
-                    dc_files=dc_files,
-                    ct_fnmatch=params.get("ct_fnmatch", "*"),  # incase None got leaked here
-                    ob_fnmatch=params.get("ob_fnmatch", "*"),
-                    dc_fnmatch=params.get("dc_fnmatch", "*"),
-                )
+                ct_files=ct_files,
+                ob_files=ob_files,
+                dc_files=dc_files,
+                ct_fnmatch=params.get("ct_fnmatch", "*"),  # incase None got leaked here
+                ob_fnmatch=params.get("ob_fnmatch", "*"),
+                dc_fnmatch=params.get("dc_fnmatch", "*"),
+            )
         else:
             logger.warning("Found unknown input arguments, ignoring.")
 
@@ -160,7 +161,7 @@ def _forgiving_reader(
 ) -> Optional[np.ndarray]:
     """
     Skip corrupted file, but inform the user about the issue.
-    
+
     Parameters
     ----------
     filename:
@@ -187,7 +188,7 @@ def _load_images(
 ) -> np.ndarray:
     """
     Load image data via dxchange.
-    
+
     Parameters
     ----------
     filelist:
@@ -293,13 +294,13 @@ def _load_by_file_list(
 
 
 def _get_filelist_by_dir(
-        ct_dir: str,
-        ob_dir: str,
-        dc_dir: Optional[str] = None,
-        ct_fnmatch: Optional[str] = "*",
-        ob_fnmatch: Optional[str] = "*",
-        dc_fnmatch: Optional[str] = "*",
-    ) -> Tuple[List[str], List[str], List[str]]:
+    ct_dir: str,
+    ob_dir: str,
+    dc_dir: Optional[str] = None,
+    ct_fnmatch: Optional[str] = "*",
+    ob_fnmatch: Optional[str] = "*",
+    dc_fnmatch: Optional[str] = "*",
+) -> Tuple[List[str], List[str], List[str]]:
     """
     Generate list of files from given directory and fnmatch for ct, ob, and dc.
 
@@ -372,8 +373,8 @@ def _get_filelist_by_dir(
 
 def _extract_rotation_angles(
     filelist: List[str],
-    metadata_idx: int=65039,
-    ) -> np.ndarray:
+    metadata_idx: int = 65039,
+) -> np.ndarray:
     """
     Extract rotation angles in degrees from filename or metadata.
 
@@ -404,9 +405,7 @@ def _extract_rotation_angles(
     regex = r"\d{8}_\S*_\d{4}_(?P<deg>\d{3})_(?P<dec>\d{3})_\d*\.tiff"
     matches = [re.match(regex, Path(f).name) for f in filelist]
     if all(matches):
-        rotation_angles = np.array(
-            [ float(".".join(m.groups())) for m in matches]
-        )
+        rotation_angles = np.array([float(".".join(m.groups())) for m in matches])
     else:
         # extract rotation angles from metadata
         file_ext = set([Path(f).suffix for f in filelist])
@@ -417,11 +416,11 @@ def _extract_rotation_angles(
         # img = tifffile.TiffFile("test_with_metadata_0.tiff")
         # img.pages[0].tags[65039].value
         # >> 'RotationActual:0.579840'
-        rotation_angles = np.array([
-            float(tifffile.TiffFile(f).pages[0].tags[metadata_idx].value.split(":")[-1])
-            for f in filelist
-        ])
+        rotation_angles = np.array(
+            [float(tifffile.TiffFile(f).pages[0].tags[metadata_idx].value.split(":")[-1]) for f in filelist]
+        )
     return rotation_angles
+
 
 # -----------------------------------
 # TODO
