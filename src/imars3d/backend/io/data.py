@@ -34,11 +34,11 @@ class load_data(param.ParameterizedFunction):
 
     Parameters
     ---------
-    ct_files: str
+    ct_files: List[str]
         explicit list of radiographs
-    ob_files: str
+    ob_files: List[str]
         explicit list of open beams
-    dc_files: Optional[str]
+    dc_files: Optional[List[str]]
         explicit list of dark current
     ct_dir: str
         directory contains radiographs
@@ -57,7 +57,7 @@ class load_data(param.ParameterizedFunction):
 
     Returns
     -------
-        radiograph stacks, obs, dcs and omegas as numpy.ndarray
+        radiograph stacks, obs, dcs and rotation angles as numpy.ndarray
 
     Notes
     -----
