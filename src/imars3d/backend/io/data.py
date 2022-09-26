@@ -18,14 +18,14 @@ from tqdm.contrib.concurrent import process_map
 # setup module level logger
 logger = param.get_logger(__name__)
 logger.name = __name__
-METADATA_DICT = {
-    65026: "ManufacturerStr:Andor",  # [ct, ob, dc]
-    65027: "ExposureTime:70.000000",  # [ct, ob, dc]
-    65068: "MotSlitHR.RBV:10.000000",  # APERTURE_HR, [ct, ob]
-    65070: "MotSlitHL.RBV:20.000000",  # APERTURE_HL, [ct, ob]
-    65066: "MotSlitVT.RBV:10.000000",  # APERTURE_VT, [ct, ob]
-    65068: "MotSlitHR.RBV:10.000000",  # APERTURE_VB, [ct, ob]
-}
+# METADATA_DICT = {
+#     65026: "ManufacturerStr:Andor",  # [ct, ob, dc]
+#     65027: "ExposureTime:70.000000",  # [ct, ob, dc]
+#     65068: "MotSlitHR.RBV:10.000000",  # APERTURE_HR, [ct, ob]
+#     65070: "MotSlitHL.RBV:20.000000",  # APERTURE_HL, [ct, ob]
+#     65066: "MotSlitVT.RBV:10.000000",  # APERTURE_VT, [ct, ob]
+#     65068: "MotSlitHR.RBV:10.000000",  # APERTURE_VB, [ct, ob]
+# }
 
 
 class load_data(param.ParameterizedFunction):
