@@ -30,3 +30,4 @@ dependencies:
     - versioningit
     - check-wheel-contents
     - yamllint
+    - pytest-playwright
