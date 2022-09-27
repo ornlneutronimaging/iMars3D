@@ -98,7 +98,7 @@ class MetaData(param.Parameterized):
         return self.config_dict
 
     def summary_pane(self):
-        return pn.pane.Markdown(
+        return pn.panel(
             f"""
             # Summary for reconstruction: {self.recn_name}
             ----------------------------------------------
