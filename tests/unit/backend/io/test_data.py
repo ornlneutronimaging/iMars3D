@@ -68,6 +68,9 @@ def test_load_data(_load_by_file_list, _get_filelist_by_dir, _extract_rotation_a
     # error_2: mix usage of function signature 1 and 2
     with pytest.raises(ValueError):
         load_data(ct_files=[], ob_files=[], dc_files=[], ct_dir="/tmp", ob_dir="/tmp")
+    # error_3: no valid signature found
+    with pytest.raises(ValueError):
+        load_data(ct_fnmatch=1)
     # case_1: load data from file list
     rst = load_data(ct_files=["1", "2"], ob_files=["3", "4"], dc_files=["5", "6"])
     assert rst == (1, 2, 3, 4)

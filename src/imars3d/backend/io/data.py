@@ -35,11 +35,11 @@ class load_data(param.ParameterizedFunction):
     Parameters
     ---------
     ct_files: List[str]
-        explicit list of radiographs
+        explicit list of radiographs (full path)
     ob_files: List[str]
-        explicit list of open beams
+        explicit list of open beams (full path)
     dc_files: Optional[List[str]]
-        explicit list of dark current
+        explicit list of dark current (full path)
     ct_dir: str
         directory contains radiographs
     ob_dir: str
@@ -92,7 +92,11 @@ class load_data(param.ParameterizedFunction):
     ob_fnmatch = param.String(default="*", doc="fnmatch for selecting ob files from ob_dir")
     dc_fnmatch = param.String(default="*", doc="fnmatch for selecting dc files from dc_dir")
     # NOTE: 0 means use as many as possible
-    max_workers = param.Integer(default=0, bounds=(0, None), doc="Maximum number of processes allowed during loading")
+    max_workers = param.Integer(
+        default=0,
+        bounds=(0, max(1, multiprocessing.cpu_count() - 2)),
+        doc="Maximum number of processes allowed during loading",
+    )
 
     def __call__(self, **params):
         """
@@ -110,10 +114,11 @@ class load_data(param.ParameterizedFunction):
         # NOTE:
         #    use set to simplify call signature checking
         sigs = set([k.split("_")[-1] for k in params.keys() if "fnmatch" not in k])
-        if sigs == {"files", "dir"}:
+        ref = {"files", "dir"}
+        if sigs.intersection(ref) == {"files", "dir"}:
             logger.error("Files and dir cannot be used at the same time")
             raise ValueError("Mix usage of allowed signature.")
-        elif sigs == {"files"}:
+        elif sigs.intersection(ref) == {"files"}:
             logger.debug("Load by file list")
             ct, ob, dc = _load_by_file_list(
                 ct_files=params.get("ct_files"),
@@ -124,7 +129,7 @@ class load_data(param.ParameterizedFunction):
                 dc_fnmatch=params.get("dc_fnmatch", "*"),
             )
             ct_files = params.get("ct_files")
-        elif sigs == {"dir"}:
+        elif sigs.intersection(ref) == {"dir"}:
             logger.debug("Load by directory")
             ct_files, ob_files, dc_files = _get_filelist_by_dir(
                 ct_dir=params.get("ct_dir"),
@@ -143,7 +148,8 @@ class load_data(param.ParameterizedFunction):
                 dc_fnmatch=params.get("dc_fnmatch", "*"),
             )
         else:
-            logger.warning("Found unknown input arguments, ignoring.")
+            logger.warning("No valid signature found, need to specify either files or dir")
+            raise ValueError("No valid signature found, need to specify either files or dir")
 
         # extracting omegas from
         # 1. filename
@@ -157,7 +163,7 @@ class load_data(param.ParameterizedFunction):
 # use _func to avoid sphinx pulling it into docs
 def _forgiving_reader(
     filename: str,
-    reader: Optional[Callable],
+    reader: Callable,
 ) -> Optional[np.ndarray]:
     """
     Skip corrupted file, but inform the user about the issue.
