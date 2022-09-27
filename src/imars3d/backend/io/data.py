@@ -96,7 +96,7 @@ class load_data(param.ParameterizedFunction):
         default=0,
         bounds=(0, max(1, multiprocessing.cpu_count() - 2)),
         doc="Maximum number of processes allowed during loading",
-        )
+    )
 
     def __call__(self, **params):
         """
