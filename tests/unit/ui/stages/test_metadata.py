@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import pytest
 import shutil
+import time
 import panel as pn
 from pathlib import Path
 from panel.io.server import serve
@@ -73,20 +74,12 @@ def test_example(page: Page, port:int, test_dir: str) -> None:
     # Press Enter
     page.locator("input[type=\"text\"]").first.press("Enter")
 
-    # Click text=►CONFIG Viewer
-    page.locator("text=►CONFIG Viewer").click()
-
-    # Click .jsoneditor-expand-all
-    page.locator(".jsoneditor-expand-all").click()
-
-    # Click .jsoneditor-collapse-all
-    page.locator(".jsoneditor-collapse-all").click()
-
-    # Click text=▼CONFIG Viewer
-    page.locator("text=▼CONFIG Viewer").click()
+    # Click th:has-text("Info"), force trigger update
+    page.locator("th:has-text(\"Info\")").click()
 
     # Click text=Save Config
     page.locator("text=Save Config").click()
+    time.sleep(1)
 
     # verify that the config file is created
     config_file = Path(test_dir) / Path("shared/processed_data/unittest/unittest.json")
