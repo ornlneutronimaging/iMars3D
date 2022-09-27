@@ -20,7 +20,7 @@ class MetaData(param.Parameterized):
             "workingdir": "TBD",
             "outputdir": "TBD",
             "steps": [],
-        } ,
+        },
         doc="Configuration dictionary",
     )
     # basic input
@@ -65,7 +65,7 @@ class MetaData(param.Parameterized):
     )
     recn_name = param.String(default="myrecon", doc="reconstruction results folder name")
     save_config_to_disk = param.Action(lambda x: x.param.trigger("save_config_to_disk"))
-    
+
     @param.depends("save_config_to_disk", watch=True)
     def save_config_file(self):
         config_filename = str(Path(self.recn_root) / self.recn_name / f"{self.recn_name}.json")
@@ -116,7 +116,7 @@ class MetaData(param.Parameterized):
             """,
             sizing_mode="stretch_width",
         )
-    
+
     @param.depends(
         "instrument",
         "ipts_num",

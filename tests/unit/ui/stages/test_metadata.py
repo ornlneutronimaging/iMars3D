@@ -32,7 +32,7 @@ def test_dir():
     shutil.rmtree(tmp_dir)
 
 
-def test_example(page: Page, port:int, test_dir: str) -> None:
+def test_example(page: Page, port: int, test_dir: str) -> None:
     # Serve the app
     app = pn.panel(MetaData().panel)
     serve(app, port=port, show=False, thread=True)
@@ -48,34 +48,34 @@ def test_example(page: Page, port:int, test_dir: str) -> None:
     page.locator("select").select_option("CG1D")
 
     # Click [placeholder="Enter non-standard project root manually here\.\.\."]
-    page.locator("[placeholder=\"Enter non-standard project root manually here\\.\\.\\.\"]").click()
+    page.locator('[placeholder="Enter non-standard project root manually here\\.\\.\\."]').click()
 
     # Fill [placeholder="Enter non-standard project root manually here\.\.\."]
-    page.locator("[placeholder=\"Enter non-standard project root manually here\\.\\.\\.\"]").fill("/home")
+    page.locator('[placeholder="Enter non-standard project root manually here\\.\\.\\."]').fill("/home")
 
     # Press Enter
-    page.locator("[placeholder=\"Enter non-standard project root manually here\\.\\.\\.\"]").press("Enter")
+    page.locator('[placeholder="Enter non-standard project root manually here\\.\\.\\."]').press("Enter")
 
     # Click [placeholder="Enter a name for your reconstruction\.\.\."]
-    page.locator("[placeholder=\"Enter a name for your reconstruction\\.\\.\\.\"]").click()
+    page.locator('[placeholder="Enter a name for your reconstruction\\.\\.\\."]').click()
 
     # Fill [placeholder="Enter a name for your reconstruction\.\.\."]
-    page.locator("[placeholder=\"Enter a name for your reconstruction\\.\\.\\.\"]").fill("unittest")
+    page.locator('[placeholder="Enter a name for your reconstruction\\.\\.\\."]').fill("unittest")
 
     # Press Enter
-    page.locator("[placeholder=\"Enter a name for your reconstruction\\.\\.\\.\"]").press("Enter")
+    page.locator('[placeholder="Enter a name for your reconstruction\\.\\.\\."]').press("Enter")
 
     # Click input[type="text"] >> nth=0
-    page.locator("input[type=\"text\"]").first.click()
+    page.locator('input[type="text"]').first.click()
 
     # Fill input[type="text"] >> nth=0
-    page.locator("input[type=\"text\"]").first.fill("11111")
+    page.locator('input[type="text"]').first.fill("11111")
 
     # Press Enter
-    page.locator("input[type=\"text\"]").first.press("Enter")
+    page.locator('input[type="text"]').first.press("Enter")
 
     # Click th:has-text("Info"), force trigger update
-    page.locator("th:has-text(\"Info\")").click()
+    page.locator('th:has-text("Info")').click()
 
     # Click text=Save Config
     page.locator("text=Save Config").click()
