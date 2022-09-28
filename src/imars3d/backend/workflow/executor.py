@@ -1,9 +1,18 @@
+# package imports
+from imars3d.backend.workflow import validate
+
+# standard imports
+import json as libjson
+from pathlib import Path
+from typing import Union
+
+
 def globals(*args):
-    "return dictionary of globals"
+    r"""return dictionary of globals"""
     return {arg: None for arg in args}
 
 
-class JsonParser:
+class Consumer:
     r"""
     tasks :[
     {name: "globals",
@@ -22,4 +31,16 @@ class JsonParser:
     }
     ]
     """
-    pass
+    json = validate.JSONValid(schema=validate.schema)
+
+    def __init__(self, json: Union[str, dict]) -> None:
+
+        # load file or dictionary, with validation against schema
+        if isinstance(json, str):
+            with open(json, "r") as file_handle:
+                json = libjson.load(json)
+
+        self.json = json
+
+    def __call__(self, *args, **kwargs):
+        pass
