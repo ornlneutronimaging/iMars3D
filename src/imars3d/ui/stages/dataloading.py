@@ -86,11 +86,8 @@ class DataLoader(param.Parameterized):
     def as_dict(self):
         return self.config_dict
 
-    def panel(self):
-        save_json_button = pn.widgets.Button.from_param(self.param.save_config_to_disk, name="Save Config")
-        update_config_button = pn.widgets.Button.from_param(self.param.update_config_action, name="Update Config")
-        buttons = pn.Row(update_config_button, save_json_button)
-        #
+    @param.depends("config_dict")
+    def json_editor(self):
         json_editor = pn.widgets.JSONEditor.from_param(
             self.param.config_dict,
             mode="view",
@@ -103,9 +100,15 @@ class DataLoader(param.Parameterized):
             sizing_mode="stretch_width",
             collapsed=True,
         )
+        return config_viewer
+
+    def panel(self):
+        save_json_button = pn.widgets.Button.from_param(self.param.save_config_to_disk, name="Save Config")
+        update_config_button = pn.widgets.Button.from_param(self.param.update_config_action, name="Update Config")
+        buttons = pn.Row(update_config_button, save_json_button)
         return pn.Column(
             buttons,
             self.file_selector,
-            config_viewer,
+            self.json_editor,
             sizing_mode="stretch_width",
         )

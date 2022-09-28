@@ -118,6 +118,22 @@ class MetaData(param.Parameterized):
             sizing_mode="stretch_width",
         )
 
+    @param.depends("config_dict")
+    def json_editor(self):
+        json_editor = pn.widgets.JSONEditor.from_param(
+            self.param.config_dict,
+            mode="view",
+            menu=False,
+            sizing_mode="stretch_width",
+        )
+        config_viewer = pn.Card(
+            json_editor,
+            title="CONFIG Viewer",
+            sizing_mode="stretch_width",
+            collapsed=True,
+        )
+        return config_viewer
+
     @param.depends(
         "instrument",
         "ipts_num",
@@ -133,12 +149,6 @@ class MetaData(param.Parameterized):
         self.config_dict["workingdir"] = self.temp_root
         self.config_dict["outputdir"] = self.recn_root
 
-    @param.depends(
-        "instrument",
-        "ipts_num",
-        "facility",
-        "config_dict",
-    )
     def panel(self, width=250):
         inst_input = pn.widgets.Select.from_param(
             self.param.instrument,
@@ -172,22 +182,10 @@ class MetaData(param.Parameterized):
             cntl_pn,
             self.summary_pane,
         )
-        json_editor = pn.widgets.JSONEditor.from_param(
-            self.param.config_dict,
-            mode="view",
-            menu=False,
-            sizing_mode="stretch_width",
-        )
-        config_viewer = pn.Card(
-            json_editor,
-            title="CONFIG Viewer",
-            sizing_mode="stretch_width",
-            collapsed=True,
-        )
         #
         app = pn.Column(
             interactive_app,
-            config_viewer,
+            self.json_editor,
             sizing_mode="stretch_width",
         )
         return app
