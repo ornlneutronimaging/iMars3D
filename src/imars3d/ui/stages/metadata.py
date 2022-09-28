@@ -68,7 +68,8 @@ class MetaData(param.Parameterized):
 
     @param.depends("save_config_to_disk", watch=True)
     def save_config_file(self):
-        config_filename = str(Path(self.recn_root) / self.recn_name / f"{self.recn_name}.json")
+        wkdir = Path(self.config_dict["outputdir"])
+        config_filename = str(wkdir / f"{self.config_dict['name']}.json")
         save_config(self.config_dict, config_filename)
 
     @param.depends("instrument", watch=True)

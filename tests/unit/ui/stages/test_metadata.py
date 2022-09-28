@@ -5,7 +5,7 @@ import time
 import panel as pn
 from pathlib import Path
 from panel.io.server import serve
-from playwright.sync_api import Page, expect
+from playwright.sync_api import Page
 from imars3d.ui.stages.metadata import MetaData
 
 pn.extension("jsoneditor")
@@ -32,7 +32,7 @@ def test_dir():
     shutil.rmtree(tmp_dir)
 
 
-def test_example(page: Page, port: int, test_dir: str) -> None:
+def test_metadata_page(page: Page, port: int, test_dir: str) -> None:
     # Serve the app
     app = pn.panel(MetaData().panel)
     serve(app, port=port, show=False, thread=True)
@@ -82,7 +82,7 @@ def test_example(page: Page, port: int, test_dir: str) -> None:
     time.sleep(1)
 
     # verify that the config file is created
-    config_file = Path(test_dir) / Path("shared/processed_data/unittest/unittest.json")
+    config_file = Path(test_dir) / Path("shared/processed_data/unittest.json")
     assert config_file.exists()
 
 

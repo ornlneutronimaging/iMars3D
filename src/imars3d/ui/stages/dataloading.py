@@ -1,129 +1,111 @@
 #!/usr/bin/env python3
-
-import os
-import numpy as np
-import tifffile
+"""
+Data loading stage for iMars3D
+"""
 from pathlib import Path
 import param
 import panel as pn
-from panel.widgets import Tqdm
+from imars3d.backend.io.config import save_config
 
 
 class DataLoader(param.Parameterized):
-    # input from previous step
-    data_root = param.Path(
-        default=Path.home(),
-        doc="ct, ob, and df root directory, default should be proj_root/raw",
+    # take over config from previous step
+    config_dict = param.Dict(
+        default={
+            "facility": "TBD",
+            "instrument": "TBD",
+            "ipts": 0,
+            "projectdir": "TBD",
+            "name": "TBD",
+            "workingdir": "TBD",
+            "outputdir": "TBD",
+            "steps": [],
+        },
+        doc="Configuration dictionary",
     )
-    proj_root = param.String(doc="map data_root to string to avoid a FileSelector error")
-    recn_root = param.Path(
-        default=Path.home(),
-        doc="reconstruction results root, default should be proj_root/processed_data",
-    )
-    temp_root = param.Path(
-        default=Path.home() / Path("tmp"),
-        doc="intermedia results save location",
-    )
-    recn_name = param.String(
-        default="myrecon",
-        doc="reconstruction results folder name",
-    )
-    # data container
-    ct = param.Array(
-        doc="radiograph stack as numpy array",
-        precedence=-1,  # hide
-    )
-    ob = param.Array(
-        doc="open beam stack as numpy array",
-        precedence=-1,  # hide
-    )
-    dc = param.Array(
-        doc="dark current stack as numpy array",
-        precedence=-1,  # hide
-    )
-    omegas = param.Array(
-        doc="rotation angles in degress derived from tiff filename.",
-    )
-    # load data action
-    load_data_action = param.Action(lambda x: x.param.trigger("load_data_action"))
-    progress_bar = Tqdm(width=300, align="end")
+    # button to write filelist to json
+    update_config_action = param.Action(lambda x: x.param.trigger("update_config_action"))
+    save_config_to_disk = param.Action(lambda x: x.param.trigger("save_config_to_disk"))
 
-    @param.depends("data_root")
-    def _update_proj_root(self):
-        self.proj_root = str(self.data_root)
+    @param.depends("save_config_to_disk", watch=True)
+    def save_config_file(self):
+        wkdir = Path(self.config_dict["outputdir"])
+        config_filename = str(wkdir / f"{self.config_dict['name']}.json")
+        save_config(self.config_dict, config_filename)
 
-    @param.depends("proj_root")
+    @param.depends("update_config_action", watch=True)
+    def update_config(self):
+        # NOTE:
+        # the filter name get be get by
+        # left search bar entry: dataloader.radiograph_folder._selector._search[False].value
+        # right search bar entry: dataloader.radiograph_folder._selector._search[True].value
+        #
+        # NOTE:
+        # when a user is using the GUI to generate the list, it should include all the files,
+        # therefore no need for additional filtering by setting *_dc_fnmatch
+        #
+        # NOTE:
+        # it is better to hide the control of how many cores to use from user, hence using the
+        # default values for max_workers (by not setting one here).
+        load_step = {
+            "name": "load",
+            "version": 1,  # where does this version come from?
+            "inputs": {
+                "ct_files": self.radiograph_folder.value,
+                "ob_files": self.openbeam.value,
+                "dc_files": self.darkcurrent.value,
+            },
+            "outputs": ["ct", "ob", "dc", "rot_angles"],
+        }
+        self.config_dict["steps"].append(load_step)
+
+    @param.depends("config_dict")
     def file_selector(self):
+        # use user home directory if invalid one found in config file
+        prjdir = str(Path.home())
+        if self.config_dict["projectdir"] != "TBD":
+            prjdir = self.config_dict["projectdir"]
+        #
         self.radiograph_folder = pn.widgets.FileSelector(
-            directory=self.data_root,
+            directory=prjdir,
             name="Radiographs(CT)",
         )
         self.openbeam = pn.widgets.FileSelector(
-            directory=self.data_root,
+            directory=prjdir,
             name="Open-beam(OB)",
         )
         self.darkcurrent = pn.widgets.FileSelector(
-            directory=self.data_root,
+            directory=prjdir,
             name="Dark-current(DC)",
         )
         return pn.Tabs(self.radiograph_folder, self.openbeam, self.darkcurrent)
 
-    @param.depends("load_data_action", watch=True)
-    def load_data(self):
-        # avoid threading issue
-        self.ct_files = self.radiograph_folder.value
-        self.ob_files = self.openbeam.value
-        self.dc_files = self.darkcurrent.value
-        # extract the rotation angles from radiograph filenames
-        self.omegas = np.array(list(map(self.get_angle_from_file, self.ct_files)))
-        # get the image array
-        self.ct = self.read_tiffs(self.radiograph_folder.value, "CT")
-        self.ob = self.read_tiffs(self.openbeam.value, "OB")
-        self.dc = self.read_tiffs(self.darkcurrent.value, "DC")
-        #
-        pn.state.notifications.success("Data lading complete.", duration=3000)
-
-    def read_tiffs(self, filelist, desc):
-        if len(filelist) == 0:
-            return None
-        data = []
-        for me in self.progress_bar(filelist, desc=desc):
-            data.append(tifffile.imread(me))
-        return np.array(data)
-
-    def get_angle_from_file(self, filename):
-        """extract rotation angle in degrees"""
-        return float(".".join(os.path.basename(filename).split("_")[4:6]))
-
     @param.output(
-        ("ct", param.Array),
-        ("ob", param.Array),
-        ("dc", param.Array),
-        ("omegas", param.Array),
-        ("recn_root", param.Path),
-        ("temp_root", param.Path),
-        ("recn_name", param.String),
+        ("config_dict", param.Dict),
     )
-    def output(self):
-        return (
-            self.ct,
-            self.ob,
-            self.dc,
-            self.omegas,
-            self.recn_root,
-            self.temp_root,
-            self.recn_name,
-        )
+    def as_dict(self):
+        return self.config_dict
 
     def panel(self):
+        save_json_button = pn.widgets.Button.from_param(self.param.save_config_to_disk, name="Save Config")
+        update_config_button = pn.widgets.Button.from_param(self.param.update_config_action, name="Update Config")
+        buttons = pn.Row(update_config_button, save_json_button)
+        #
+        json_editor = pn.widgets.JSONEditor.from_param(
+            self.param.config_dict,
+            mode="view",
+            menu=False,
+            sizing_mode="stretch_width",
+        )
+        config_viewer = pn.Card(
+            json_editor,
+            title="CONFIG Viewer",
+            sizing_mode="stretch_width",
+            collapsed=True,
+        )
         return pn.Column(
-            pn.widgets.Button.from_param(
-                self.param.load_data_action,
-                name="Load All",
-                width=80,
-                button_type="primary",
-            ),
+            buttons,
             self.file_selector,
-            self.progress_bar,
+            config_viewer,
             sizing_mode="stretch_width",
         )
