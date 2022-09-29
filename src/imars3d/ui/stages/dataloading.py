@@ -57,9 +57,10 @@ class DataLoader(param.Parameterized):
             },
             "outputs": ["ct", "ob", "dc", "rot_angles"],
         }
-        self.config_dict["steps"].append(load_step)
+        self.config_dict["tasks"].append(load_step)
+        self.param.trigger("config_dict")
 
-    @param.depends("config_dict")
+    @param.depends("config_dict", on_init=True)
     def file_selector(self):
         # use user home directory if invalid one found in config file
         prjdir = str(Path.home())
@@ -86,7 +87,7 @@ class DataLoader(param.Parameterized):
     def as_dict(self):
         return self.config_dict
 
-    @param.depends("config_dict")
+    @param.depends("config_dict", on_init=True)
     def json_editor(self):
         json_editor = pn.widgets.JSONEditor.from_param(
             self.param.config_dict,
@@ -106,9 +107,10 @@ class DataLoader(param.Parameterized):
         save_json_button = pn.widgets.Button.from_param(self.param.save_config_to_disk, name="Save Config")
         update_config_button = pn.widgets.Button.from_param(self.param.update_config_action, name="Update Config")
         buttons = pn.Row(update_config_button, save_json_button)
-        return pn.Column(
+        app = pn.Column(
             buttons,
             self.file_selector,
             self.json_editor,
             sizing_mode="stretch_width",
         )
+        return app

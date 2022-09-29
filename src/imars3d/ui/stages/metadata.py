@@ -118,7 +118,7 @@ class MetaData(param.Parameterized):
             sizing_mode="stretch_width",
         )
 
-    @param.depends("config_dict")
+    @param.depends("config_dict", on_init=True)
     def json_editor(self):
         json_editor = pn.widgets.JSONEditor.from_param(
             self.param.config_dict,
@@ -148,6 +148,7 @@ class MetaData(param.Parameterized):
         self.config_dict["name"] = self.recn_name
         self.config_dict["workingdir"] = self.temp_root
         self.config_dict["outputdir"] = self.recn_root
+        self.param.trigger("config_dict")
 
     def panel(self, width=250):
         inst_input = pn.widgets.Select.from_param(
