@@ -26,7 +26,7 @@ def ref_config():
         "name": "unittest",
         "workingdir": "/tmp",
         "outputdir": "/tmp",
-        "steps": [],
+        "tasks": [],
     }
     # cleanup
     shutil.rmtree("/tmp/unittest.json", ignore_errors=True)
@@ -58,7 +58,7 @@ def test_loaddata_page(page: Page, port: int, ref_config: dict) -> None:
     page.locator("text=Save Config").click()
     time.sleep(1)
 
-    assert dataloader.config_dict["steps"][0]["inputs"]["ct_files"][0] == "/tmp/unittest.json"
+    assert dataloader.config_dict["tasks"][0]["inputs"]["ct_files"][0] == "/tmp/unittest.json"
 
 
 if __name__ == "__main__":
