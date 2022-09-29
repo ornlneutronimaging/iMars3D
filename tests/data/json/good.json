@@ -3,7 +3,7 @@
     "ipts": "IPTS-1234",
     "name": "name for reconstruced ct scans",
     "workingdir": "/path/to/dir",
-    "ouputdir": "/path/to/dir",
+    "outputdir": "/path/to/dir",
     "tasks": [
         {
             "name": "load",
@@ -36,16 +36,16 @@
             "inputs": {
                 "ct_series": "globals.ct"
             },
-            "outputs": "tilt_angle"
+            "outputs": ["tilt_angle"]
         },
         {
             "name": "tilt_corection",
-            "version": 1,
+            "function": "do magic thing",
             "inputs": {
                 "ct_series": "globals.ct",
                 "angle": "tilt_corection.tilt_angle"
             },
-            "outputs": "globals.ct"
+            "outputs": ["globals.ct"]
         },
         {
             "name": "save",
