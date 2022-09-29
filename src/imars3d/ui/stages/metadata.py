@@ -19,7 +19,7 @@ class MetaData(param.Parameterized):
             "name": "TBD",
             "workingdir": "TBD",
             "outputdir": "TBD",
-            "steps": [],
+            "tasks": [],
         },
         doc="Configuration dictionary",
     )
@@ -61,7 +61,7 @@ class MetaData(param.Parameterized):
     )
     temp_root = param.Path(
         default=Path.home() / Path("tmp"),
-        doc="intermedia results save location",
+        doc="intermediate results save location",
     )
     recn_name = param.String(default="myrecon", doc="reconstruction results folder name")
     save_config_to_disk = param.Action(lambda x: x.param.trigger("save_config_to_disk"))

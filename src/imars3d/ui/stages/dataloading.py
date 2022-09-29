@@ -19,7 +19,7 @@ class DataLoader(param.Parameterized):
             "name": "TBD",
             "workingdir": "TBD",
             "outputdir": "TBD",
-            "steps": [],
+            "tasks": [],
         },
         doc="Configuration dictionary",
     )
@@ -49,7 +49,7 @@ class DataLoader(param.Parameterized):
         # default values for max_workers (by not setting one here).
         load_step = {
             "name": "load",
-            "version": 1,  # where does this version come from?
+            "function": "imars3d.backend.io.data.load_data",
             "inputs": {
                 "ct_files": self.radiograph_folder.value,
                 "ob_files": self.openbeam.value,
