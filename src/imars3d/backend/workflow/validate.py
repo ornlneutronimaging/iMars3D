@@ -1,7 +1,7 @@
 import json
 import jsonschema
 from pathlib import Path
-from typing import Any, Union
+from typing import Any, Dict, Union
 
 FilePath = Union[Path, str]
 
@@ -35,17 +35,27 @@ SCHEMA = {
 
 
 def _validate_schema(json_obj: Any) -> None:
+    """Validate the data against the schema for jobs"""
     jsonschema.validate(json_obj, schema=SCHEMA)
+
+
+def _validate_tasks(json_obj: Dict) -> None:
+    for step, task in enumerate(json_obj["tasks"]):
+        func_str = task["function"].strip()
+        if not func_str:
+            # TODO need better exception
+            raise RuntimeError(f'Step {step} specified empty "function"')
 
 
 def validates(json_str: str) -> None:
     # verify that the string is non-empty
     if len(json_str.strip()) == 0:
         raise json.JSONDecodeError("Empty string", json_str, 0)
-
     json_obj = json.loads(json_str)
 
+    # validation
     _validate_schema(json_obj)
+    _validate_tasks(json_obj)
 
 
 def validate(filename: FilePath) -> None:
@@ -53,7 +63,9 @@ def validate(filename: FilePath) -> None:
     with open(filepath, "r") as handle:
         json_obj = json.load(handle)
 
+    # validation
     _validate_schema(json_obj)
+    _validate_tasks(json_obj)
 
 
 class JSONValid:
@@ -67,7 +79,7 @@ class JSONValid:
         self._validate(json)
         obj._json = json
 
-    def _validate(self, json):
+    def _validate(self, json_str) -> None:
         r"""check input json against class variable schema"""
         assert self._schema
         assert json

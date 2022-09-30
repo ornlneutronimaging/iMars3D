@@ -1,4 +1,6 @@
+import json
 from json import JSONDecodeError
+from jsonschema.exceptions import ValidationError
 import pytest
 from pathlib import Path
 from imars3d.backend.workflow.validate import validate, validates
@@ -50,6 +52,22 @@ def test_string_ill_formed():
 def test_string_good():
     doc = load_file(GOOD_FILE)
     validates(doc)
+
+
+def test_string_missing_tasks():
+    doc = load_file(GOOD_FILE)
+    json_obj = json.loads(doc)
+    del json_obj["tasks"]
+    with pytest.raises(ValidationError):
+        validates(json.dumps(json_obj))
+
+
+def test_string_empty_function():
+    doc = load_file(GOOD_FILE)
+    json_obj = json.loads(doc)
+    json_obj["tasks"][0]["function"] = ""
+    with pytest.raises(RuntimeError):
+        validates(json.dumps(json_obj))
 
 
 if __name__ == "__main__":
