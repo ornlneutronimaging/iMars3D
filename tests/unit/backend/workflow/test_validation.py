@@ -1,9 +1,9 @@
 from json import JSONDecodeError
 import pytest
 from pathlib import Path
-from imars3d.backend.validation import validate, validates
+from imars3d.backend.workflow.validate import validate, validates
 
-JSON_DATA_DIR = Path(__file__).parent.parent.parent / "data" / "json"
+JSON_DATA_DIR = Path(__file__).parent.parent.parent.parent / "data" / "json"
 GOOD_FILE = JSON_DATA_DIR / "good.json"
 ILL_FORMED_FILE = JSON_DATA_DIR / "ill_formed.json"
 
