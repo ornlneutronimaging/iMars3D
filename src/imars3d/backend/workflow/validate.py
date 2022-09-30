@@ -36,7 +36,14 @@ SCHEMA = {
 
 def _validate_schema(json_obj: Any) -> None:
     """Validate the data against the schema for jobs"""
-    jsonschema.validate(json_obj, schema=SCHEMA)
+    try:
+        jsonschema.validate(json_obj, schema=SCHEMA)
+    except jsonschema.ValidationError as e:
+        raise JSONValidationError("While validation configuration file") from e
+
+
+def _function_exists(func_str: str) -> bool:
+    return func_str.startswith("imars3d")
 
 
 def _validate_tasks(json_obj: Dict) -> None:
@@ -44,7 +51,9 @@ def _validate_tasks(json_obj: Dict) -> None:
         func_str = task["function"].strip()
         if not func_str:
             # TODO need better exception
-            raise RuntimeError(f'Step {step} specified empty "function"')
+            raise JSONValidationError(f'Step {step} specified empty "function"')
+        if not _function_exists(func_str):
+            raise JSONValidationError(f'Step {step} specified nonexistent function "{func_str}"')
 
 
 def validates(json_str: str) -> None:
@@ -66,6 +75,10 @@ def validate(filename: FilePath) -> None:
     # validation
     _validate_schema(json_obj)
     _validate_tasks(json_obj)
+
+
+class JSONValidationError(RuntimeError):
+    pass  # default behavior is good enough
 
 
 class JSONValid:

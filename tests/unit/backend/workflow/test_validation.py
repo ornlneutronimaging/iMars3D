@@ -3,7 +3,7 @@ from json import JSONDecodeError
 from jsonschema.exceptions import ValidationError
 import pytest
 from pathlib import Path
-from imars3d.backend.workflow.validate import validate, validates
+from imars3d.backend.workflow.validate import validate, validates, JSONValidationError
 
 JSON_DATA_DIR = Path(__file__).parent.parent.parent.parent / "data" / "json"
 GOOD_FILE = JSON_DATA_DIR / "good.json"
@@ -58,7 +58,7 @@ def test_string_missing_tasks():
     doc = load_file(GOOD_FILE)
     json_obj = json.loads(doc)
     del json_obj["tasks"]
-    with pytest.raises(ValidationError):
+    with pytest.raises(JSONValidationError):
         validates(json.dumps(json_obj))
 
 
@@ -66,7 +66,15 @@ def test_string_empty_function():
     doc = load_file(GOOD_FILE)
     json_obj = json.loads(doc)
     json_obj["tasks"][0]["function"] = ""
-    with pytest.raises(RuntimeError):
+    with pytest.raises(JSONValidationError):
+        validates(json.dumps(json_obj))
+
+
+def test_string_bad_function():
+    doc = load_file(GOOD_FILE)
+    json_obj = json.loads(doc)
+    json_obj["tasks"][0]["function"] = "nonexistent.function"
+    with pytest.raises(JSONValidationError):
         validates(json.dumps(json_obj))
 
 

@@ -40,7 +40,7 @@
         },
         {
             "name": "tilt_corection",
-            "function": "do magic thing",
+            "function": "imars3d do magic thing",
             "inputs": {
                 "ct_series": "globals.ct",
                 "angle": "tilt_corection.tilt_angle"
