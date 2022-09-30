@@ -1,13 +1,29 @@
 #!/usr/bin/env python3
-
+"""
+First stage to generate interactive reconstruction
+"""
 import param
 import panel as pn
 from pathlib import Path
+from imars3d.backend.io.config import save_config
 
 
 class MetaData(param.Parameterized):
-    # facility param required to locate the data on
-    # analysis mounts
+    # configuration to carry into the next stage
+    config_dict = param.Dict(
+        default={
+            "facility": "TBD",
+            "instrument": "TBD",
+            "ipts": 0,
+            "projectdir": "TBD",
+            "name": "TBD",
+            "workingdir": "TBD",
+            "outputdir": "TBD",
+            "tasks": [],
+        },
+        doc="Configuration dictionary",
+    )
+    # basic input
     instrument = param.Selector(
         default="CG1D",
         objects=["CG1D", "SNAP", "VENUS", "CUPID"],
@@ -20,14 +36,12 @@ class MetaData(param.Parameterized):
         doc="IPTS number",
     )
     # derived project root
-    # NOTE: the IPTS-x sub-folder structure is not consistent among
-    #       different experiments (historical issues?), so we should
-    #       only specify the root, and let users decide where the
-    #       input data should be.
+    # NOTE: the IPTS-x sub-folder structure is not consistent among different experiments,
+    #       so we should only specify the root, and let users decide where the input data should be.
     # NOTE: basic dir structure
     #       /FACILITY/INSTRUMENT/IPTS-xxxx/
     #       - raw
-    #         |- strucutre unstable, but should always have open-beam, dark current(field), and input ct
+    #         |- strucutre unstable, but should always have open-beam, dark current, and input ct
     #       - shared
     #         |- processed_data
     #            |- where reconstruction results sits in each own folder
@@ -47,13 +61,16 @@ class MetaData(param.Parameterized):
     )
     temp_root = param.Path(
         default=Path.home() / Path("tmp"),
-        doc="intermedia results save location",
+        doc="intermediate results save location",
     )
-    #
-    # NOTE: recon name will also be used to save intermedia results as well for consistency
-    # - intermedia results: temp_root/recon_name/stage_name/data+config
-    # - final recon: recn_root/myreon/data+config
     recn_name = param.String(default="myrecon", doc="reconstruction results folder name")
+    save_config_to_disk = param.Action(lambda x: x.param.trigger("save_config_to_disk"))
+
+    @param.depends("save_config_to_disk", watch=True)
+    def save_config_file(self):
+        wkdir = Path(self.config_dict["outputdir"])
+        config_filename = str(wkdir / f"{self.config_dict['name']}.json")
+        save_config(self.config_dict, config_filename)
 
     @param.depends("instrument", watch=True)
     def _update_facility(self):
@@ -76,21 +93,13 @@ class MetaData(param.Parameterized):
         self.recn_root = f"{self.proj_root}/shared/processed_data"
 
     @param.output(
-        ("data_root", param.Path),
-        ("recn_root", param.Path),
-        ("temp_root", param.Path),
-        ("recn_name", param.String),
+        ("config_dict", param.Dict),
     )
-    def metadata(self):
-        return (
-            self.data_root,
-            self.recn_root,
-            self.temp_root,
-            self.recn_name,
-        )
+    def as_dict(self):
+        return self.config_dict
 
     def summary_pane(self):
-        return pn.pane.Markdown(
+        return pn.panel(
             f"""
             # Summary for reconstruction: {self.recn_name}
             ----------------------------------------------
@@ -102,11 +111,44 @@ class MetaData(param.Parameterized):
             | Raw data dir | `{self.data_root}` |
             | Results dir | `{Path(self.recn_root) / Path(self.recn_name)}` |
             | Checkpoint(s) dir | `{Path(self.temp_root) / Path(self.recn_name)}` |
+            | Configuration | `{Path(self.temp_root) / Path(self.recn_name) / f"{Path(self.recn_name)}.json"}` |
 
             > If the information above is correct, proceed to next step.
             """,
             sizing_mode="stretch_width",
         )
+
+    @param.depends("config_dict", on_init=True)
+    def json_editor(self):
+        json_editor = pn.widgets.JSONEditor.from_param(
+            self.param.config_dict,
+            mode="view",
+            menu=False,
+            sizing_mode="stretch_width",
+        )
+        config_viewer = pn.Card(
+            json_editor,
+            title="CONFIG Viewer",
+            sizing_mode="stretch_width",
+            collapsed=True,
+        )
+        return config_viewer
+
+    @param.depends(
+        "instrument",
+        "ipts_num",
+        "facility",
+        watch=True,
+    )
+    def _update_config(self):
+        self.config_dict["instrument"] = self.instrument
+        self.config_dict["ipts"] = self.ipts_num
+        self.config_dict["facility"] = self.facility
+        self.config_dict["projectdir"] = self.proj_root
+        self.config_dict["name"] = self.recn_name
+        self.config_dict["workingdir"] = self.temp_root
+        self.config_dict["outputdir"] = self.recn_root
+        self.param.trigger("config_dict")
 
     def panel(self, width=250):
         inst_input = pn.widgets.Select.from_param(
@@ -127,15 +169,24 @@ class MetaData(param.Parameterized):
         recnname_input = pn.widgets.TextInput.from_param(
             self.param.recn_name, name="Reconstrution name", placeholder="Enter a name for your reconstruction..."
         )
+        save_json_button = pn.widgets.Button.from_param(self.param.save_config_to_disk, name="Save Config")
         cntl_pn = pn.Column(
             inst_input,
             ipts_input,
             projroot_input,
             recnname_input,
+            save_json_button,
             width=width,
         )
         #
-        return pn.Row(
+        interactive_app = pn.Row(
             cntl_pn,
             self.summary_pane,
         )
+        #
+        app = pn.Column(
+            interactive_app,
+            self.json_editor,
+            sizing_mode="stretch_width",
+        )
+        return app

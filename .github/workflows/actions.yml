@@ -21,6 +21,8 @@ jobs:
           environment-file: conda_environment.yml
       - name: Install testing requirements
         run: mamba env update --name test --file conda_development.yml
+      - name: Install ui test requirements
+        run: playwright install
       - name: Install iMars3d in editable mode
         run: pip install -e .
       - name: Unit test with code coverage
