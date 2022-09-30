@@ -31,8 +31,8 @@
             }
         },
         {
-            "name": "tilt_corection",
-            "function": "imars3d.backend.corrections.tilt.tilt_correction",
+            "name": "determine_tilt_correction",
+            "function": "imars3d.backend.diagnostics.tilt.tilt_correction",
             "inputs": {
                 "ct_series": "globals.ct"
             },
@@ -40,10 +40,10 @@
         },
         {
             "name": "tilt_corection",
-            "function": "imars3d do magic thing",
+            "function": "imars3d.backend.diagnostics.tilt.apply_tilt_correction_correction",
             "inputs": {
                 "ct_series": "globals.ct",
-                "angle": "tilt_corection.tilt_angle"
+                "angle": "determine_tilt_correction.tilt_angle"
             },
             "outputs": ["globals.ct"]
         },

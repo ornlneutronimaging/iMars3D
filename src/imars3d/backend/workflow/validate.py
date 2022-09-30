@@ -1,7 +1,10 @@
+import importlib
+from importlib.util import find_spec
 import json
 import jsonschema
 from pathlib import Path
-from typing import Any, Dict, Union
+import sys
+from typing import Any, Dict, Tuple, Union
 
 FilePath = Union[Path, str]
 
@@ -42,8 +45,19 @@ def _validate_schema(json_obj: Any) -> None:
         raise JSONValidationError("While validation configuration file") from e
 
 
+def _function_parts(func_str: str) -> Tuple[str, str]:
+    mod_str = ".".join(func_str.split(".")[:-1])
+    func_str = func_str.split(".")[-1]
+    return (mod_str, func_str)
+
+
 def _function_exists(func_str: str) -> bool:
-    return func_str.startswith("imars3d")
+    # print('**********', func_str)
+    mod_str, func_str = _function_parts(func_str)
+    # print(mod_str, func_str)
+    # print('mods:', mod_str, mod_str in sys.modules)
+    # print('find_spec:', find_spec(mod_str, func_str))
+    return bool(find_spec(mod_str, func_str))
 
 
 def _validate_tasks(json_obj: Dict) -> None:
@@ -52,6 +66,8 @@ def _validate_tasks(json_obj: Dict) -> None:
         if not func_str:
             # TODO need better exception
             raise JSONValidationError(f'Step {step} specified empty "function"')
+        if "." not in func_str:
+            raise JSONValidationError(f"Function '{func_str}' does not appear to be absolute specification")
         if not _function_exists(func_str):
             raise JSONValidationError(f'Step {step} specified nonexistent function "{func_str}"')
 

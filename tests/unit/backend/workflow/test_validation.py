@@ -77,6 +77,10 @@ def test_string_bad_function():
     with pytest.raises(JSONValidationError):
         validates(json.dumps(json_obj))
 
+    json_obj["tasks"][0]["function"] = "toplevelfunction"
+    with pytest.raises(JSONValidationError):
+        validates(json.dumps(json_obj))
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
