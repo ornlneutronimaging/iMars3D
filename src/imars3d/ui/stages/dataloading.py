@@ -55,7 +55,7 @@ class DataLoader(param.Parameterized):
                 "ob_files": self.openbeam.value,
                 "dc_files": self.darkcurrent.value,
             },
-            "outputs": ["ct", "ob", "dc", "rot_angles"],
+            "outputs": [f"globals.{x}" if x in globals else x for x in ["ct", "ob", "dc", "rot_angles"]],
         }
         self.config_dict["tasks"].append(load_step)
         self.param.trigger("config_dict")
