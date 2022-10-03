@@ -46,21 +46,21 @@ def _validate_schema(json_obj: Any) -> None:
 
 
 def _function_parts(func_str: str) -> Tuple[str, str]:
+    """Convert the function specification into a module and function name"""
     mod_str = ".".join(func_str.split(".")[:-1])
     func_str = func_str.split(".")[-1]
     return (mod_str, func_str)
 
 
 def _function_exists(func_str: str) -> bool:
-    # print('**********', func_str)
+    """Returns True if the function exists"""
     mod_str, func_str = _function_parts(func_str)
-    # print(mod_str, func_str)
-    # print('mods:', mod_str, mod_str in sys.modules)
-    # print('find_spec:', find_spec(mod_str, func_str))
+
     return bool(find_spec(mod_str, func_str))
 
 
-def _validate_tasks(json_obj: Dict) -> None:
+def _validate_tasks_exist(json_obj: Dict) -> None:
+    """Go through the list of tasks and verify that all tasks exist"""
     for step, task in enumerate(json_obj["tasks"]):
         func_str = task["function"].strip()
         if not func_str:
@@ -72,44 +72,37 @@ def _validate_tasks(json_obj: Dict) -> None:
             raise JSONValidationError(f'Step {step} specified nonexistent function "{func_str}"')
 
 
-def validates(json_str: str) -> None:
-    # verify that the string is non-empty
-    if len(json_str.strip()) == 0:
-        raise json.JSONDecodeError("Empty string", json_str, 0)
-    json_obj = json.loads(json_str)
-
-    # validation
-    _validate_schema(json_obj)
-    _validate_tasks(json_obj)
-
-
-def validate(filename: FilePath) -> None:
-    filepath = Path(filename)
-    with open(filepath, "r") as handle:
-        json_obj = json.load(handle)
-
-    # validation
-    _validate_schema(json_obj)
-    _validate_tasks(json_obj)
+def _todict(obj: Union[Dict, Path, str]) -> Dict:
+    """Convert the supplied object into a dict. Raise a TypeError if the object is not a type that has a conversion menthod."""
+    if isinstance(obj, dict):
+        return obj
+    elif isinstance(obj, Path):
+        with open(obj, "r") as handle:
+            return json.load(handle)
+    elif isinstance(obj, str):
+        return json.loads(obj)
+    else:
+        raise TypeError(f"Do not know how to convert type={type(obj)} to dict")
 
 
 class JSONValidationError(RuntimeError):
+    """Custom exception for validation errors independent of what created them"""
+
     pass  # default behavior is good enough
 
 
 class JSONValid:
-    def __init__(self, schema):
-        self._schema = schema
+    """Descriptor class that validates the json object
 
-    def __get__(self, obj, objtype=None):
+    See https://realpython.com/python-descriptors/"""
+
+    def __get__(self, obj, type=None) -> Dict:
         return obj._json
 
-    def __set__(self, obj, json):
-        self._validate(json)
-        obj._json = json
+    def __set__(self, obj, value) -> None:
+        obj._json = _todict(value)
+        self._validate(obj._json)
 
-    def _validate(self, json_str) -> None:
-        r"""check input json against class variable schema"""
-        assert self._schema
-        assert json
-        return True
+    def _validate(self, obj: Dict) -> None:
+        _validate_schema(obj)
+        _validate_tasks_exist(obj)
