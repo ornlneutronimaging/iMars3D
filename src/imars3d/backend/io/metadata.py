@@ -66,7 +66,7 @@ class MetaData(param.Parameterized):
             if self.datatype in ("darkcurrent", "dc"):
                 self.metadata_index = [65026, 65027]
         elif self.suffix.lower() in (".fits", ".fit"):
-            raise NotImplementedError
+            raise ValueError(f'Suffix="{self.suffix}" is not currently supported')
 
     @param.depends("filename", "metadata_index", watch=True, on_init=True)
     def _update_metadata(self):
