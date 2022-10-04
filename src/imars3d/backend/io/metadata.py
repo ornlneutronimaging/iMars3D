@@ -88,7 +88,7 @@ class MetaData(param.Parameterized):
             if isinstance(me, str):
                 is_match = me == te
             elif isinstance(me, float):
-                is_match = (np.isclose(me, te, rtol=self.relative_tolerance))
+                is_match = np.isclose(me, te, rtol=self.relative_tolerance)
             # break early if is_match if false
             if not is_match:
                 break
