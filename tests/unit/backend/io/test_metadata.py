@@ -10,7 +10,7 @@ from imars3d.backend.io.metadata import _extract_metadata_from_tiff
 
 
 @pytest.fixture(scope="module")
-def test_data(tmpdir_factory):
+def data_fixture(tmpdir_factory):
     # create testing tiff images
     data = np.ones((3, 3))
     #
@@ -49,8 +49,8 @@ def test_data(tmpdir_factory):
     return ct, ob, dc, ct_alt, fits
 
 
-def test_metadata(test_data):
-    ct, ob, dc, ct_alt, _ = list(map(str, test_data))
+def test_metadata(data_fixture):
+    ct, ob, dc, ct_alt, _ = list(map(str, data_fixture))
     metadata_ct = MetaData(filename=ct, datatype="ct")
     metadata_ob = MetaData(filename=ob, datatype="ob")
     metadata_dc = MetaData(filename=dc, datatype="dc")
@@ -68,8 +68,8 @@ def test_metadata(test_data):
     assert not metadata_ct_alt.match(other_filename=dc, other_datatype="dc")
 
 
-def test_not_implemented(test_data):
-    ct, ob, dc, ct_alt, fits = list(map(str, test_data))
+def test_not_implemented(data_fixture):
+    ct, ob, dc, ct_alt, fits = list(map(str, data_fixture))
     with pytest.raises(ValueError):
         MetaData(filename=fits, datatype="ct")
     #
@@ -78,8 +78,8 @@ def test_not_implemented(test_data):
         metadata_ct.match(other_filename=fits, other_datatype="ct")
 
 
-def test_extract_metadata_from_tiff(test_data):
-    ct, ob, dc, ct_alt, fits = list(map(str, test_data))
+def test_extract_metadata_from_tiff(data_fixture):
+    ct, ob, dc, ct_alt, fits = list(map(str, data_fixture))
     test_filename = ct
     test_index = [65026, 65027]
     #
