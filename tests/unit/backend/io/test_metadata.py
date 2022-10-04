@@ -2,7 +2,6 @@
 """
 Unit tests for backend metadata auxiliary class.
 """
-import os
 import pytest
 import numpy as np
 import tifffile
@@ -11,7 +10,7 @@ from imars3d.backend.io.metadata import _extract_metadata_from_tiff
 
 
 @pytest.fixture(scope="module")
-def test_data():
+def test_data(tmpdir_factory):
     # create testing tiff images
     data = np.ones((3, 3))
     #
@@ -36,50 +35,52 @@ def test_data():
         (65068, "s", 0, "MotSlitHR.RBV:11.000000", True),
     ]
     # write testing data
-    tifffile.imwrite("test_ct.tiff", data, extratags=ext_tags_ct)
-    tifffile.imwrite("test_ob.tiff", data, extratags=ext_tags_ct)
-    tifffile.imwrite("test_dc.tiff", data, extratags=ext_tags_dc)
-    tifffile.imwrite("test_ct_alt.tiff", data, extratags=ext_tags_ct_alt)
+    ct = tmpdir_factory.mktemp("test_metadata").join("test_ct.tiff")
+    tifffile.imwrite(str(ct), data, extratags=ext_tags_ct)
+    ob = tmpdir_factory.mktemp("test_metadata").join("test_ob.tiff")
+    tifffile.imwrite(str(ob), data, extratags=ext_tags_ct)
+    dc = tmpdir_factory.mktemp("test_metadata").join("test_dc.tiff")
+    tifffile.imwrite(str(dc), data, extratags=ext_tags_dc)
+    ct_alt = tmpdir_factory.mktemp("test_metadata").join("test_ct_alt.tiff")
+    tifffile.imwrite(str(ct_alt), data, extratags=ext_tags_ct_alt)
     # for extension checking
-    tifffile.imwrite("test.fits", data)
-    yield
-    # cleanup
-    os.remove("test_ct.tiff")
-    os.remove("test_ob.tiff")
-    os.remove("test_dc.tiff")
-    os.remove("test_ct_alt.tiff")
-    os.remove("test.fits")
+    fits = tmpdir_factory.mktemp("test_metadata").join("test.fits")
+    tifffile.imwrite(str(fits), data)
+    return ct, ob, dc, ct_alt, fits
 
 
 def test_metadata(test_data):
-    metadata_ct = MetaData(filename="test_ct.tiff", datatype="ct")
-    metadata_ob = MetaData(filename="test_ob.tiff", datatype="ob")
-    metadata_dc = MetaData(filename="test_dc.tiff", datatype="dc")
-    metadata_ct_alt = MetaData(filename="test_ct_alt.tiff", datatype="ct")
+    ct, ob, dc, ct_alt, _ = list(map(str, test_data))
+    metadata_ct = MetaData(filename=ct, datatype="ct")
+    metadata_ob = MetaData(filename=ob, datatype="ob")
+    metadata_dc = MetaData(filename=dc, datatype="dc")
+    metadata_ct_alt = MetaData(filename=ct_alt, datatype="ct")
     # ct and ob, dc should match
     assert metadata_ct == metadata_ob
     assert metadata_ct == metadata_dc
-    assert metadata_ct.match(other_filename="test_ob.tiff", other_datatype="ob")
-    assert metadata_ct.match(other_filename="test_dc.tiff", other_datatype="dc")
+    assert metadata_ct.match(other_filename=ob, other_datatype="ob")
+    assert metadata_ct.match(other_filename=dc, other_datatype="dc")
     # ct_alt and ob, dc should not match
     assert metadata_ct != metadata_ct_alt
     assert metadata_ct_alt != metadata_ob
     assert metadata_ct_alt != metadata_dc
-    assert not metadata_ct_alt.match(other_filename="test_ob.tiff", other_datatype="ob")
-    assert not metadata_ct_alt.match(other_filename="test_dc.tiff", other_datatype="dc")
+    assert not metadata_ct_alt.match(other_filename=ob, other_datatype="ob")
+    assert not metadata_ct_alt.match(other_filename=dc, other_datatype="dc")
 
 
 def test_not_implemented(test_data):
-    with pytest.raises(NotImplementedError):
-        MetaData(filename="test.fits", datatype="ct")
+    ct, ob, dc, ct_alt, fits = list(map(str, test_data))
+    with pytest.raises(ValueError):
+        MetaData(filename=fits, datatype="ct")
     #
-    metadata_ct = MetaData(filename="test_ct.tiff", datatype="ct")
-    with pytest.raises(NotImplementedError):
-        metadata_ct.match(other_filename="test.fits", other_datatype="ct")
+    metadata_ct = MetaData(filename=ct, datatype="ct")
+    with pytest.raises(ValueError):
+        metadata_ct.match(other_filename=fits, other_datatype="ct")
 
 
 def test_extract_metadata_from_tiff(test_data):
-    test_filename = "test_ct.tiff"
+    ct, ob, dc, ct_alt, fits = list(map(str, test_data))
+    test_filename = ct
     test_index = [65026, 65027]
     #
     ref = {"ManufacturerStr": "Test", "ExposureTime": 70.0}

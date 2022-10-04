@@ -10,7 +10,6 @@ from pathlib import Path
 
 # setup module level logger
 logger = param.get_logger(__name__)
-logger.name = __name__
 
 
 class MetaData(param.Parameterized):
@@ -66,6 +65,7 @@ class MetaData(param.Parameterized):
             if self.datatype in ("darkcurrent", "dc"):
                 self.metadata_index = [65026, 65027]
         elif self.suffix.lower() in (".fits", ".fit"):
+            logger.error("FITS file is not supported yet.")
             raise ValueError(f'Suffix="{self.suffix}" is not currently supported')
 
     @param.depends("filename", "metadata_index", watch=True, on_init=True)
@@ -76,8 +76,6 @@ class MetaData(param.Parameterized):
             raise NotImplementedError
 
     def __eq__(self, other):
-        if not isinstance(other, MetaData):
-            raise NotImplementedError
         # find the most common keys
         common_keys = [k for k in self.metadata.keys() if k in other.metadata.keys()]
         # check all entries
