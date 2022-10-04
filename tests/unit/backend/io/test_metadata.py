@@ -40,12 +40,15 @@ def test_data():
     tifffile.imwrite("test_ob.tiff", data, extratags=ext_tags_ct)
     tifffile.imwrite("test_dc.tiff", data, extratags=ext_tags_dc)
     tifffile.imwrite("test_ct_alt.tiff", data, extratags=ext_tags_ct_alt)
+    # for extension checking
+    tifffile.imwrite("test.fits", data)
     yield
     # cleanup
     os.remove("test_ct.tiff")
     os.remove("test_ob.tiff")
     os.remove("test_dc.tiff")
     os.remove("test_ct_alt.tiff")
+    os.remove("test.fits")
 
 
 def test_metadata(test_data):
@@ -64,6 +67,15 @@ def test_metadata(test_data):
     assert metadata_ct_alt != metadata_dc
     assert not metadata_ct_alt.match(other_filename="test_ob.tiff", other_datatype="ob")
     assert not metadata_ct_alt.match(other_filename="test_dc.tiff", other_datatype="dc")
+
+
+def test_not_implemented(test_data):
+    with pytest.raises(NotImplementedError):
+        MetaData(filename="test.fits", datatype="ct")
+    #
+    metadata_ct = MetaData(filename="test_ct.tiff", datatype="ct")
+    with pytest.raises(NotImplementedError):
+        metadata_ct.match(other_filename="test.fits", other_datatype="ct")
 
 
 def test_extract_metadata_from_tiff(test_data):
