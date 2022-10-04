@@ -86,7 +86,7 @@ class MetaData(param.Parameterized):
             me = self.metadata[k]
             te = other.metadata[k]
             if isinstance(me, str):
-                is_match = (me == te) and is_match
+                is_match = (me == te)
             elif isinstance(me, float):
                 is_match = (np.isclose(me, te, rtol=self.relative_tolerance)) and is_match
             # break early if is_match if false
