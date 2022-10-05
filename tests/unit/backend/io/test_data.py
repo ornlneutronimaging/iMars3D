@@ -21,32 +21,30 @@ from imars3d.backend.io.data import _extract_rotation_angles
 
 
 @pytest.fixture(scope="module")
-def test_data():
-    # create some test data
+def data_fixture(tmpdir_factory):
+    # dummy tiff image data
     data = np.ones((3, 3))
-    # -- good tiff name, no need for meatdata
-    tifffile.imwrite("test.tiff", data)
-    # -- good tiff with good name, no metadata
-    tifffile.imwrite("20191030_expname_0080_010_020_1960.tiff", data)
-    # -- bad tiff name, but with metadata
+    #
+    tmpdirname = "test_data"
+    # TIFF files
+    # -- valid tiff with generic name, no metadata
+    generic_tiff = tmpdir_factory.mktemp(tmpdirname).join("generic.tiff")
+    tifffile.imwrite(str(generic_tiff), data)
+    # -- valid tiff with good name for angle extraction, no metadata
+    good_tiff = tmpdir_factory.mktemp(tmpdirname).join("20191030_expname_0080_010_020_1960.tiff")
+    tifffile.imwrite(str(good_tiff), data)
+    # -- valid tiff with generic name, but has metadata
     ex_tags = [
         (65039, "s", 0, "RotationActual:0.1", True),
     ]
-    for i in range(3):
-        tifffile.imwrite(
-            f"test_with_metadata_{i}.tiff",
-            data,
-            extratags=ex_tags,
-        )
-
-    # synthetic fits data
+    metadata_tiff = tmpdir_factory.mktemp(tmpdirname).join("metadata.tiff")
+    tifffile.imwrite(str(metadata_tiff), data, extratags=ex_tags)
+    # Fits files
+    generic_fits = tmpdir_factory.mktemp(tmpdirname).join("generic.fits")
     hdu = fits.PrimaryHDU(data)
-    hdu.writeto("test.fits")
-    yield
-
-    # remove the test data
-    list(map(os.remove, map(str, glob.glob("*.tiff"))))
-    list(map(os.remove, map(str, glob.glob("*.fits"))))
+    hdu.writeto(str(generic_fits))
+    # return the tmp files
+    return generic_tiff, good_tiff, metadata_tiff, generic_fits
 
 
 @mock.patch("imars3d.backend.io.data._extract_rotation_angles", return_value=4)
@@ -88,18 +86,19 @@ def test_forgiving_reader():
     assert _forgiving_reader(filename="test", reader=badReader) is None
 
 
-def test_load_images(test_data):
+def test_load_images(data_fixture):
+    generic_tiff, good_tiff, metadata_tiff, generic_fits = list(map(str, data_fixture))
     func = partial(_load_images, desc="test", max_workers=2)
     # error case: unsupported file format
     incorrect_filelist = ["file1.bad", "file2.bad"]
     with pytest.raises(ValueError):
         rst = func(filelist=incorrect_filelist)
     # case1: tiff
-    tiff_filelist = ["test.tiff", "test.tiff"]
+    tiff_filelist = [generic_tiff, good_tiff, metadata_tiff]
     rst = func(filelist=tiff_filelist)
-    assert rst.shape == (2, 3, 3)
+    assert rst.shape == (3, 3, 3)
     # case2: fits
-    fits_filelist = ["test.fits", "test.fits"]
+    fits_filelist = [generic_fits, generic_fits]
     rst = func(filelist=fits_filelist)
     assert rst.shape == (2, 3, 3)
 
@@ -120,7 +119,7 @@ def test_load_by_file_list(_load_images):
     assert rst == ("a", "a", None)
 
 
-def test_get_filelist_by_dir(test_data):
+def test_get_filelist_by_dir(data_fixture):
     # error_1: ct_dir does not exists
     with pytest.raises(ValueError):
         _get_filelist_by_dir(ct_dir="dummy", ob_dir="/tmp", dc_dir="/tmp")
@@ -155,7 +154,8 @@ def test_get_filelist_by_dir(test_data):
     # TODO: once the FileMetaData class is ready, we can start
 
 
-def test_extract_rotation_angles(test_data):
+def test_extract_rotation_angles(data_fixture):
+    generic_tiff, good_tiff, metadata_tiff, generic_fits = list(map(str, data_fixture))
     # error_1: empty list
     with pytest.raises(ValueError):
         _extract_rotation_angles([])
@@ -163,13 +163,11 @@ def test_extract_rotation_angles(test_data):
     with pytest.raises(ValueError):
         _extract_rotation_angles(["dummy.dummier", "dummy.dummier"])
     # case_1: extract from filename
-    fn = "20191030_expname_0080_010_020_1960.tiff"
-    rst = _extract_rotation_angles([fn, fn])
+    rst = _extract_rotation_angles([good_tiff, good_tiff])
     ref = np.array([10.02, 10.02])
     np.testing.assert_array_almost_equal(rst, ref)
     # case_2: extract from metadata
-    fnl = [f"test_with_metadata_{i}.tiff" for i in range(3)]
-    rst = _extract_rotation_angles(fnl)
+    rst = _extract_rotation_angles([metadata_tiff] * 3)
     ref = np.array([0.1, 0.1, 0.1])
     np.testing.assert_array_almost_equal(rst, ref)
 
