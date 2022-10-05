@@ -95,7 +95,6 @@ def _todict(obj: Union[Dict, Path, str]) -> Dict:
 
 class JSONValidationError(RuntimeError):
     """Custom exception for validation errors independent of what created them"""
-
     pass  # default behavior is good enough
 
 
