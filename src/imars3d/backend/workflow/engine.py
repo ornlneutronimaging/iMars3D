@@ -28,20 +28,22 @@ def WorkflowEngine(config: Union[str, dict], schema: str = validate.SCHEMA) -> "
     -------
         Instance of class WorkflowEngineWithSchema
     """
+
     class WorkflowEngineWithSchema:
         config = validate.JSONValid(schema=schema)
         # parameters that can potentially be shared by more than one task
         # REVIEW could be added in the schema instead of hardcode it here
-        global_params = {"instrument",
-                         "ipts",
-                         "workingdir",
-                         "outputdir",
-                         "ct",  # array of radiograph intensities
-                         "ob",  # array of open bean intensities
-                         "dc",  # array of dark current intensities
-                         "tilt_angle",
-                         "rot_center"
-                         }
+        global_params = {
+            "instrument",
+            "ipts",
+            "workingdir",
+            "outputdir",
+            "ct",  # array of radiograph intensities
+            "ob",  # array of open bean intensities
+            "dc",  # array of dark current intensities
+            "tilt_angle",
+            "rot_center",
+        }
 
         @staticmethod
         def _init_registry() -> dict:
@@ -62,7 +64,9 @@ def WorkflowEngine(config: Union[str, dict], schema: str = validate.SCHEMA) -> "
             return getattr(module, function_name)
 
         @staticmethod
-        def _instrospect_task_function(function_str: str, ) -> namedtuple:
+        def _instrospect_task_function(
+            function_str: str,
+        ) -> namedtuple:
             r"""Obtain information from a task function
 
             Parameters
@@ -79,9 +83,8 @@ def WorkflowEngine(config: Union[str, dict], schema: str = validate.SCHEMA) -> "
                     the names of the function arguments, which are the names of param.Parameter objects
             """
             f = WorkflowEngineWithSchema._load_function(function_str)
-            outputs = dict(function=f,
-                           param_names=set(f.param.params().keys()))
-            return namedtuple('TaskFuncionInstrospection', outputs.keys())(**outputs)
+            outputs = dict(function=f, param_names=set(f.param.params().keys()))
+            return namedtuple("TaskFuncionInstrospection", outputs.keys())(**outputs)
 
         def __init__(self) -> None:
             r"""
@@ -112,7 +115,7 @@ def WorkflowEngine(config: Union[str, dict], schema: str = validate.SCHEMA) -> "
 
         def _resolve_inputs(self, inputs: dict) -> dict:
             r"""Some values in dict `inputs` may be keys of the registry.
-             Substitute with values of the registry if true.
+            Substitute with values of the registry if true.
             """
             resolved = inputs
             for key, possible_reg_key in inputs.items():
@@ -151,8 +154,10 @@ def WorkflowEngine(config: Union[str, dict], schema: str = validate.SCHEMA) -> "
                     new_globals = set([x for x in task["outputs"] if isinstance(x, str)])
                     unaccounted = new_globals - self.global_params  # these parameters should be globals
                     if unaccounted:
-                        raise WorkflowEngineError(f"Output(s) {', '.join(unaccounted)} of task {task['name']} "
-                                                  "should be global but aren't!")
+                        raise WorkflowEngineError(
+                            f"Output(s) {', '.join(unaccounted)} of task {task['name']} "
+                            "should be global but aren't!"
+                        )
                     current_globals.update(new_globals)
 
         def run(self) -> None:

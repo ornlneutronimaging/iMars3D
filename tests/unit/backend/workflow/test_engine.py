@@ -58,7 +58,6 @@ def config():
 
 
 class TestWorkflowEngine:
-
     def test_dryrun(self, config):
         engine = WorkflowEngine(config)
         engine._dryrun()
@@ -71,9 +70,7 @@ class TestWorkflowEngine:
             engine._dryrun()
 
         # Error: task for which implicit ct has not been computed yet
-        task0 = {"name": "task0",
-                 "function": f"{__name__}.save",
-                 "outputs": ["ct"]}
+        task0 = {"name": "task0", "function": f"{__name__}.save", "outputs": ["ct"]}
         config_bad = deepcopy(config)
         config_bad["tasks"].insert(0, task0)
         engine = WorkflowEngine(config_bad)
