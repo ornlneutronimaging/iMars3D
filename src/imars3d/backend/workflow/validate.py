@@ -8,33 +8,24 @@ from typing import Any, Dict, Tuple, Union
 
 FilePath = Union[Path, str]
 
-# JSON schema. Cut be here or in its own file
 # http://json-schema.org/learn/getting-started-step-by-step.html
-SCHEMA = {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "type": "object",
-    "properties": {
-        "instrument": {"type": "string"},
-        "ipts": {"type": "string"},
-        "name": {"type": "string"},
-        "workingdir": {"type": "string"},
-        "outputdir": {"type": "string"},
-        "tasks": {
-            "type": "array",
-            "minItems": 1,
-            "items": {
-                "properties": {
-                    "name": {"type": "string"},
-                    "function": {"type": "string"},
-                    "inputs": {"type": "object"},
-                    "outputs": {"type": "array"},
-                },
-                "required": ["name", "function", "inputs"],
-            },
-        },
-    },
-    "required": ["instrument", "ipts", "name", "workingdir", "outputdir", "tasks"],
-}
+SCHEMA_FILE = Path(__file__).parent / "schema.json"
+
+
+def _load_schema():
+    try:
+        with open(SCHEMA_FILE, "r") as handle:
+            schema = json.load(handle)
+    except FileNotFoundError as e:
+        raise RuntimeError(f"Failed to load schema from {SCHEMA_FILE}") from e
+
+    if not schema:
+        raise RuntimeError(f"Failed to load schema from {SCHEMA_FILE}")
+    return schema
+
+
+SCHEMA = _load_schema()
+del _load_schema
 
 
 def _validate_schema(json_obj: Any) -> None:
