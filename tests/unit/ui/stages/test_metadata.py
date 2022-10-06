@@ -82,6 +82,7 @@ def test_metadata_page(page: Page, port: int, test_dir: str) -> None:
     time.sleep(1)
 
     # verify that the config file is created
+    # NOTE: Github action builder cannot find this file, but local test passed.
     # config_file = Path(test_dir) / Path("shared/processed_data/unittest.json")
     # assert config_file.exists()
 
