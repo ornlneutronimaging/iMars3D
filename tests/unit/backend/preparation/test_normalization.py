@@ -94,7 +94,7 @@ def test_normalization_standard():
     """standard normalization routine with reasonable dark and flat."""
     raw, darks, flats, proj = prepare_synthetic_data()
     # process with normalization
-    proj_imars3d = normalization(raw, flats, darks)
+    proj_imars3d = normalization(arrays=raw, flats=flats, darks=darks)
     # compare
     diff = np.absolute(proj_imars3d - proj).sum() / np.prod(proj.shape)
     assert diff < 0.01
@@ -110,7 +110,7 @@ def test_normalization_bright_dark():
         ix, iy = np.random.randint(low=0, high=darks.shape[1], size=2)
         darks[i, ix, iy] += flats[i, ix, iy]
     # process with normalization
-    proj_imars3d = normalization(raw, flats, darks)
+    proj_imars3d = normalization(arrays=raw, flats=flats, darks=darks)
     # compare
     diff = np.absolute(proj_imars3d - proj).sum() / np.prod(proj.shape)
     assert diff < 0.01
