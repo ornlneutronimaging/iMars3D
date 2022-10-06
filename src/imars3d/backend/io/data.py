@@ -13,6 +13,7 @@ from pathlib import Path
 from fnmatch import fnmatchcase
 from typing import Optional, Tuple, List, Callable
 from tqdm.contrib.concurrent import process_map
+from imars3d.backend.io.metadata import MetaData
 
 
 # setup module level logger
@@ -358,10 +359,26 @@ def _get_filelist_by_dir(
 
     # gather the ct_files
     ct_files = ct_dir.glob(ct_fnmatch)
+    # try to use the first ct file as a reference
+    # NOTE: do not use the generator above to avoid off by one error due to
+    #       consuming the generator
+    try:
+        ct_ref = next(ct_dir.glob(ct_fnmatch))
+    except StopIteration:
+        logger.warning("ct_files is [].")
+        ct_ref = None
+    metadata_ref = None if ct_ref is None else MetaData(filename=str(ct_ref), datatype="ct")
+    ext_ref = None if ct_ref is None else ct_ref.suffix
 
     # gather the ob_files
     if ob_fnmatch is None:
-        raise NotImplementedError("ob_fnmatch is None is not implemented yet.")
+        if ct_ref is None:
+            logger.warning("ob_files is [].")
+            ob_files = []
+        else:
+            ob_files = ob_dir.glob(f"*{ext_ref}")
+            # remove files that do not match the metadata of ct_ref
+            ob_files = [obf for obf in ob_files if metadata_ref.match(other_filename=str(obf), other_datatype="ob")]
     else:
         ob_files = ob_dir.glob(ob_fnmatch)
 
@@ -370,7 +387,15 @@ def _get_filelist_by_dir(
         dc_files = []
     else:
         if dc_fnmatch is None:
-            raise NotImplementedError("dc_fnmatch is None is not implemented yet.")
+            if ct_ref is None:
+                logger.warning("dc_files is [].")
+                dc_files = []
+            else:
+                dc_files = dc_dir.glob(f"*{ext_ref}")
+                # remove files that do not match the metadata of ct_ref
+                dc_files = [
+                    dcf for dcf in dc_files if metadata_ref.match(other_filename=str(dcf), other_datatype="dc")
+                ]
         else:
             dc_files = dc_dir.glob(dc_fnmatch)
 

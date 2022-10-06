@@ -231,6 +231,14 @@ def test_get_filelist_by_dir(tiff_with_metadata):
         ob_fnmatch=None,
     )
     assert rst == ([ct_alt], [], [])
+    # case_5: did not find any match for ct
+    rst = _get_filelist_by_dir(
+        ct_dir=ct_dir,
+        ob_dir=ob_dir,
+        ct_fnmatch="*.not_exist",
+        ob_fnmatch=None,
+    )
+    assert rst == ([], [], [])
 
 
 if __name__ == "__main__":
