@@ -8,26 +8,34 @@ from param import Parameter, ParameterizedFunction
 # standard library imports
 from copy import deepcopy
 import json
-from pathlib import Path
 import pytest
 
 
 class load_data(ParameterizedFunction):
-    r"""mimic loading a set of radiographs into a numpy array"""
+    r"""mock loading a set of radiographs into a numpy array"""
     ct_files = Parameter()
     ct_dir = Parameter()
 
-    def __call__(self):
-        return np.arange(len(self.ct_files))
+    def __call__(self, **params):
+        return [np.arange(len(params["ct_files"])), ]
 
 
 class save(ParameterizedFunction):
-    r"""mimic saving a set or radiographs to some directory"""
+    r"""mock saving a set or radiographs to some directory"""
     ct = Parameter()
-    outputdir = Parameter()
+    workingdir = Parameter()
 
-    def __call__(self):
-        return self.ct, self.outputdir / "out.dat"
+    def __call__(self, **params):
+        return None
+
+
+class reconstruction(ParameterizedFunction):
+    r"""mock the reconstruction of the radiographs"""
+    ct = Parameter()
+    rot_center = Parameter()
+
+    def __call__(self, **params):
+        return [params["ct"], ]
 
 
 @pytest.fixture(scope="module")
@@ -43,13 +51,20 @@ def config():
             "name": "task1",
             "function": "_MODULE_PATH_.load_data",
             "inputs": {
-                "ct_files": []
+                "ct_files": ["ct1", "ct2", "ct3"]
             },
             "outputs": ["ct"]
         },
         {
             "name": "task2",
-            "function": "_MODULE_PATH_.save",
+            "function": "_MODULE_PATH_.save"
+        },
+        {
+            "name": "task3",
+            "function": "_MODULE_PATH_.reconstruction",
+            "inputs": {
+                "rot_center": "0.0"
+            },
             "outputs": ["ct"]
         }
     ]
@@ -64,7 +79,7 @@ class TestWorkflowEngine:
 
         # Error: adding a templated output not in globals
         config_bad = deepcopy(config)
-        config_bad["tasks"][1]["outputs"].append("path")
+        config_bad["tasks"][1].update({"outputs": ["path"]})
         engine = WorkflowEngine(config_bad)
         with pytest.raises(WorkflowEngineError, match="path of task task2 should be global"):
             engine._dryrun()
@@ -77,18 +92,16 @@ class TestWorkflowEngine:
         with pytest.raises(WorkflowEngineError, match="ct for task task0 are missing"):
             engine._dryrun()
 
-        # Error: task for which templated db has not been computed yet
+        # Error: task for which templated rot_center has not been computed yet
         config_bad = deepcopy(config)
-        config_bad["tasks"][1]["inputs"] = {"open_beam": "ob"}
+        config_bad["tasks"][2].pop("inputs")
         engine = WorkflowEngine(config_bad)
-        with pytest.raises(WorkflowEngineError, match="ob for task task2 are missing"):
+        with pytest.raises(WorkflowEngineError, match="rot_center for task task3 are missing"):
             engine._dryrun()
 
-    r"""
     def test_run(self, config):
         engine = WorkflowEngine(config)
         engine.run()
-    """
 
 
 if __name__ == "__main__":
