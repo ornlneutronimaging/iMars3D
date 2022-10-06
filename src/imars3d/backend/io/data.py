@@ -72,7 +72,7 @@ class load_data(param.ParameterizedFunction):
         The fnmatch selectors are applicable in both signature, which help to down-select
         files if needed. Default is set to "*", which selects everything.
         Also, if ob_fnmatch and dc_fnmatch are set to "None" in the second signature call, the
-        data loader will attempt to read the metadata embedded in the ct file to find obs
+        data loader will attempt to read the metadata embedded in the first ct file to find obs
         and dcs with similar metadata.
 
         Currently, we are using a forgiving reader to load the image where a corrupted file
