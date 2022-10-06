@@ -63,10 +63,10 @@ def WorkflowEngine(config: Union[str, dict], schema: str = validate.SCHEMA) -> "
             if function_outputs is None:
                 return
             tests = {
-                "Return value must be an iterable ": hasattr(function_outputs, '__iter__'),
-                "Return value cannot be a string": not isinstance(function_outputs, str)
+                "Return value must be an iterable ": hasattr(function_outputs, "__iter__"),
+                "Return value cannot be a string": not isinstance(function_outputs, str),
             }
-            errors = ' and '.join([k for k, v in tests.items() if v is False])
+            errors = " and ".join([k for k, v in tests.items() if v is False])
             if errors:
                 raise WorkflowEngineError(errors)
 
@@ -129,8 +129,7 @@ def WorkflowEngine(config: Union[str, dict], schema: str = validate.SCHEMA) -> "
                     raise WorkflowEngineError(e)
                 self._registry.update(dict(zip(task["outputs"], function_outputs)))
 
-        def _resolve_inputs(self, inputs: dict,
-                            globals_required: set) -> dict:
+        def _resolve_inputs(self, inputs: dict, globals_required: set) -> dict:
             r"""Populate the input parameters of the parameterized function with whatever global parameters
             it may require and that are missing in the task entry of the JSON configuration file.
 

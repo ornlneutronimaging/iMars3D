@@ -17,7 +17,9 @@ class load_data(ParameterizedFunction):
     ct_dir = Parameter()
 
     def __call__(self, **params):
-        return [np.arange(len(params["ct_files"])), ]
+        return [
+            np.arange(len(params["ct_files"])),
+        ]
 
 
 class save(ParameterizedFunction):
@@ -35,7 +37,9 @@ class reconstruction(ParameterizedFunction):
     rot_center = Parameter()
 
     def __call__(self, **params):
-        return [params["ct"], ]
+        return [
+            params["ct"],
+        ]
 
 
 @pytest.fixture(scope="module")
