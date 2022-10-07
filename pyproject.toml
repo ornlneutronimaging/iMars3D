@@ -19,3 +19,8 @@ distance-dirty = "{next_version}.dev{distance}+d{build_date:%Y%m%d%H%M}"
 
 [tool.versioningit.write]
 file = "src/imars3d/_version.py"
+
+[tool.pytest.ini_options]
+pythonpath = [
+  ".", "src"
+]
