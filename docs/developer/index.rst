@@ -6,7 +6,8 @@ Development Guide
 
    overview
    environment
-   multiprocessing.rst
+   paramterizedFunction
+   multiprocessing
    ui_developmentGuide
    workflow
    ui_test
