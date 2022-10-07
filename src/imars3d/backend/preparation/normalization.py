@@ -10,6 +10,26 @@ logger = param.get_logger(__name__)
 logger.name = __name__
 
 class normalization(param.ParameterizedFunction):
+    """
+    Normalize the input array(s) by subtracting the dark field and dividing by the adjusted flat field.
+
+    Parameters
+    ----------
+    arrays:
+        3D array of images, the first dimension is the rotation angle omega.
+    flats:
+        3D array of flat field images (aka flat field, open beam), axis=0 is the image number axis.
+    darks:
+        3D array of dark field images, axis=0 is the image number axis.
+    cut_off:
+        Permitted maximum value for the normalized data, originated from tomopy, negative values means no cutoff.
+    max_workers:
+        number of cores to use for parallel processing, default is -1, which means using all available cores.
+
+    Returns
+    -------
+        normalized 3D array of images, the first dimension is the rotation angle omega.
+    """
     arrays = param.Array(doc="3D array of images, the first dimension is the rotation angle omega.")
     flats = param.Array(doc="3D array of flat field images (aka flat field, open beam), axis=0 is the image number axis.")
     darks = param.Array(doc="3D array of dark field images, axis=0 is the image number axis.")
@@ -25,26 +45,6 @@ class normalization(param.ParameterizedFunction):
 
 
     def __call__(self, **params):
-        """
-        Normalize the input array(s) by subtracting the dark field and dividing by the adjusted flat field.
-
-        Parameters
-        ----------
-        arrays:
-            3D array of images, the first dimension is the rotation angle omega.
-        flats:
-            3D array of flat field images (aka flat field, open beam), axis=0 is the image number axis.
-        darks:
-            3D array of dark field images, axis=0 is the image number axis.
-        cut_off:
-            Permitted maximum value for the normalized data, originated from tomopy, negative values means no cutoff.
-        max_workers:
-            number of cores to use for parallel processing, default is -1, which means using all available cores.
-
-        Returns
-        -------
-            normalized 3D array of images, the first dimension is the rotation angle omega.
-        """
         logger.info(f"Executing Filter: Normalization")
         # type*bounds check via Parameter
         _ = self.instance(**params)
