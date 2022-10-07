@@ -9,6 +9,7 @@ import tomopy
 logger = param.get_logger(__name__)
 logger.name = __name__
 
+
 class normalization(param.ParameterizedFunction):
     """
     Normalize the input array(s) by subtracting the dark field and dividing by the adjusted flat field.
@@ -30,8 +31,11 @@ class normalization(param.ParameterizedFunction):
     -------
         normalized 3D array of images, the first dimension is the rotation angle omega.
     """
+
     arrays = param.Array(doc="3D array of images, the first dimension is the rotation angle omega.")
-    flats = param.Array(doc="3D array of flat field images (aka flat field, open beam), axis=0 is the image number axis.")
+    flats = param.Array(
+        doc="3D array of flat field images (aka flat field, open beam), axis=0 is the image number axis."
+    )
     darks = param.Array(doc="3D array of dark field images, axis=0 is the image number axis.")
     cut_off = param.Number(
         default=-1.0,
@@ -43,7 +47,6 @@ class normalization(param.ParameterizedFunction):
         doc="Maximum number of processes allowed during loading",
     )
 
-
     def __call__(self, **params):
         logger.info(f"Executing Filter: Normalization")
         # type*bounds check via Parameter
@@ -52,7 +55,7 @@ class normalization(param.ParameterizedFunction):
         params = param.ParamOverrides(self, params)
         # import pdb; pdb.set_trace()
         # type validation is done, now replacing max_worker with an actual integer
-        self.max_workers = multiprocessing.cpu_count() - 2  if params.max_workers <= 0 else params.max_workers
+        self.max_workers = multiprocessing.cpu_count() - 2 if params.max_workers <= 0 else params.max_workers
         logger.debug(f"max_worker={self.max_workers}")
 
         # parse input (mostly for Tomopy)
@@ -66,7 +69,9 @@ class normalization(param.ParameterizedFunction):
         # For pixels where dark > flat, tomopy replace the value with 1e-6 on-the-fly
         # see https://github.com/tomopy/tomopy/blob/master/source/tomopy/prep/normalize.py#L135
         #
-        arrays_normalized = tomopy.normalize(params.arrays, self.flats, self.darks, cutoff=tomopy_cut_off, ncore=self.max_workers)
+        arrays_normalized = tomopy.normalize(
+            params.arrays, self.flats, self.darks, cutoff=tomopy_cut_off, ncore=self.max_workers
+        )
         # return
         logger.info(f"FINISHED Executing Filter: Normalization")
 
