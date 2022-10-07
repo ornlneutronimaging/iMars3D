@@ -3,6 +3,9 @@
   "title": "Schema for coordinating processing in imars3d",
   "type": "object",
   "properties": {
+    "facility": {
+      "type": "string"
+    },
     "instrument": {
       "type": "string"
     },
@@ -40,5 +43,5 @@
       }
     }
   },
-  "required": ["instrument", "ipts", "name", "workingdir", "outputdir", "tasks"]
+    "required": ["facility", "instrument", "ipts", "name", "workingdir", "outputdir", "tasks"]
 }

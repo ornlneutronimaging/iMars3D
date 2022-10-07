@@ -28,12 +28,31 @@ SCHEMA = _load_schema()
 del _load_schema
 
 
-def _validate_schema(json_obj: Any) -> None:
+def _validate_schema(json_obj: Dict) -> None:
     """Validate the data against the schema for jobs"""
     try:
         jsonschema.validate(json_obj, schema=SCHEMA)
     except jsonschema.ValidationError as e:
         raise JSONValidationError("While validation configuration file") from e
+
+
+def _validate_instrument(facility, instrument, allowed_instr) -> None:
+    if instrument not in allowed_instr:
+        raise JSONValidationError(f"Instrument {instrument} is in list of allowed for {facility}: {allowed_instr}")
+
+
+def _validate_facility_and_instrument(json_obj: Dict) -> None:
+    FACILITIES = ("HFIR", "SNS")
+
+    if json_obj["facility"] not in FACILITIES:
+        raise JSONValidationError(
+            f"Facility {json_obj['facility']} is in list of allowed facilities: " + ", ".join(FACILITIES)
+        )
+
+    if json_obj["facility"] == "SNS":
+        _validate_instrument("SNS", json_obj["instrument"], ["SNAP"])
+    if json_obj["facility"] == "HFIR":
+        _validate_instrument("HFIR", json_obj["instrument"], ["CG1D"])
 
 
 def _function_parts(func_str: str) -> Tuple[str, str]:
@@ -96,4 +115,5 @@ class JSONValid:
 
     def _validate(self, obj: Dict) -> None:
         _validate_schema(obj)
+        _validate_facility_and_instrument(obj)
         _validate_tasks_exist(obj)

@@ -64,13 +64,25 @@ def test_string_good():
     doc = load_file(GOOD_FILE)
     obj = MockContainer(doc)
     # verify that the instrument is as expected
-    assert obj._json["instrument"] == "cg1d"
+    assert obj._json["instrument"] == "CG1D"
 
 
 def test_string_missing_tasks():
     doc = load_file(GOOD_FILE)
     json_obj = json.loads(doc)
     del json_obj["tasks"]
+    with pytest.raises(JSONValidationError):
+        MockContainer(json.dumps(json_obj))
+
+
+@pytest.mark.parametrize(
+    "facility,instrument", [("hfir", "CG1D"), ("hfir", "CG1D"), ("HFIR", "SNAP"), ("HFIR", "junk"), ("SNS", "junk")]
+)
+def test_bad_instrument(facility, instrument):
+    doc = load_file(GOOD_FILE)
+    json_obj = json.loads(doc)
+    json_obj["facility"] = facility
+    json_obj["instrument"] = instrument
     with pytest.raises(JSONValidationError):
         MockContainer(json.dumps(json_obj))
 

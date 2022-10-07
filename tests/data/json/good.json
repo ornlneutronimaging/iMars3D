@@ -1,5 +1,6 @@
 {
-    "instrument": "cg1d",
+    "facility": "HFIR",
+    "instrument": "CG1D",
     "ipts": "IPTS-1234",
     "name": "name for reconstruced ct scans",
     "workingdir": "/path/to/dir",
