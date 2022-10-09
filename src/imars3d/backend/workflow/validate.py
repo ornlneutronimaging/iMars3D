@@ -28,10 +28,10 @@ SCHEMA = _load_schema()
 del _load_schema
 
 
-def _validate_schema(json_obj: Dict) -> None:
+def _validate_schema(json_obj: Dict, schema: Dict = SCHEMA) -> None:
     """Validate the data against the schema for jobs"""
     try:
-        jsonschema.validate(json_obj, schema=SCHEMA)
+        jsonschema.validate(json_obj, schema=schema)
     except jsonschema.ValidationError as e:
         raise JSONValidationError("While validation configuration file") from e
 
@@ -106,6 +106,9 @@ class JSONValid:
 
     See https://realpython.com/python-descriptors/"""
 
+    def __init__(self, schema):
+        self._schema = schema
+
     def __get__(self, obj, type=None) -> Dict:
         return obj._json
 
@@ -114,6 +117,6 @@ class JSONValid:
         self._validate(obj._json)
 
     def _validate(self, obj: Dict) -> None:
-        _validate_schema(obj)
+        _validate_schema(obj, schema=self._schema)
         _validate_facility_and_instrument(obj)
         _validate_tasks_exist(obj)
