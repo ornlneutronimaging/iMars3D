@@ -50,7 +50,7 @@ def _validate_facility_and_instrument(json_obj: Dict) -> None:
             f"Facility {facility} is missing in the list of allowed facilities: " + ", ".join(FACILITIES)
         )
 
-    validate_instrument(facility, json_obj["instrument"], FACILITIES[facility])
+    _validate_instrument(facility, json_obj["instrument"], FACILITIES[facility])
 
 
 def _function_parts(func_str: str) -> Tuple[str, str]:
