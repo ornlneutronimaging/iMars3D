@@ -76,7 +76,7 @@ def test_string_missing_tasks():
 
 
 @pytest.mark.parametrize(
-    "facility,instrument", [("hfir", "CG1D"), ("hfir", "CG1D"), ("HFIR", "SNAP"), ("HFIR", "junk"), ("SNS", "junk")]
+    "facility,instrument", [("hfir", "CG1D"), ("HFIR", "cg1d"), ("HFIR", "SNAP"), ("HFIR", "junk"), ("SNS", "junk")]
 )
 def test_bad_instrument(facility, instrument):
     doc = load_file(GOOD_FILE)

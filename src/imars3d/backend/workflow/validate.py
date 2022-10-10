@@ -42,18 +42,16 @@ def _validate_instrument(facility, instrument, allowed_instr) -> None:
 
 
 def _validate_facility_and_instrument(json_obj: Dict) -> None:
-    FACILITIES = ("HFIR", "SNS")
+    FACILITIES = {"HFIR": ["CG1D"],
+                  "SNS": ["SNAP"]}
 
-    if json_obj["facility"] not in FACILITIES:
+    facility = json_obj["facility"]
+    if facility not in FACILITIES:
         raise JSONValidationError(
-            f"Facility {json_obj['facility']} is in list of allowed facilities: " + ", ".join(FACILITIES)
+            f"Facility {facility} is missing in the list of allowed facilities: " + ", ".join(FACILITIES)
         )
 
-    if json_obj["facility"] == "SNS":
-        _validate_instrument("SNS", json_obj["instrument"], ["SNAP"])
-    if json_obj["facility"] == "HFIR":
-        _validate_instrument("HFIR", json_obj["instrument"], ["CG1D"])
-
+    validate_instrument(facility, json_obj["instrument"], FACILITIES[facility])
 
 def _function_parts(func_str: str) -> Tuple[str, str]:
     """Convert the function specification into a module and function name"""
