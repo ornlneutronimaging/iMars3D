@@ -1,0 +1,13 @@
+{
+    "instrument": "cg1d",
+    "ipts": "IPTS-1234",
+    "name": "name for reconstruced ct scans",
+    "workingdir": "/path/to/dir",
+    "ouputdir": "/path/to/dir",
+    "tasks": [
+        {
+            "name": "load",
+            "function": "imars3d.backend.io.data.load_data",
+            "inputs": {
+                "filenames": []
+            },

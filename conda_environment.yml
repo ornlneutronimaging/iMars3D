@@ -6,6 +6,7 @@ dependencies:
   - astropy
   - tomopy
   - dxchange
+  - jsonschema
   - pooch
   - panel
   - param

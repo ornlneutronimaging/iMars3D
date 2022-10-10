@@ -8,6 +8,10 @@ repos:
       - id: trailing-whitespace
       - id: check-docstring-first
       - id: check-json
+        exclude: |
+          (?x)^(
+                  ^tests/data/json/ill_formed.json
+              )$
       - id: check-added-large-files
         args: [--maxkb=8192]
       - id: check-yaml
