@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import numpy as np
 import pytest
-from imars3d.backend.morph.crop import crop, detect_bounds
+from imars3d.backend.morph.crop import crop
 
 
 def generate_fake_proj(
@@ -45,10 +45,10 @@ def test_crop_manual():
     slit_pos = (400, 824, 100, 412)  # left, right, top, bottom
     imgstack = np.array([generate_fake_proj(img_shape, slit_pos) for _ in range(n_imgs)])
     # manual crop
-    imgstack_cropped = crop(imgstack, slit_pos)
+    imgstack_cropped = crop(arrays=imgstack, crop_limit=slit_pos)
     assert imgstack_cropped.shape == (n_imgs, 312, 424)
     # auto crop
-    imgstack_cropped = crop(imgstack)
+    imgstack_cropped = crop(arrays=imgstack)
     assert imgstack_cropped.shape == (n_imgs, 312, 424)
 
 
@@ -60,7 +60,7 @@ def test_auto_detect_slit_position():
     slit_pos = (400, 824, 100, 412)  # left, right, top, bottom
     img = generate_fake_proj(img_shape, slit_pos)
     # auto crop
-    slit_pos_detected = detect_bounds(img)
+    slit_pos_detected = crop.detect_bounds(img)
     np.testing.assert_allclose(
         np.array(slit_pos_detected),
         np.array(slit_pos),
@@ -84,7 +84,7 @@ def test_auto_detect_object_in_fov():
         intensity_inner_high=15_000,
     )
     # auto detect
-    slit_pos_detected = detect_bounds(img, expand_ratio=0)
+    slit_pos_detected = crop.detect_bounds(img, expand_ratio=0)
     np.testing.assert_allclose(
         np.array(slit_pos_detected),
         np.array(slit_pos),
@@ -95,13 +95,13 @@ def test_auto_detect_object_in_fov():
 def test_crop_wrong_array_dim():
     arrays = np.array([1, 2, 3])
     with pytest.raises(ValueError):
-        crop(arrays)
+        crop(arrays=arrays)
 
 
 def test_auto_detect_wrong_array_dim():
     arrays = np.array([1, 2, 3])
     with pytest.raises(ValueError):
-        detect_bounds(arrays)
+        crop.detect_bounds(arrays)
 
 
 def test_auto_detect_no_signal():
@@ -115,7 +115,7 @@ def test_auto_detect_no_signal():
         intensity_inner_low=10_000,
         intensity_inner_high=11_000,
     )
-    slit_pos_detected = detect_bounds(img, expand_ratio=0)
+    slit_pos_detected = crop.detect_bounds(img, expand_ratio=0)
     # since there is no signal, the detector will just return the whole image
     # range.
     np.testing.assert_allclose(

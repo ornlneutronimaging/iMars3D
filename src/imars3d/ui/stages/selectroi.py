@@ -163,7 +163,7 @@ class SelectROI(param.Parameterized):
             pn.state.warning("No CT to crop")
         else:
             self.ct = crop(
-                self.ct,
+                arrays=self.ct,
                 crop_limit=crop_limit,
             )
         #
@@ -171,7 +171,7 @@ class SelectROI(param.Parameterized):
             pn.state.warning("No OB to crop")
         else:
             self.ob = crop(
-                self.ob,
+                arrays=self.ob,
                 crop_limit=crop_limit,
             )
         #
@@ -179,7 +179,7 @@ class SelectROI(param.Parameterized):
             pn.state.warning("No DC to crop")
         else:
             self.dc = crop(
-                self.dc,
+                arrays=self.dc,
                 crop_limit=crop_limit,
             )
 
