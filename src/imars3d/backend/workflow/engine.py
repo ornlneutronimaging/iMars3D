@@ -35,6 +35,7 @@ def WorkflowEngine(config: Union[str, dict], schema: str = validate.SCHEMA) -> "
         # parameters that can potentially be shared by more than one task
         # REVIEW could be added in the schema instead of hardcode it here
         global_params = {
+            "facility",
             "instrument",
             "ipts",
             "workingdir",

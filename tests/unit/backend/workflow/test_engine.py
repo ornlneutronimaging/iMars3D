@@ -45,7 +45,8 @@ class reconstruction(ParameterizedFunction):
 @pytest.fixture(scope="module")
 def config():
     config_str = """{
-    "instrument": "cg1d",
+    "facility": "HFIR",
+    "instrument": "CG1D",
     "ipts": "IPTS-1234",
     "name": "name for reconstructed ct scans",
     "workingdir": "/path/to/working/dir",
