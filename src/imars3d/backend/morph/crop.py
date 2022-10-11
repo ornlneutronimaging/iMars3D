@@ -7,6 +7,7 @@ from scipy.ndimage import median_filter
 logger = param.get_logger(__name__)
 logger.name = __name__
 
+
 class crop(param.ParameterizedFunction):
     """
     Crop the image stack to provided limits or auto detected bound box.
@@ -34,6 +35,7 @@ class crop(param.ParameterizedFunction):
     -------
         The cropped image stack.
     """
+
     # Notes
     # -----
     #     Case 1: slits in, i.e I_inner >> I_outer
@@ -62,28 +64,20 @@ class crop(param.ParameterizedFunction):
 
     arrays = param.Array(doc="The image stack to crop. Can also be a 2D image.")
     crop_limit = param.Tuple(
-        default=(-1, -1, -1, -1), 
-        doc="The four limits for cropping. Default is (-1, -1, -1, -1), which will trigger the automatic bounds detection."
+        default=(-1, -1, -1, -1),
+        doc="The four limits for cropping. Default is (-1, -1, -1, -1), which will trigger the automatic bounds detection.",
     )
     border_pix = param.Integer(
-        default=10, 
-        doc="the width of border region to estimate the background intensity, which helps to determine which case we are in."
+        default=10,
+        doc="the width of border region to estimate the background intensity, which helps to determine which case we are in.",
     )
-    expand_ratio = param.Number(
-        default=0.1, 
-        doc="The ratio to expand the cropped region."
-    )
+    expand_ratio = param.Number(default=0.1, doc="The ratio to expand the cropped region.")
     rel_intensity_threshold_air_or_slit = param.Number(
-        default=0.05, 
-        doc="Passing through keyword arguments to detect_bounds."
+        default=0.05, doc="Passing through keyword arguments to detect_bounds."
     )
-    rel_intensity_threshold_fov = param.Number(
-        default=0.1, 
-        doc="Passing through keyword arguments to detect_bounds."
-    )
+    rel_intensity_threshold_fov = param.Number(default=0.1, doc="Passing through keyword arguments to detect_bounds.")
     rel_intensity_threshold_sample = param.Number(
-        default=0.95, 
-        doc="Passing through keyword arguments to detect_bounds."
+        default=0.95, doc="Passing through keyword arguments to detect_bounds."
     )
 
     def __call__(self, **params):
@@ -92,13 +86,13 @@ class crop(param.ParameterizedFunction):
         # sanitize args
         params = param.ParamOverrides(self, params)
         return self._crop(
-            params.arrays, 
-            params.crop_limit, 
-            params.border_pix, 
-            params.expand_ratio, 
-            params.rel_intensity_threshold_air_or_slit, 
-            params.rel_intensity_threshold_fov, 
-            params.rel_intensity_threshold_sample
+            params.arrays,
+            params.crop_limit,
+            params.border_pix,
+            params.expand_ratio,
+            params.rel_intensity_threshold_air_or_slit,
+            params.rel_intensity_threshold_fov,
+            params.rel_intensity_threshold_sample,
         )
 
     def _crop(
@@ -111,7 +105,7 @@ class crop(param.ParameterizedFunction):
         rel_intensity_threshold_fov,
         rel_intensity_threshold_sample,
     ) -> np.ndarray:
-        
+
         if arrays.ndim not in (2, 3):
             raise ValueError("Only 2D and 3D arrays are supported.")
 
@@ -131,7 +125,6 @@ class crop(param.ParameterizedFunction):
             return arrays[top:bottom, left:right]
         elif arrays.ndim == 3:
             return arrays[:, top:bottom, left:right]
-
 
     def detect_bounds(
         arrays: np.ndarray,
