@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import numpy as np
 import pytest
-from imars3d.backend.morph.crop import crop
+from imars3d.backend.morph.crop import crop, detect_bounds
 
 
 def generate_fake_proj(
@@ -60,7 +60,7 @@ def test_auto_detect_slit_position():
     slit_pos = (400, 824, 100, 412)  # left, right, top, bottom
     img = generate_fake_proj(img_shape, slit_pos)
     # auto crop
-    slit_pos_detected = crop.detect_bounds(img)
+    slit_pos_detected = detect_bounds(img)
     np.testing.assert_allclose(
         np.array(slit_pos_detected),
         np.array(slit_pos),
@@ -84,7 +84,7 @@ def test_auto_detect_object_in_fov():
         intensity_inner_high=15_000,
     )
     # auto detect
-    slit_pos_detected = crop.detect_bounds(img, expand_ratio=0)
+    slit_pos_detected = detect_bounds(img, expand_ratio=0)
     np.testing.assert_allclose(
         np.array(slit_pos_detected),
         np.array(slit_pos),
@@ -101,7 +101,7 @@ def test_crop_wrong_array_dim():
 def test_auto_detect_wrong_array_dim():
     arrays = np.array([1, 2, 3])
     with pytest.raises(ValueError):
-        crop.detect_bounds(arrays)
+        detect_bounds(arrays)
 
 
 def test_auto_detect_no_signal():
@@ -115,7 +115,7 @@ def test_auto_detect_no_signal():
         intensity_inner_low=10_000,
         intensity_inner_high=11_000,
     )
-    slit_pos_detected = crop.detect_bounds(img, expand_ratio=0)
+    slit_pos_detected = detect_bounds(img, expand_ratio=0)
     # since there is no signal, the detector will just return the whole image
     # range.
     np.testing.assert_allclose(
