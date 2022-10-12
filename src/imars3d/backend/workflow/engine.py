@@ -1,9 +1,6 @@
 # package imports
 from imars3d.backend.workflow import validate
 
-# third party imports
-from param import ParameterizedFunction
-
 # standard imports
 from collections import namedtuple
 from collections.abc import Iterable
@@ -16,7 +13,7 @@ class WorkflowEngineError(RuntimeError):
 
 
 def WorkflowEngine(
-    schema: str = validate.SCHEMA, globals: Optional[List[str]] = None
+    workflow_schema: dict = validate.SCHEMA, global_parameters: Optional[List[str]] = None
 ) -> "WorkflowEngineWithSchema":  # noqa F821
     r"""Workflow engine factory, given a particular workflow schema.
 
@@ -26,17 +23,17 @@ def WorkflowEngine(
 
     Parameters
     ----------
-    schema
+    workflow_schema
         JSON schema for validation of input workflow configuration
-    globals
+    global_parameters
         List of JSON entries deemed as accessible by any workflow task. These are metadata
         and the task outputs.
     Returns
     -------
         class WorkflowEngineWithSchema
     """
-    if not globals:
-        globals = {
+    if not global_parameters:
+        global_parameters = {
             "facility",
             "instrument",
             "ipts",
@@ -50,10 +47,9 @@ def WorkflowEngine(
         }
 
     class WorkflowEngineWithSchema:
-        config = validate.JSONValid(schema=schema)
-        global_params = set(globals)
-        # parameters that can potentially be shared by more than one task
-        # REVIEW could be added in the schema instead of hardcode it here
+        global_params = set(global_parameters)
+        schema: dict = workflow_schema
+        config = validate.JSONValid(schema=workflow_schema)
 
         @staticmethod
         def _validate_outputs(function_outputs: Union[None, Iterable[Any]]):

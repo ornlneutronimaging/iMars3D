@@ -43,5 +43,5 @@
       }
     }
   },
-    "required": ["facility", "instrument", "ipts", "name", "workingdir", "outputdir", "tasks"]
+    "required": ["name", "workingdir", "outputdir", "tasks"]
 }
