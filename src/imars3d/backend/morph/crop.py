@@ -87,13 +87,13 @@ class crop(param.ParameterizedFunction):
         # sanitize args
         params = param.ParamOverrides(self, params)
         cropped_array = self._crop(
-            params.arrays, 
-            params.crop_limit, 
-            params.border_pix, 
-            params.expand_ratio, 
-            params.rel_intensity_threshold_air_or_slit, 
-            params.rel_intensity_threshold_fov, 
-            params.rel_intensity_threshold_sample
+            params.arrays,
+            params.crop_limit,
+            params.border_pix,
+            params.expand_ratio,
+            params.rel_intensity_threshold_air_or_slit,
+            params.rel_intensity_threshold_fov,
+            params.rel_intensity_threshold_sample,
         )
         logger.info(f"FINISHED Executing Filter: Crop")
         return cropped_array
@@ -124,11 +124,12 @@ class crop(param.ParameterizedFunction):
             )
         # crop
         left, right, top, bottom = crop_limit
-        
+
         if arrays.ndim == 2:
             return arrays[top:bottom, left:right]
         elif arrays.ndim == 3:
             return arrays[:, top:bottom, left:right]
+
 
 def detect_bounds(
     arrays: np.ndarray,
