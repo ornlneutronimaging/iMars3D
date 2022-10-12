@@ -1,44 +1,41 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import numpy as np
+import param
 from scipy.ndimage import median_filter
 
+logger = param.get_logger(__name__)
+logger.name = __name__
 
-def crop(
-    arrays: np.ndarray,
-    crop_limit: tuple = (-1, -1, -1, -1),
-    border_pix: int = 10,
-    expand_ratio: float = 0.1,
-    rel_intensity_threshold_air_or_slit: float = 0.05,
-    rel_intensity_threshold_fov: float = 0.1,
-    rel_intensity_threshold_sample: float = 0.95,
-) -> np.ndarray:
+
+class crop(param.ParameterizedFunction):
     """
     Crop the image stack to provided limits or auto detected bound box.
 
     Parameters
     -----------
-    arrays:
+    arrays: ndarray
         The image stack to crop. Can also be a 2D image.
-    crop_limit:
+    crop_limit: tuple
         The four limits for cropping. Default is (-1, -1, -1, -1), which will trigger
         the automatic bounds detection.
-    border_pix:
+    border_pix: int
         the width of border region to estimate the background intensity, which helps
         to determine which case we are in.
-    expand_ratio:
+    expand_ratio: float
         the ratio to expand the cropped region.
-    rel_intensity_threshold_air_or_slit:
+    rel_intensity_threshold_air_or_slit: float
         passing through keyword arguments to detect_bounds.
-    rel_intensity_threshold_fov:
+    rel_intensity_threshold_fov: float
         passing through keyword arguments to detect_bounds.
-    rel_intensity_threshold_sample:
+    rel_intensity_threshold_sample: float
         passing through keyword arguments to detect_bounds.
 
     Returns
     -------
         The cropped image stack.
     """
+
     # Notes
     # -----
     #     Case 1: slits in, i.e I_inner >> I_outer
@@ -64,25 +61,74 @@ def crop(
     # ********************************************************
     #
     # NOTE: fails early if the array dimension is incorrect
-    if arrays.ndim not in (2, 3):
-        raise ValueError("Only 2D and 3D arrays are supported.")
 
-    # check if crop limits (bounding box) are provided
-    if -1 in crop_limit:
-        crop_limit = detect_bounds(
-            arrays,
-            border_pix,
-            expand_ratio,
-            rel_intensity_threshold_air_or_slit,
-            rel_intensity_threshold_fov,
-            rel_intensity_threshold_sample,
+    arrays = param.Array(doc="The image stack to crop. Can also be a 2D image.")
+    crop_limit = param.Tuple(
+        default=(-1, -1, -1, -1),
+        doc="The four limits for cropping. Default is (-1, -1, -1, -1), which will trigger the automatic bounds detection.",
+    )
+    border_pix = param.Integer(
+        default=10,
+        doc="the width of border region to estimate the background intensity, which helps to determine which case we are in.",
+    )
+    expand_ratio = param.Number(default=0.1, doc="The ratio to expand the cropped region.")
+    rel_intensity_threshold_air_or_slit = param.Number(
+        default=0.05, doc="Passing through keyword arguments to detect_bounds."
+    )
+    rel_intensity_threshold_fov = param.Number(default=0.1, doc="Passing through keyword arguments to detect_bounds.")
+    rel_intensity_threshold_sample = param.Number(
+        default=0.95, doc="Passing through keyword arguments to detect_bounds."
+    )
+
+    def __call__(self, **params):
+        logger.info(f"Executing Filter: Crop")
+        # forced type+bounds check
+        _ = self.instance(**params)
+        # sanitize args
+        params = param.ParamOverrides(self, params)
+        cropped_array = self._crop(
+            params.arrays,
+            params.crop_limit,
+            params.border_pix,
+            params.expand_ratio,
+            params.rel_intensity_threshold_air_or_slit,
+            params.rel_intensity_threshold_fov,
+            params.rel_intensity_threshold_sample,
         )
-    # crop
-    left, right, top, bottom = crop_limit
-    if arrays.ndim == 2:
-        return arrays[top:bottom, left:right]
-    elif arrays.ndim == 3:
-        return arrays[:, top:bottom, left:right]
+        logger.info(f"FINISHED Executing Filter: Crop")
+        return cropped_array
+
+    def _crop(
+        self,
+        arrays,
+        crop_limit,
+        border_pix,
+        expand_ratio,
+        rel_intensity_threshold_air_or_slit,
+        rel_intensity_threshold_fov,
+        rel_intensity_threshold_sample,
+    ) -> np.ndarray:
+
+        if arrays.ndim not in (2, 3):
+            raise ValueError("Only 2D and 3D arrays are supported.")
+
+        # check if crop limits (bounding box) are provided
+        if -1 in crop_limit:
+            crop_limit = detect_bounds(
+                arrays,
+                border_pix,
+                expand_ratio,
+                rel_intensity_threshold_air_or_slit,
+                rel_intensity_threshold_fov,
+                rel_intensity_threshold_sample,
+            )
+        # crop
+        left, right, top, bottom = crop_limit
+
+        if arrays.ndim == 2:
+            return arrays[top:bottom, left:right]
+        elif arrays.ndim == 3:
+            return arrays[:, top:bottom, left:right]
 
 
 def detect_bounds(
@@ -114,7 +160,6 @@ def detect_bounds(
         the relative intensity threshold used to determine pixels within the
         sample region, only valid for case 2, and the value is relative to the
         intensity of the air region (outter region in case 2).
-
     Returns
     -------
         The crop limits in (left, right, top, bottom) order.

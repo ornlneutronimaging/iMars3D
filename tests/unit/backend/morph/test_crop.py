@@ -45,10 +45,10 @@ def test_crop_manual():
     slit_pos = (400, 824, 100, 412)  # left, right, top, bottom
     imgstack = np.array([generate_fake_proj(img_shape, slit_pos) for _ in range(n_imgs)])
     # manual crop
-    imgstack_cropped = crop(imgstack, slit_pos)
+    imgstack_cropped = crop(arrays=imgstack, crop_limit=slit_pos)
     assert imgstack_cropped.shape == (n_imgs, 312, 424)
     # auto crop
-    imgstack_cropped = crop(imgstack)
+    imgstack_cropped = crop(arrays=imgstack)
     assert imgstack_cropped.shape == (n_imgs, 312, 424)
 
 
@@ -95,7 +95,7 @@ def test_auto_detect_object_in_fov():
 def test_crop_wrong_array_dim():
     arrays = np.array([1, 2, 3])
     with pytest.raises(ValueError):
-        crop(arrays)
+        crop(arrays=arrays)
 
 
 def test_auto_detect_wrong_array_dim():
