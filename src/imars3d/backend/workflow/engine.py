@@ -15,9 +15,9 @@ class WorkflowEngineError(RuntimeError):
     pass
 
 
-def WorkflowEngine(schema: str = validate.SCHEMA,
-                   globals: Optional[List[str]]=None
-                   )-> "WorkflowEngineWithSchema":  # noqa F821
+def WorkflowEngine(
+    schema: str = validate.SCHEMA, globals: Optional[List[str]] = None
+) -> "WorkflowEngineWithSchema":  # noqa F821
     r"""Workflow engine factory, given a particular workflow schema.
 
     Example:
