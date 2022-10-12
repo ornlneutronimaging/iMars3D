@@ -15,26 +15,28 @@ class WorkflowEngineError(RuntimeError):
     pass
 
 
-def WorkflowEngine(config: Union[str, dict], schema: str = validate.SCHEMA) -> "WorkflowEngineWithSchema":  # noqa F821
-    r"""engine that interprets and runs all the operations in the reconstruction configuration
+def WorkflowEngine(schema: str = validate.SCHEMA,
+                   globals: Optional[List[str]]=None
+                   )-> "WorkflowEngineWithSchema":  # noqa F821
+    r"""Workflow engine factory, given a particular workflow schema.
+
+    Example:
+        engine = WorkflowEngine(schema=some_json_schema)  # `engine` is a class
+        workflow = engine(config=some_json_file)  # `workflow` is an instance of class `engine`
 
     Parameters
     ----------
-    config
-        JSON configuration for reconstruction-reduction
     schema
-        JSON schema for validation of `config`
-
+        JSON schema for validation of input workflow configuration
+    globals
+        List of JSON entries deemed as accessible by any workflow task. These are metadata
+        and the task outputs.
     Returns
     -------
-        Instance of class WorkflowEngineWithSchema
+        class WorkflowEngineWithSchema
     """
-
-    class WorkflowEngineWithSchema:
-        config = validate.JSONValid(schema=schema)
-        # parameters that can potentially be shared by more than one task
-        # REVIEW could be added in the schema instead of hardcode it here
-        global_params = {
+    if not globals:
+        globals = {
             "facility",
             "instrument",
             "ipts",
@@ -46,6 +48,12 @@ def WorkflowEngine(config: Union[str, dict], schema: str = validate.SCHEMA) -> "
             "tilt_angle",
             "rot_center",
         }
+
+    class WorkflowEngineWithSchema:
+        config = validate.JSONValid(schema=schema)
+        global_params = set(globals)
+        # parameters that can potentially be shared by more than one task
+        # REVIEW could be added in the schema instead of hardcode it here
 
         @staticmethod
         def _validate_outputs(function_outputs: Union[None, Iterable[Any]]):
@@ -71,9 +79,16 @@ def WorkflowEngine(config: Union[str, dict], schema: str = validate.SCHEMA) -> "
             if errors:
                 raise WorkflowEngineError(errors)
 
-        def __init__(self) -> None:
+        def __init__(self, config: Union[str, dict]) -> None:
+            r"""
+
+            Parameters
+            ----------
+            config
+                JSON configuration for reconstruction-reduction
+            """
             self.config: dict = config  # validated JSON configuration file
-            self._registry: Optional[dict] = None  # will store set or computerd globals parameters
+            self._registry: Optional[dict] = None  # will store set or computed globals parameters
 
         def _instrospect_task_function(self, function_str: str) -> namedtuple:
             r"""Obtain information from the function associated to one task in the workflow
@@ -205,4 +220,4 @@ def WorkflowEngine(config: Union[str, dict], schema: str = validate.SCHEMA) -> "
                 self._validate_outputs(outputs)
                 self._update_registry(task, outputs)
 
-    return WorkflowEngineWithSchema()
+    return WorkflowEngineWithSchema

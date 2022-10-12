@@ -78,35 +78,37 @@ def config():
 
 
 class TestWorkflowEngine:
+    engine = WorkflowEngine()  # Workflow factory
+
     def test_dryrun(self, config):
-        engine = WorkflowEngine(config)
-        engine._dryrun()
+        workflow = self.engine(config)
+        workflow._dryrun()
 
         # Error: adding a templated output not in globals
         config_bad = deepcopy(config)
         config_bad["tasks"][1].update({"outputs": ["path"]})
-        engine = WorkflowEngine(config_bad)
+        workflow = self.engine(config_bad)
         with pytest.raises(WorkflowEngineError, match="path of task task2 should be global"):
-            engine._dryrun()
+            workflow._dryrun()
 
         # Error: task for which implicit ct has not been computed yet
         task0 = {"name": "task0", "function": f"{__name__}.save", "outputs": ["ct"]}
         config_bad = deepcopy(config)
         config_bad["tasks"].insert(0, task0)
-        engine = WorkflowEngine(config_bad)
+        workflow = self.engine(config_bad)
         with pytest.raises(WorkflowEngineError, match="ct for task task0 are missing"):
-            engine._dryrun()
+            workflow._dryrun()
 
         # Error: task for which templated rot_center has not been computed yet
         config_bad = deepcopy(config)
         config_bad["tasks"][2].pop("inputs")
-        engine = WorkflowEngine(config_bad)
+        workflow = self.engine(config_bad)
         with pytest.raises(WorkflowEngineError, match="rot_center for task task3 are missing"):
-            engine._dryrun()
+            workflow._dryrun()
 
     def test_run(self, config):
-        engine = WorkflowEngine(config)
-        engine.run()
+        workflow = self.engine(config)
+        workflow.run()
 
 
 if __name__ == "__main__":
