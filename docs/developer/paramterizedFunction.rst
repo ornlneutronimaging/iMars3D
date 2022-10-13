@@ -62,11 +62,16 @@ Then, we can use the ``param.ParameterizedFunction`` to create a callable functi
             # forced type+bounds check
             _ = self.instance(**params)
             # sanitize
+            # NOTE: this will allow param to use default value if the input arg
+            #       is missing from params.
+            #       for example, if we call add(base=1, exponent=2), then param
+            #       here will help fill in the missing arg, phase with its default
+            #       i.e.  _add(base=1, phase=0, exponent=2)
             params = param.ParamOverrides(self, params)
             # call the actual function
-            base = params.get("base")
-            phase = params.get("phase")
-            exponent = params.get("exponent")
+            base = params.get("base")  # alternatively, params.base
+            phase = params.get("phase")  # alternatively, params.phase
+            exponent = params.get("exponent")  # alternatively, params.exponent
             return _add(base, phase, exponent)
 
 Notice that the function docstring is added to the class docstring location with explicit type attention.

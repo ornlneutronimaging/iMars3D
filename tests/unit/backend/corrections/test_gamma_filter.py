@@ -5,15 +5,8 @@ import skimage
 from imars3d.backend.corrections.gamma_filter import gamma_filter
 
 
-@pytest.mark.parametrize(
-    "use_selective_median_filter",
-    [
-        (False),
-        (True),
-    ],
-)
-def test_gamma_filter(use_selective_median_filter):
-    """ """
+@pytest.fixture(scope="module")
+def data_fixture():
     # constants
     np.random.seed(7)
     # input image
@@ -32,8 +25,32 @@ def test_gamma_filter(use_selective_median_filter):
     saturation_intensity = np.iinfo(imgs_with_noise.dtype).max
     for i, j in NOISE_LOC:
         imgs_with_noise[0, j, i] = saturation_intensity - np.random.randint(0, 4)
+    return imgs_reference, imgs_with_noise, NOISE_LOC, UNCHANGED_PIXELS, saturation_intensity
+
+
+def test_gamma_filter_incorrect_data_type(data_fixture):
+    # NOTE:
+    # since we are adopting a forgiving scheme, so this code should still run
+    # even if a float array is given.
+    imgs_reference, imgs_with_noise, NOISE_LOC, UNCHANGED_PIXELS, saturation_intensity = data_fixture
+    gamma_filter(arrays=imgs_with_noise.astype(np.float64))
+
+
+@pytest.mark.parametrize(
+    "use_selective_median_filter",
+    [
+        (False),
+        (True),
+    ],
+)
+def test_gamma_filter_selective_filtering(use_selective_median_filter, data_fixture):
+    """ """
+    imgs_reference, imgs_with_noise, NOISE_LOC, UNCHANGED_PIXELS, saturation_intensity = data_fixture
     # call gamma_filter
-    imgs_filtered = gamma_filter(imgs_with_noise, selective_median_filter=use_selective_median_filter)
+    imgs_filtered = gamma_filter(
+        arrays=imgs_with_noise,
+        selective_median_filter=use_selective_median_filter,
+    )
     # verify results
     for i, j in NOISE_LOC:
         # all the artificial gamma saturated pixels should be replaced
