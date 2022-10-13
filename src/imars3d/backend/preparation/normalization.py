@@ -25,7 +25,7 @@ class normalization(param.ParameterizedFunction):
     cut_off:
         Permitted maximum value for the normalized data, originated from tomopy, negative values means no cutoff.
     max_workers:
-        number of cores to use for parallel processing, default is -1, which means using all available cores.
+        number of cores to use for parallel processing, default is 0, which means using all available cores.
 
     Returns
     -------
