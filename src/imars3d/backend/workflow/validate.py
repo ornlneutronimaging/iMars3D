@@ -1,10 +1,10 @@
-import importlib
+# standard imports
+from collections.abc import Iterable
 from importlib.util import find_spec
 import json
 import jsonschema
 from pathlib import Path
-import sys
-from typing import Any, Dict, Tuple, Union
+from typing import Dict, Tuple, Union
 
 FilePath = Union[Path, str]
 
@@ -24,7 +24,7 @@ def _load_schema():
     return schema
 
 
-SCHEMA = _load_schema()
+SCHEMA: dict = _load_schema()
 del _load_schema
 
 
@@ -36,21 +36,25 @@ def _validate_schema(json_obj: Dict, schema: Dict = SCHEMA) -> None:
         raise JSONValidationError("While validation configuration file") from e
 
 
-def _validate_instrument(facility, instrument, allowed_instr) -> None:
+def _validate_facility(json_obj: Dict) -> None:
+    facilities = {"HFIR", "SNS"}
+    facility = json_obj["facility"]
+    if facility not in facilities:
+        raise JSONValidationError(
+            f"Facility {facility} is missing in the list of allowed facilities: " + ", ".join(facilities)
+        )
+
+
+def _validate_instrument(json_obj: Dict, allowed_instr: set) -> None:
+    instrument = json_obj["instrument"]
     if instrument not in allowed_instr:
-        raise JSONValidationError(f"Instrument {instrument} is in list of allowed for {facility}: {allowed_instr}")
+        raise JSONValidationError(f"Instrument {instrument} is missing in list {allowed_instr}")
 
 
 def _validate_facility_and_instrument(json_obj: Dict) -> None:
-    FACILITIES = {"HFIR": ["CG1D"], "SNS": ["SNAP"]}
-
-    facility = json_obj["facility"]
-    if facility not in FACILITIES:
-        raise JSONValidationError(
-            f"Facility {facility} is missing in the list of allowed facilities: " + ", ".join(FACILITIES)
-        )
-
-    _validate_instrument(facility, json_obj["instrument"], FACILITIES[facility])
+    _validate_facility(json_obj)
+    allowed_instr = {"HFIR": {"CG1D"}, "SNS": {"SNAP"}}[json_obj["facility"]]
+    _validate_instrument(json_obj, allowed_instr)
 
 
 def _function_parts(func_str: str) -> Tuple[str, str]:
@@ -105,7 +109,7 @@ class JSONValid:
     See https://realpython.com/python-descriptors/"""
 
     def __init__(self, schema):
-        self._schema = schema
+        self._schema = _todict(schema)
 
     def __get__(self, obj, type=None) -> Dict:
         return obj._json
@@ -114,7 +118,24 @@ class JSONValid:
         obj._json = _todict(value)
         self._validate(obj._json)
 
+    def required(self, queryset: Iterable) -> bool:
+        r"""Check if a set of input parameters are required by the schema
+
+        Parameters
+        ----------
+        queryset
+            list of input parameters
+        """
+        required_params = self._schema.get("required", {})
+        # cat the set of query parameters into a python set
+        queryset = {queryset} if isinstance(queryset, str) else set(queryset)
+        # check if the set queryset is contained in the set of required parameters
+        return len(queryset - set(self._schema.get("required", {}))) == 0
+
     def _validate(self, obj: Dict) -> None:
         _validate_schema(obj, schema=self._schema)
-        _validate_facility_and_instrument(obj)
-        _validate_tasks_exist(obj)
+        # Additional validations only when required by the schema
+        if self.required({"facility", "instrument"}):
+            _validate_facility_and_instrument(obj)
+        if self.required("tasks"):
+            _validate_tasks_exist(obj)

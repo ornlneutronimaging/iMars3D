@@ -1,6 +1,6 @@
+from copy import deepcopy
 import json
 from json import JSONDecodeError
-from jsonschema.exceptions import ValidationError
 import pytest
 from pathlib import Path
 from imars3d.backend.workflow.validate import JSONValid, JSONValidationError, SCHEMA
@@ -9,11 +9,15 @@ JSON_DATA_DIR = Path(__file__).parent.parent.parent.parent / "data" / "json"
 GOOD_FILE = JSON_DATA_DIR / "good.json"
 ILL_FORMED_FILE = JSON_DATA_DIR / "ill_formed.json"
 
+# Force checking for instrument, facitlity, and tasks
+STRICT_SCHEMA = deepcopy(SCHEMA)
+STRICT_SCHEMA["required"] = ["facility", "instrument", "name", "workingdir", "outputdir", "tasks"]
+
 
 class MockContainer:
     """Mock class for mimicing how json validation will work in practice"""
 
-    config = JSONValid(schema=SCHEMA)
+    config = JSONValid(schema=STRICT_SCHEMA)
 
     def __init__(self, obj):
         self.config = obj
