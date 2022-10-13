@@ -3,8 +3,6 @@
 Unit tests for backend data loading.
 """
 
-import os
-import glob
 import pytest
 import astropy.io.fits as fits
 import tifffile
