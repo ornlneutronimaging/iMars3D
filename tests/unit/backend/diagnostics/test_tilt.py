@@ -236,7 +236,7 @@ def test_apply_tilt_correction():
     img_ref = skimage.data.brain()[2, :, :]
     tilt = 1.0  # deg
     img_tilted = rotate(img_ref, tilt, resize=False)
-    img_corrected = apply_tilt_correction(img_tilted, tilt)
+    img_corrected = apply_tilt_correction(arrays=img_tilted, tilt=tilt)
     # verify
     # NOTE: the rotate will alter the value due to interpolation, so it is not
     #       possible to compare the exact values.
@@ -247,7 +247,7 @@ def test_apply_tilt_correction():
     imgs_ref = skimage.data.brain()[:3, :, :]
     tilt = 1.0  # deg
     imgs_tilted = np.array([rotate(img, tilt, resize=False) for img in imgs_ref])
-    imgs_corrected = apply_tilt_correction(imgs_tilted, tilt)
+    imgs_corrected = apply_tilt_correction(arrays=imgs_tilted, tilt=tilt)
     # verify
     # NOTE: similar as the 2d case
     err_tilted = np.linalg.norm(imgs_tilted - imgs_ref) / img_ref.size
@@ -256,7 +256,7 @@ def test_apply_tilt_correction():
     # case 3: incorrect input
     with pytest.raises(ValueError):
         imgs_incorrect = np.arange(10)
-        apply_tilt_correction(imgs_incorrect, tilt)
+        apply_tilt_correction(arrays=imgs_incorrect, tilt=tilt)
 
 
 def test_tilt_correction():
@@ -266,7 +266,7 @@ def test_tilt_correction():
     omegas = np.linspace(0, np.pi * 2, 11)
     projs_ref = np.array([virtual_cam(two_sphere_system(omega, rot_axis_ideal, size=size)) for omega in omegas])
     # case 1: null
-    projs_corrected = tilt_correction(projs_ref, omegas)
+    projs_corrected = tilt_correction(arrays=projs_ref, rot_angles=omegas)
     # verify
     assert np.allclose(projs_corrected, projs_ref)
     # case 2: small angle tilt
@@ -274,7 +274,7 @@ def test_tilt_correction():
     tilt_outplane = np.radians(0.0)
     rot_axis = get_tilted_rot_axis(-tilt_inplane, tilt_outplane)
     projs_tilted = np.array([virtual_cam(two_sphere_system(omega, rot_axis, size=size)) for omega in omegas])
-    projs_corrected = tilt_correction(projs_tilted, omegas)
+    projs_corrected = tilt_correction(arrays=projs_tilted, rot_angles=omegas)
     # verify
     # the corrected one should close to the ideal (non-tilted) one
     diff_corrected = projs_corrected / projs_corrected.max() - projs_ref / projs_ref.max()

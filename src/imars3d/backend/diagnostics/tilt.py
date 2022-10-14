@@ -308,7 +308,11 @@ class tilt_correction(param.ParameterizedFunction):
             np.copyto(shm_arrays, params.arrays)
 
             rst = process_map(
-                partial(calculate_tilt, low_bound=low_bound, high_bound=high_bound),
+                partial(
+                    calculate_tilt,
+                    low_bound=params.low_bound,
+                    high_bound=params.high_bound,
+                ),
                 [shm_arrays[il] for il in idx_lowrange],
                 [shm_arrays[ih] for ih in idx_highrange],
                 max_workers=self.max_workers,
@@ -381,11 +385,11 @@ class apply_tilt_correction(param.ParameterizedFunction):
         logger.debug(f"max_worker={self.max_workers}")
 
         # dimensionality check
-        if arrays.ndim == 2:
-            logger.info(f"2D image detected, applying tilt correction with tilt = {tilt:.3f} deg")
+        if params.arrays.ndim == 2:
+            logger.info(f"2D image detected, applying tilt correction with tilt = {params.tilt:.3f} deg")
             return rotate(params.arrays, -params.tilt, resize=False, preserve_range=True)
-        elif arrays.ndim == 3:
-            logger.info(f"3D array detected, applying tilt correction with tilt = {tilt:.3f} deg")
+        elif params.arrays.ndim == 3:
+            logger.info(f"3D array detected, applying tilt correction with tilt = {params.tilt:.3f} deg")
             with SharedMemoryManager() as smm:
                 shm = smm.SharedMemory(params.arrays.nbytes)
                 shm_arrays = np.ndarray(params.arrays.shape, dtype=params.arrays.dtype, buffer=shm.buf)
