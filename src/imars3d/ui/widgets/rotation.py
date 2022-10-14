@@ -1,10 +1,13 @@
+#!/usr/bin/env python3
+"""Widgets for rotation."""
 import param
 import panel as pn
 from imars3d.backend.diagnostics.rotation import find_rotation_center
 
 
 class FindRotationCenter(param.Parameterized):
-    """
+    """Rotation center finder widget.
+
     widget of rotation center finder filter from iMars3D, must have a parent
     widget with valid ct stack.
     """
@@ -22,6 +25,7 @@ class FindRotationCenter(param.Parameterized):
 
     @param.depends("execute", watch=True)
     def apply(self):
+        """Apply rotation center finder."""
         if self.parent.ct is None:
             pn.state.notifications.warning("no CT found", duration=3000)
         else:
@@ -45,6 +49,7 @@ class FindRotationCenter(param.Parameterized):
             pn.state.notifications.success("Rotation center found.", duration=3000)
 
     def panel(self, width=200):
+        """App card view."""
         #
         auto_atol_status = pn.widgets.Checkbox.from_param(
             self.param.auto_atol,

@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-
+"""Widgets for normalization."""
 import param
 import panel as pn
 from imars3d.backend.preparation.normalization import normalization
 
 
 class Normalization(param.Parameterized):
-    """
+    """Normalization widget.
+
     Widget for the normalization filter from iMars3D, must have a parent widget with
     validate ct, ob, dc stack.
     """
@@ -21,6 +22,7 @@ class Normalization(param.Parameterized):
 
     @param.depends("execute", watch=True)
     def apply(self):
+        """Apply normalization."""
         if self.parent.ct is None:
             pn.state.notifications.warning("no CT found", duration=3000)
             return
@@ -46,6 +48,7 @@ class Normalization(param.Parameterized):
         pn.state.notifications.success("normalization complete.", duration=3000)
 
     def panel(self, width=200):
+        """App card view."""
         # cutoff
         auto_cutoff = pn.widgets.Checkbox.from_param(
             self.param.auto_cutoff,
