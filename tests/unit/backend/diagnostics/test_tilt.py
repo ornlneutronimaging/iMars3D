@@ -177,6 +177,9 @@ def test_calculate_dissimilarity():
     err_1 = calculate_dissimilarity(1, img0, img180)
     err_2 = calculate_dissimilarity(2, img0, img180)
     assert err_1 < err_2
+    err_3 = calculate_dissimilarity(1, img180, img0)
+    err_4 = calculate_dissimilarity(2, img180, img0)
+    assert err_3 < err_4
     # case 3: ensure dissimilarity calculate is abelian
     err_ab = calculate_dissimilarity(1, img0, img180)
     err_ba = calculate_dissimilarity(-1, img180, img0)
@@ -260,6 +263,9 @@ def test_apply_tilt_correction():
 
 
 def test_tilt_correction():
+    # error_0: incorrect dimension
+    with pytest.raises(ValueError):
+        tilt_correction(arrays=np.arange(10), tilt=1.0)
     # make synthetic data
     size = 100
     rot_axis_ideal = get_tilted_rot_axis(0, 0)
@@ -275,6 +281,17 @@ def test_tilt_correction():
     rot_axis = get_tilted_rot_axis(-tilt_inplane, tilt_outplane)
     projs_tilted = np.array([virtual_cam(two_sphere_system(omega, rot_axis, size=size)) for omega in omegas])
     projs_corrected = tilt_correction(arrays=projs_tilted, rot_angles=omegas)
+    # verify
+    # the corrected one should close to the ideal (non-tilted) one
+    diff_corrected = projs_corrected / projs_corrected.max() - projs_ref / projs_ref.max()
+    err_corrected = np.linalg.norm(diff_corrected) / projs_ref.size
+    assert err_corrected < 1e-3
+    # case 3: large angle tilt
+    tilt_inplane = np.radians(3.0)
+    tilt_outplane = np.radians(0.0)
+    rot_axis = get_tilted_rot_axis(-tilt_inplane, tilt_outplane)
+    projs_tilted = np.array([virtual_cam(two_sphere_system(omega, rot_axis, size=size)) for omega in omegas])
+    projs_corrected = tilt_correction(arrays=projs_tilted, rot_angles=omegas, cut_off_angle_deg=0.1)
     # verify
     # the corrected one should close to the ideal (non-tilted) one
     diff_corrected = projs_corrected / projs_corrected.max() - projs_ref / projs_ref.max()
