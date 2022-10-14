@@ -272,7 +272,7 @@ class tilt_correction(param.ParameterizedFunction):
     # This will have to be updated once we moved to a client-server architecture.
     max_workers = param.Integer(
         default=0,
-        bounds=(0, max(1, multiprocessing.cpu_count() - 2)),
+        bounds=(0, None),
         doc="Number of cores to use for parallel median filtering, default is 0, which means using all available cores.",
     )
 
@@ -368,7 +368,7 @@ class apply_tilt_correction(param.ParameterizedFunction):
     # This will have to be updated once we moved to a client-server architecture.
     max_workers = param.Integer(
         default=0,
-        bounds=(0, max(1, multiprocessing.cpu_count() - 2)),
+        bounds=(0, None),
         doc="Number of cores to use for parallel median filtering, default is 0, which means using all available cores.",
     )
 
