@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""iMars3D: rotation center finding module."""
 import numpy as np
 from multiprocessing.managers import SharedMemoryManager
 from tqdm.contrib.concurrent import process_map
