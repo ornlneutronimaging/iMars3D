@@ -1,72 +1,107 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import multiprocessing
 import numpy as np
+import param
 import tomopy
-import tomopy.util.mproc as mproc
 from skimage import feature
 from multiprocessing.managers import SharedMemoryManager
 from tqdm.contrib.concurrent import process_map
 from functools import partial
 
+logger = param.get_logger(__name__)
+logger.name = __name__
 
-def intensity_fluctuation_correction(
-    arrays: np.ndarray,
-    air_pixels: int = 5,
-    sigma: int = 3,
-    ncore: int = -1,
-):
+
+class intensity_fluctuation_correction(param.ParameterizedFunction):
     """
     Correct for intensity fluctuation in the radiograph.
 
     Parameters
     ----------
-    arrays:
+    ct: np.ndarray
         The image/radiograph stack to correct for beam intensity fluctuation.
-    air_pixels:
+    air_pixels: int
         Number of pixels at each boundary to calculate the scaling factor. When a negative number
         is given, the auto air region detection will be used instead of tomopy.
-    sigma:
+    sigma: int
         The standard deviation of the Gaussian filter, only valid when using the auto air region
         detection via canny edge detection from skimage.
-    ncore:
-        The number of cores to use for parallel processing, default is -1, which means using all available cores.
+    max_workers: int
+        The number of cores to use for parallel processing, default is 0, which means using all available cores.
 
     Returns
     -------
         The corrected image/radiograph stack.
     """
-    # validation
-    if arrays.ndim not in (2, 3):
-        raise ValueError("The image/radiograph stack must be 2D or 3D.")
-    # process
-    if air_pixels < 0:
-        # auto air region detection
-        ncore = mproc.mp.cpu_count() if ncore == -1 else int(ncore)
-        # use shared memory model and tqdm wrapper for multiprocessing
-        with SharedMemoryManager() as smm:
-            # create the shared memory
-            shm = smm.SharedMemory(arrays.nbytes)
-            # create a numpy array point to the shared memory
-            shm_arrays = np.ndarray(
-                arrays.shape,
-                dtype=arrays.dtype,
-                buffer=shm.buf,
-            )
-            # copy data
-            np.copyto(shm_arrays, arrays)
-            # map the multiprocessing calls
-            rst = process_map(
-                partial(intensity_fluctuation_correction_skimage, sigma=sigma),
-                [img for img in shm_arrays],
-                max_workers=ncore,
-                desc="intensity_fluctuation_correction",
-            )
-        #
-        return np.array(rst)
-    else:
-        # use tomopy process
-        ncore = None if ncore == -1 else int(ncore)
-        return tomopy.normalize_bg(arrays, air=air_pixels, ncore=ncore)
+
+    ct = param.Array(doc="The image/radiograph stack to correct for beam intensity fluctuation.")
+    air_pixels = param.Integer(
+        default=5,
+        doc="Number of pixels at each boundary to calculate the scaling factor. When a negative number is given, the auto air region detection will be used instead of tomopy.",
+    )
+    sigma = param.Integer(
+        default=3,
+        doc="The standard deviation of the Gaussian filter, only valid when using the auto air region detection via canny edge detection from skimage.",
+    )
+    max_workers = param.Integer(
+        default=0,
+        bounds=(0, None),
+        doc="The number of cores to use for parallel processing, default is 0, which means using all available cores.",
+    )
+
+    def __call__(self, **params):
+        logger.info(f"Executing Filter: Intensity Fluctuation Correction")
+        # forced type+bounds check
+        _ = self.instance(**params)
+        # sanitize arguments
+        params = param.ParamOverrides(self, params)
+
+        # type validation is done, now replacing max_worker with an actual integer
+        self.max_workers = multiprocessing.cpu_count() if params.max_workers <= 0 else params.max_workers
+        logger.debug(f"max_workers={self.max_workers}")
+        corrected_array = self._intensity_fluctuation_correction(
+            params.ct, params.air_pixels, params.sigma, self.max_workers
+        )
+        logger.info(f"FINISHED Executing Filter: Intensity Fluctuation Correction")
+        return corrected_array
+
+    def _intensity_fluctuation_correction(
+        self,
+        ct,
+        air_pixels,
+        sigma,
+        max_workers,
+    ):
+        # validation
+        if ct.ndim not in (2, 3):
+            raise ValueError("The image/radiograph stack must be 2D or 3D.")
+        # process
+        if air_pixels < 0:
+            # auto air region detection
+            with SharedMemoryManager() as smm:
+                # create the shared memory
+                shm = smm.SharedMemory(ct.nbytes)
+                # create a numpy array point to the shared memory
+                shm_arrays = np.ndarray(
+                    ct.shape,
+                    dtype=ct.dtype,
+                    buffer=shm.buf,
+                )
+                # copy data
+                np.copyto(shm_arrays, ct)
+                # map the multiprocessing calls
+                rst = process_map(
+                    partial(intensity_fluctuation_correction_skimage, sigma=sigma),
+                    [img for img in shm_arrays],
+                    max_workers=max_workers,
+                    desc="intensity_fluctuation_correction",
+                )
+            #
+            return np.array(rst)
+        else:
+            # use tomopy process
+            return tomopy.normalize_bg(ct, air=air_pixels, ncore=max_workers)
 
 
 def intensity_fluctuation_correction_skimage(
@@ -79,9 +114,9 @@ def intensity_fluctuation_correction_skimage(
 
     Parameters
     ----------
-    image:
+    image: np.ndarray
         The image/radiograph (2D) to correct for beam intensity fluctuation.
-    sigma:
+    sigma: int
         The standard deviation of the Gaussian filter for the canny edge detection.
 
     Returns
