@@ -3,7 +3,6 @@
 import param
 import multiprocessing
 import numpy as np
-import tomopy.util.mproc as mproc
 from typing import Tuple
 from functools import partial
 from scipy.optimize import minimize_scalar
