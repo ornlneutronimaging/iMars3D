@@ -4,7 +4,6 @@ import multiprocessing
 import numpy as np
 import param
 import tomopy
-import tomopy.util.mproc as mproc
 from skimage import feature
 from multiprocessing.managers import SharedMemoryManager
 from tqdm.contrib.concurrent import process_map
@@ -47,6 +46,7 @@ class intensity_fluctuation_correction(param.ParameterizedFunction):
     )
     max_workers = param.Integer(
         default=0,
+        bounds=(0, None),
         doc="The number of cores to use for parallel processing, default is 0, which means using all available cores.",
     )
 
@@ -58,7 +58,7 @@ class intensity_fluctuation_correction(param.ParameterizedFunction):
         params = param.ParamOverrides(self, params)
 
         # type validation is done, now replacing max_worker with an actual integer
-        self.max_workers = multiprocessing.cpu_count() - 2 if params.max_workers <= 0 else params.max_workers
+        self.max_workers = multiprocessing.cpu_count() if params.max_workers <= 0 else params.max_workers
         logger.debug(f"max_workers={self.max_workers}")
         corrected_array = self._intensity_fluctuation_correction(
             params.ct, params.air_pixels, params.sigma, self.max_workers
@@ -79,8 +79,6 @@ class intensity_fluctuation_correction(param.ParameterizedFunction):
         # process
         if air_pixels < 0:
             # auto air region detection
-            max_workers = mproc.mp.cpu_count() if max_workers == 0 else int(max_workers)
-            # use shared memory model and tqdm wrapper for multiprocessing
             with SharedMemoryManager() as smm:
                 # create the shared memory
                 shm = smm.SharedMemory(ct.nbytes)
@@ -103,7 +101,6 @@ class intensity_fluctuation_correction(param.ParameterizedFunction):
             return np.array(rst)
         else:
             # use tomopy process
-            max_workers = None if max_workers == 0 else int(max_workers)
             return tomopy.normalize_bg(ct, air=air_pixels, ncore=max_workers)
 
 
