@@ -49,3 +49,10 @@ repos:
     entry: yamllint
     language: python
     types: [file, yaml]
+  - repo: https://github.com/pycqa/pydocstyle
+    rev: 6.1.1
+    hooks:
+    - id: pydocstyle
+      args:
+      - --convention=numpy
+      - --match-dir='./src/imars3d/'
