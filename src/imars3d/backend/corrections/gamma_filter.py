@@ -58,7 +58,7 @@ class gamma_filter(param.ParameterizedFunction):
     )
     max_workers = param.Integer(
         default=0,
-        bounds=(0, max(1, multiprocessing.cpu_count() - 2)),
+        bounds=(0, None),
         doc="Maximum number of processes allowed during processing",
     )
     selective_median_filter = param.Boolean(
