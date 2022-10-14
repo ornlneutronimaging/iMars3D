@@ -132,7 +132,7 @@ def intensity_fluctuation_correction_skimage(
 
     Notes
     -----
-        This class here is assuming the beam is decaying uniformly over time whereas
+        This method here is assuming the beam is decaying uniformly over time whereas
         the tomopy version is assuming different region decays slightly different, hence
         the linear interpolation between left and right air pixels.
         In most cases, a uniform decay is a good approximation as neutron beam tends
