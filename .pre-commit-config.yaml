@@ -55,4 +55,4 @@ repos:
     - id: pydocstyle
       args:
       - --convention=numpy
-      - --match-dir='./src/imars3d/'
+      - --match='(?!test_).*\.py'
