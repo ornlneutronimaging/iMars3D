@@ -284,7 +284,7 @@ class tilt_correction(param.ParameterizedFunction):
         params = param.ParamOverrides(self, params)
 
         # type validation is done, now replacing max_worker with an actual integer
-        self.max_workers = multiprocessing.cpu_count() - 2 if params.max_workers <= 0 else params.max_workers
+        self.max_workers = multiprocessing.cpu_count() if params.max_workers == 0 else params.max_workers
         logger.debug(f"max_worker={self.max_workers}")
 
         # dimension check
@@ -380,7 +380,7 @@ class apply_tilt_correction(param.ParameterizedFunction):
         params = param.ParamOverrides(self, params)
 
         # type validation is done, now replacing max_worker with an actual integer
-        self.max_workers = multiprocessing.cpu_count() - 2 if params.max_workers <= 0 else params.max_workers
+        self.max_workers = multiprocessing.cpu_count() if params.max_workers == 0 else params.max_workers
         logger.debug(f"max_worker={self.max_workers}")
 
         # dimensionality check
