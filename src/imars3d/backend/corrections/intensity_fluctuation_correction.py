@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""iMars3D's intensity fluctuation correction module."""
 import multiprocessing
 import numpy as np
 import param
@@ -51,6 +52,7 @@ class intensity_fluctuation_correction(param.ParameterizedFunction):
     )
 
     def __call__(self, **params):
+        """Call the function."""
         logger.info(f"Executing Filter: Intensity Fluctuation Correction")
         # forced type+bounds check
         _ = self.instance(**params)
@@ -73,6 +75,7 @@ class intensity_fluctuation_correction(param.ParameterizedFunction):
         sigma,
         max_workers,
     ):
+        """Correct for intensity fluctuation in the radiograph."""
         # validation
         if ct.ndim not in (2, 3):
             raise ValueError("The image/radiograph stack must be 2D or 3D.")
@@ -107,8 +110,9 @@ class intensity_fluctuation_correction(param.ParameterizedFunction):
 def intensity_fluctuation_correction_skimage(
     image: np.ndarray,
     sigma: int = 3,
-):
-    """
+) -> np.ndarray:
+    """IFC via skimage.
+
     Correct for intensity fluctuation in the radiograph using skimage to auto
     detect the air region (adapted from iMars3dv1.filter.ifc).
 

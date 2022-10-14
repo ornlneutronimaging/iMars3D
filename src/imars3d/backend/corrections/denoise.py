@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""Image noise reduction (denoise) module."""
 import param
 import multiprocessing
 import numpy as np
@@ -18,8 +19,9 @@ logger.name = __name__
 
 
 def measure_noiseness(image: np.ndarray) -> float:
-    """
-    Measure the noiseness of the image, doi:`10.1006/cviu.1996.0060 <https://doi.org/10.1006/cviu.1996.0060>`_
+    """Measure the noiseness of the image.
+
+    Reference paper, doi:`10.1006/cviu.1996.0060 <https://doi.org/10.1006/cviu.1996.0060>`_
 
     Parameters
     ----------
@@ -113,7 +115,7 @@ def denoise_by_bilateral(
     sigma_color: float = 0.02,
     sigma_spatial: float = 5.0,
     max_workers: int = 0,
-):
+) -> np.ndarray:
     """
     Denoise the image stack with the bilateral filter.
 
@@ -249,6 +251,7 @@ class denoise(param.ParameterizedFunction):
     )
 
     def __call__(self, **params):
+        """Call the denoise function."""
         logger.info(f"Executing Filter: Denoise Filter")
         # type*bounds check via Parameter
         _ = self.instance(**params)
