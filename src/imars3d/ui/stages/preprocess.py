@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+"""Preprocessing stage for iMars3D."""
 import param
 import panel as pn
 import holoviews as hv
@@ -20,6 +20,8 @@ from imars3d.ui.widgets.ring_removal import RemoveRingArtifact
 
 
 class Preprocess(param.Parameterized):
+    """Preprocessing stage for iMars3D."""
+
     # -- Input data from previous step
     # data container
     ct = param.Array(
@@ -83,6 +85,7 @@ class Preprocess(param.Parameterized):
         ("recn_name", param.String),
     )
     def output(self):
+        """Output data for next step."""
         return (
             self.ct,
             self.omegas,
@@ -93,6 +96,7 @@ class Preprocess(param.Parameterized):
 
     @param.depends("ct_checkpoint_action", watch=True)
     def save_checkpoint(self):
+        """Save current state to checkpoint."""
         if self.ct is None:
             pn.state.warning("No CT to save")
         else:
@@ -114,6 +118,7 @@ class Preprocess(param.Parameterized):
             )
 
     def cross_hair_view(self, x, y):
+        """Cross hair view."""
         return (hv.HLine(y) * hv.VLine(x)).opts(
             opts.HLine(
                 color="yellow",
@@ -233,6 +238,7 @@ class Preprocess(param.Parameterized):
         "colormap_scale",
     )
     def ct_viewer(self):
+        """Radiograph (CT) viewer."""
         if self.ct is None:
             return pn.pane.Markdown("no CT to display")
         # ct image object
@@ -268,6 +274,7 @@ class Preprocess(param.Parameterized):
         "colormap_scale",
     )
     def ob_viewer(self):
+        """Open beam viewer."""
         if self.ob is None:
             return pn.pane.Markdown("no OB to display")
         # no need for fancy viewer tools for OB
@@ -290,6 +297,7 @@ class Preprocess(param.Parameterized):
         "colormap_scale",
     )
     def dc_viewer(self):
+        """Dark current viewer."""
         if self.dc is None:
             return pn.pane.Markdown("no DC to display")
         #
@@ -306,6 +314,7 @@ class Preprocess(param.Parameterized):
         return pn.Column(dc_control, viewer)
 
     def plot_control(self, width=80):
+        """Plot control panel."""
         # color map
         cmap = pn.widgets.Select.from_param(
             self.param.colormap,
@@ -330,6 +339,7 @@ class Preprocess(param.Parameterized):
         return plot_pn
 
     def panel(self):
+        """Panel view."""
         # side panel width
         width = self.frame_width // 2
         # filters panel
