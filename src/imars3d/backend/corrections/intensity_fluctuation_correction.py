@@ -13,6 +13,7 @@ from functools import partial
 logger = param.get_logger(__name__)
 logger.name = __name__
 
+
 class intensity_fluctuation_correction(param.ParameterizedFunction):
     """
     Correct for intensity fluctuation in the radiograph.
@@ -35,25 +36,23 @@ class intensity_fluctuation_correction(param.ParameterizedFunction):
         The corrected image/radiograph stack.
     """
 
-    ct = param.Array(
-        doc = "The image/radiograph stack to correct for beam intensity fluctuation."
-    )
+    ct = param.Array(doc="The image/radiograph stack to correct for beam intensity fluctuation.")
     air_pixels = param.Integer(
-        default = 5,
-        doc = "Number of pixels at each boundary to calculate the scaling factor. When a negative number is given, the auto air region detection will be used instead of tomopy."
+        default=5,
+        doc="Number of pixels at each boundary to calculate the scaling factor. When a negative number is given, the auto air region detection will be used instead of tomopy.",
     )
     sigma = param.Integer(
-        default = 3,
-        doc = "The standard deviation of the Gaussian filter, only valid when using the auto air region detection via canny edge detection from skimage."
+        default=3,
+        doc="The standard deviation of the Gaussian filter, only valid when using the auto air region detection via canny edge detection from skimage.",
     )
     max_workers = param.Integer(
-        default = 0,
-        doc = "The number of cores to use for parallel processing, default is 0, which means using all available cores."
+        default=0,
+        doc="The number of cores to use for parallel processing, default is 0, which means using all available cores.",
     )
 
     def __call__(self, **params):
         logger.info(f"Executing Filter: Intensity Fluctuation Correction")
-         # forced type+bounds check
+        # forced type+bounds check
         _ = self.instance(**params)
         # sanitize arguments
         params = param.ParamOverrides(self, params)
@@ -62,10 +61,7 @@ class intensity_fluctuation_correction(param.ParameterizedFunction):
         self.max_workers = multiprocessing.cpu_count() - 2 if params.max_workers <= 0 else params.max_workers
         logger.debug(f"max_workers={self.max_workers}")
         corrected_array = self._intensity_fluctuation_correction(
-            params.ct,
-            params.air_pixels,
-            params.sigma,
-            self.max_workers
+            params.ct, params.air_pixels, params.sigma, self.max_workers
         )
         logger.info(f"FINISHED Executing Filter: Intensity Fluctuation Correction")
         return corrected_array
