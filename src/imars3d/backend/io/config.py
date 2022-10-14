@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-"""
-Configuration file handler for the imars3d.
-"""
+"""Configuration file handler for the imars3d."""
 import json
 from pathlib import Path
 
@@ -10,6 +8,16 @@ def save_config(
     config_dict: dict,
     filepath: str,
 ):
+    """
+    Save a config dict to a file.
+
+    Parameters
+    ----------
+    config_dict : dict
+        The config dict to save.
+    filepath : str
+        The filepath to save the config dict to.
+    """
     # sanity check
     filepath = Path(filepath)
     if filepath.suffix not in (".json", ".JSON"):
