@@ -72,7 +72,7 @@ class find_rotation_center(param.ParameterizedFunction):
         atol = atol_deg if in_degrees else np.radians(atol_deg)
         idx_low, idx_hgh = find_180_deg_pairs_idx(angles, atol=atol, in_degrees=in_degrees)
         # process
-        max_workers = multiprocessing.cpu_count() - 2 if max_workers <= 0 else max_workers
+        max_workers = multiprocessing.cpu_count() if max_workers <= 0 else max_workers
         # use shared memory model and tqdm wrapper for multiprocessing to reduce
         # runtime memory footprint
         with SharedMemoryManager() as smm:
