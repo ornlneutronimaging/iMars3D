@@ -17,6 +17,7 @@ Subpackages
    imars3d.backend.io
    imars3d.backend.morph
    imars3d.backend.preparation
+   imars3d.backend.workflow
 
 Submodules
 ----------
