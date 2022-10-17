@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-"""
-Metadata class for IMars3D
-"""
+"""Metadata class for IMars3D."""
 import numpy as np
 import param
 import tifffile
@@ -13,9 +11,7 @@ logger = param.get_logger(__name__)
 
 
 class MetaData(param.Parameterized):
-    """
-    Metadata extracted from given file
-    """
+    """Metadata extracted from given file."""
 
     filename = param.Filename(doc="full path to the file.")
     datatype = param.Selector(
@@ -52,13 +48,12 @@ class MetaData(param.Parameterized):
 
     @property
     def suffix(self) -> str:
+        """Return the suffix of the file."""
         return Path(self.filename).suffix
 
     @param.depends("filename", "datatype", watch=True, on_init=True)
     def _update_metadata_index(self):
-        """
-        Update metadata index
-        """
+        """Update metadata index."""
         if self.suffix.lower() in (".tiff", "tif"):
             # NOTE: trim slits position from metadata_keys if the file is
             #       dark current file
@@ -76,6 +71,7 @@ class MetaData(param.Parameterized):
             raise NotImplementedError
 
     def __eq__(self, other):
+        """Compare metadata."""
         # find the most common keys
         common_keys = [k for k in self.metadata.keys() if k in other.metadata.keys()]
         # check all entries
@@ -93,6 +89,7 @@ class MetaData(param.Parameterized):
         return is_match
 
     def match(self, other_filename: str, other_datatype: str) -> bool:
+        """Match metadata with another file."""
         # instantiate metadata for other file
         other = MetaData(filename=other_filename, datatype=other_datatype)
         return self == other

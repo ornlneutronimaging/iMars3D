@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+"""Reconstruction stage for iMars3D."""
 import param
 import panel as pn
 import holoviews as hv
@@ -16,9 +16,7 @@ from imars3d.ui.widgets.rotation import FindRotationCenter
 
 
 class Reconstruction(param.Parameterized):
-    """
-    Panel for conduction guided reconstruction with iMars3D.
-    """
+    """Panel for conduction guided reconstruction with iMars3D."""
 
     # -- data container
     # ** input data from previous step
@@ -99,6 +97,7 @@ class Reconstruction(param.Parameterized):
 
     @param.depends("execute", watch=True)
     def apply(self):
+        """Run reconstruction."""
         # sanity check
         if self.ct is None:
             pn.state.warning("no CT found!")
@@ -123,10 +122,12 @@ class Reconstruction(param.Parameterized):
         ("recon", param.Array),
     )
     def output(self):
+        """Return reconstruction results to next step."""
         return self.recon
 
     @param.depends("ct_checkpoint_action", watch=True)
     def save_checkpoint(self):
+        """Save current ct to checkpoint."""
         if self.ct is None:
             pn.state.warning("No CT to save")
         else:
@@ -149,6 +150,7 @@ class Reconstruction(param.Parameterized):
 
     @param.depends("recon_save", watch=True)
     def save_reconstruction_results(self):
+        """Save reconstruction results to disk."""
         if self.recon is None:
             pn.state.warning("No reconstruction results to save")
         else:
@@ -173,6 +175,7 @@ class Reconstruction(param.Parameterized):
                 f_rotcnt.write(f"{self.rotation_center_finder.rot_center}")
 
     def cross_hair_view(self, x, y):
+        """Return cross hair view of the image."""
         return (hv.HLine(y) * hv.VLine(x)).opts(
             opts.HLine(
                 color="yellow",
@@ -246,6 +249,7 @@ class Reconstruction(param.Parameterized):
         "colormap_scale",
     )
     def ct_viewer(self):
+        """Radiograph viewer."""
         if self.ct is None:
             return pn.pane.Markdown("no CT to display")
         # ct image object
@@ -281,6 +285,7 @@ class Reconstruction(param.Parameterized):
         "colormap_scale",
     )
     def recon_viewer(self):
+        """Reconstruction viewer."""
         if self.recon is None:
             return pn.pane.Markdown("no recontruction results to display")
         #
@@ -316,6 +321,7 @@ class Reconstruction(param.Parameterized):
         return pn.Column(save_recon_button, rasterize(img.hist()))
 
     def recon_panel(self, width=200):
+        """Reconstruction panel."""
         # methods
         algorithm_select = pn.widgets.Select.from_param(
             self.param.algorithm,
@@ -348,6 +354,7 @@ class Reconstruction(param.Parameterized):
         return recon_panel
 
     def plot_control(self, width=80):
+        """Plot control panel."""
         # color map
         cmap = pn.widgets.Select.from_param(
             self.param.colormap,
@@ -372,6 +379,7 @@ class Reconstruction(param.Parameterized):
         return plot_pn
 
     def panel(self):
+        """App panel view."""
         # rotation center finder
         self.rotation_center_finder.parent = self
         # -- side panel

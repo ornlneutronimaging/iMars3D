@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""iMars3D's ring artifact correction module."""
 import scipy
 import numpy as np
 import tomopy.util.mproc as mproc
@@ -15,8 +16,8 @@ def remove_ring_artifact(
     correction_range: tuple = (0.9, 1.1),
     ncore: int = -1,
 ) -> np.ndarray:
-    """
-    Remove ring artifact from radiograph stack using Ketcham method.
+    """Remove ring artifact from radiograph stack using Ketcham method.
+
     ref: `10.1117/12.680939 <https://doi.org/10.1117/12.680939>`_
 
     Parameters
@@ -78,8 +79,10 @@ def remove_ring_artifact_Ketcham(
     sub_division: int = 10,
     correction_range: tuple = (0.9, 1.1),
 ) -> np.ndarray:
-    """
-    Use the Ketcham method (doi:`10.1117/12.680939 <https://doi.org/10.1117/12.680939>`_) to remove ring artifact from given sinogram.
+    """Ketcham's ring artifact removal method.
+
+    Use the Ketcham method (doi:`10.1117/12.680939 <https://doi.org/10.1117/12.680939>`_)
+    to remove ring artifact from given sinogram.
 
     Parameters
     ----------

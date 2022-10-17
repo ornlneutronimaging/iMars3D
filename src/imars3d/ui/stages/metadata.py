@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-"""
-First stage to generate interactive reconstruction
-"""
+"""First stage to generate interactive reconstruction."""
 import param
 import panel as pn
 from pathlib import Path
@@ -9,6 +7,8 @@ from imars3d.backend.io.config import save_config
 
 
 class MetaData(param.Parameterized):
+    """Collect metadata from users."""
+
     # configuration to carry into the next stage
     config_dict = param.Dict(
         default={
@@ -68,6 +68,7 @@ class MetaData(param.Parameterized):
 
     @param.depends("save_config_to_disk", watch=True)
     def save_config_file(self):
+        """Save config file to disk."""
         wkdir = Path(self.config_dict["outputdir"])
         config_filename = str(wkdir / f"{self.config_dict['name']}.json")
         save_config(self.config_dict, config_filename)
@@ -96,9 +97,11 @@ class MetaData(param.Parameterized):
         ("config_dict", param.Dict),
     )
     def as_dict(self):
+        """Return config dict."""
         return self.config_dict
 
     def summary_pane(self):
+        """Return a summary pane."""
         return pn.panel(
             f"""
             # Summary for reconstruction: {self.recn_name}
@@ -120,6 +123,7 @@ class MetaData(param.Parameterized):
 
     @param.depends("config_dict", on_init=True)
     def json_editor(self):
+        """Return a json editor pane."""
         json_editor = pn.widgets.JSONEditor.from_param(
             self.param.config_dict,
             mode="view",
@@ -151,6 +155,7 @@ class MetaData(param.Parameterized):
         self.param.trigger("config_dict")
 
     def panel(self, width=250):
+        """App panel view."""
         inst_input = pn.widgets.Select.from_param(
             self.param.instrument,
             name="Instrument",

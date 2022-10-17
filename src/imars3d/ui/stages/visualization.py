@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+"""Visualization stage for iMars3D."""
 import numpy as np
 import param
 import panel as pn
@@ -9,6 +9,8 @@ from holoviews import streams
 
 
 class Visualization(param.Parameterized):
+    """Visualization stage for iMars3D."""
+
     recon = param.Array(
         doc="reconstruction results as numpy array",
         precedence=-1,  # hide
@@ -29,6 +31,7 @@ class Visualization(param.Parameterized):
     frame_width = param.Integer(default=500, doc="viewer frame size")
 
     def cross_hair_view(self, x, y):
+        """Cross hair view."""
         return (hv.HLine(y) * hv.VLine(x)).opts(
             opts.HLine(
                 color="red",
@@ -41,6 +44,7 @@ class Visualization(param.Parameterized):
         )
 
     def xz_view(self):
+        """XZ view."""
         # main, top down
         xzview = self.recon[self.idx_y, :, :]
         return hv.Image(
@@ -62,6 +66,7 @@ class Visualization(param.Parameterized):
         )
 
     def xy_view(self, x, y):
+        """XY view."""
         z = int(y)
         # bottom
         xyview = self.recon[:, int(z), :]
@@ -94,6 +99,7 @@ class Visualization(param.Parameterized):
         )
 
     def yz_view(self, x, y):
+        """YZ view."""
         z = int(y)
         # side
         yzview = self.recon[:, :, int(x)]
@@ -134,6 +140,7 @@ class Visualization(param.Parameterized):
         "colormap_scale",
     )
     def recon_orthorgonal_view(self):
+        """Orthogonal view of the reconstruction."""
         if self.recon is None:
             return pn.pane.Markdown("no reconstruction to show")
         # control
@@ -158,6 +165,7 @@ class Visualization(param.Parameterized):
         return pn.Column(y_slider, viewer)
 
     def plot_control(self, width=80):
+        """Plot control."""
         # color map
         cmap = pn.widgets.Select.from_param(
             self.param.colormap,
@@ -182,6 +190,7 @@ class Visualization(param.Parameterized):
         return plot_pn
 
     def panel(self):
+        """App panel view."""
         width = self.frame_width // 2
         # side panel
         side_pn = pn.Column(

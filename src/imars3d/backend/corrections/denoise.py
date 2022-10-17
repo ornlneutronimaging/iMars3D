@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""Image noise reduction (denoise) module."""
 import param
 import multiprocessing
 import numpy as np
@@ -18,8 +19,9 @@ logger.name = __name__
 
 
 def measure_noiseness(image: np.ndarray) -> float:
-    """
-    Measure the noiseness of the image, doi:`10.1006/cviu.1996.0060 <https://doi.org/10.1006/cviu.1996.0060>`_
+    """Measure the noiseness of the image.
+
+    Reference paper, doi:`10.1006/cviu.1996.0060 <https://doi.org/10.1006/cviu.1996.0060>`_
 
     Parameters
     ----------
@@ -113,7 +115,7 @@ def denoise_by_bilateral(
     sigma_color: float = 0.02,
     sigma_spatial: float = 5.0,
     max_workers: int = 0,
-):
+) -> np.ndarray:
     """
     Denoise the image stack with the bilateral filter.
 
@@ -242,17 +244,14 @@ class denoise(param.ParameterizedFunction):
         bounds=(0.0, None),
         doc="The sigma of the spatial space, only valid for 'bilateral' method.",
     )
-    # NOTE:
-    # The front and backend are sharing the same computing unit, therefore we can
-    # set a hard cap on the max_workers.
-    # This will have to be updated once we moved to a client-server architecture.
     max_workers = param.Integer(
         default=0,
-        bounds=(0, max(1, multiprocessing.cpu_count() - 2)),
+        bounds=(0, None),
         doc="The number of cores to use for parallel processing, default is 0, which means using all available cores.",
     )
 
     def __call__(self, **params):
+        """Call the denoise function."""
         logger.info(f"Executing Filter: Denoise Filter")
         # type*bounds check via Parameter
         _ = self.instance(**params)
@@ -260,7 +259,7 @@ class denoise(param.ParameterizedFunction):
         params = param.ParamOverrides(self, params)
 
         # type validation is done, now replacing max_worker with an actual integer
-        self.max_workers = multiprocessing.cpu_count() - 2 if params.max_workers <= 0 else params.max_workers
+        self.max_workers = multiprocessing.cpu_count() if params.max_workers <= 0 else params.max_workers
         logger.debug(f"max_worker={self.max_workers}")
 
         if params.method == "median":

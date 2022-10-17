@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+"""Widgets for tilt correction."""
 import param
 import panel as pn
 import numpy as np
@@ -7,7 +7,8 @@ from imars3d.backend.diagnostics.tilt import tilt_correction
 
 
 class TiltCorrection(param.Parameterized):
-    """
+    """Tilt correction widget.
+
     Widget for tilt correction from iMars3D, must have parent widget with valid
     ct stack.
     """
@@ -23,6 +24,7 @@ class TiltCorrection(param.Parameterized):
 
     @param.depends("execute", watch=True)
     def apply(self):
+        """Apply tilt correction."""
         if self.parent.ct is None:
             pn.state.notifications.warning("no CT found", duration=3000)
         else:
@@ -40,6 +42,7 @@ class TiltCorrection(param.Parameterized):
             pn.state.notifications.success("Tilt correction complete.", duration=3000)
 
     def panel(self, width=200):
+        """App card view."""
         #
         tilt_search_bounds_input = pn.widgets.LiteralInput.from_param(
             self.param.tilt_search_bounds,

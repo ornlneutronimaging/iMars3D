@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-
+"""Widgets for gamma filter."""
 import param
 import panel as pn
 from imars3d.backend.corrections.gamma_filter import gamma_filter
 
 
 class GammaFilter(param.Parameterized):
-    """
+    """Gamma filter widget.
+
     Widget for the gamma filter from iMars3D, must have a parent widget with
     validate ct stack.
     """
@@ -26,6 +27,7 @@ class GammaFilter(param.Parameterized):
 
     @param.depends("execute", watch=True)
     def apply(self):
+        """Apply gamma filter."""
         if self.parent.ct is None:
             pn.state.notifications.warning("no CT found", duration=3000)
         else:
@@ -45,6 +47,7 @@ class GammaFilter(param.Parameterized):
             pn.state.notifications.success("gamma filtering complete.", duration=3000)
 
     def panel(self, width=200):
+        """App card view."""
         # use selective median filter
         selective_median_filter = pn.widgets.Toggle.from_param(
             self.param.selective_median_filter,

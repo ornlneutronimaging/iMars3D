@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""iMars3D: rotation center finding module."""
 import numpy as np
 import param
 import multiprocessing

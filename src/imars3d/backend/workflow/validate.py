@@ -1,3 +1,5 @@
+#!/usr/bin/enb python3
+"""iMars3D's config validation module."""
 # standard imports
 from collections.abc import Iterable
 from importlib.util import find_spec
@@ -13,6 +15,7 @@ SCHEMA_FILE = Path(__file__).parent / "schema.json"
 
 
 def _load_schema():
+    """Load default schema."""
     try:
         with open(SCHEMA_FILE, "r") as handle:
             schema = json.load(handle)
@@ -29,7 +32,24 @@ del _load_schema
 
 
 def _validate_schema(json_obj: Dict, schema: Dict = SCHEMA) -> None:
-    """Validate the data against the schema for jobs"""
+    """Validate the data against the schema for jobs.
+
+    Parameters
+    ----------
+    json_obj : Dict
+        The data to validate
+    schema : Dict, optional
+        The schema to validate against, by default SCHEMA
+
+    Raises
+    ------
+    JSONValidationError
+        If the data does not validate against the schema
+
+    Returns
+    -------
+    None
+    """
     try:
         jsonschema.validate(json_obj, schema=schema)
     except jsonschema.ValidationError as e:
@@ -58,21 +78,21 @@ def _validate_facility_and_instrument(json_obj: Dict) -> None:
 
 
 def _function_parts(func_str: str) -> Tuple[str, str]:
-    """Convert the function specification into a module and function name"""
+    """Convert the function specification into a module and function name."""
     mod_str = ".".join(func_str.split(".")[:-1])
     func_str = func_str.split(".")[-1]
     return (mod_str, func_str)
 
 
 def _function_exists(func_str: str) -> bool:
-    """Returns True if the function exists"""
+    """Return True if the function exists."""
     mod_str, func_str = _function_parts(func_str)
 
     return bool(find_spec(mod_str, func_str))
 
 
 def _validate_tasks_exist(json_obj: Dict) -> None:
-    """Go through the list of tasks and verify that all tasks exist"""
+    """Go through the list of tasks and verify that all tasks exist."""
     for step, task in enumerate(json_obj["tasks"]):
         func_str = task["function"].strip()
         if not func_str:
@@ -98,35 +118,42 @@ def _todict(obj: Union[Dict, Path, str]) -> Dict:
 
 
 class JSONValidationError(RuntimeError):
-    """Custom exception for validation errors independent of what created them"""
+    """Custom exception for validation errors independent of what created them."""
 
     pass  # default behavior is good enough
 
 
 class JSONValid:
-    """Descriptor class that validates the json object
+    """Descriptor class that validates the json object.
 
-    See https://realpython.com/python-descriptors/"""
+    See https://realpython.com/python-descriptors/
+    """
 
     def __init__(self, schema):
         self._schema = _todict(schema)
 
     def __get__(self, obj, type=None) -> Dict:
+        """Return the json object."""
         return obj._json
 
     def __set__(self, obj, value) -> None:
+        """Validate the json object."""
         obj._json = _todict(value)
         self._validate(obj._json)
 
     def required(self, queryset: Iterable) -> bool:
-        r"""Check if a set of input parameters are required by the schema
+        r"""Check if a set of input parameters are required by the schema.
 
         Parameters
         ----------
         queryset
-            list of input parameters
+            list of input parameters.
+
+        Returns
+        -------
+        bool
+            True if all the input parameters are required by the schema.
         """
-        required_params = self._schema.get("required", {})
         # cat the set of query parameters into a python set
         queryset = {queryset} if isinstance(queryset, str) else set(queryset)
         # check if the set queryset is contained in the set of required parameters

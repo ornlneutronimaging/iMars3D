@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-"""
-Data handling for imars3d.
-"""
+"""Data handling for iMars3D."""
 import re
 import param
 import multiprocessing
@@ -31,10 +29,10 @@ logger.name = __name__
 
 class load_data(param.ParameterizedFunction):
     """
-    Load data with given input
+    Load data with given input.
 
     Parameters
-    ---------
+    ----------
     ct_files: List[str]
         explicit list of radiographs (full path)
     ob_files: List[str]
@@ -95,20 +93,18 @@ class load_data(param.ParameterizedFunction):
     # NOTE: 0 means use as many as possible
     max_workers = param.Integer(
         default=0,
-        bounds=(0, max(1, multiprocessing.cpu_count() - 2)),
+        bounds=(0, None),
         doc="Maximum number of processes allowed during loading",
     )
 
     def __call__(self, **params):
-        """
-        This makes the class behaves like a function.
-        """
+        """Parse inputs and perform multiple dispatch."""
         # type*bounds check via Parameter
         _ = self.instance(**params)
         # sanitize arguments
         params = param.ParamOverrides(self, params)
         # type validation is done, now replacing max_worker with an actual integer
-        self.max_workers = multiprocessing.cpu_count() - 2 if params.max_workers == 0 else params.max_workers
+        self.max_workers = multiprocessing.cpu_count() if params.max_workers == 0 else params.max_workers
         logger.debug(f"max_worker={self.max_workers}")
 
         # multiple dispatch
@@ -451,12 +447,3 @@ def _extract_rotation_angles(
             [float(tifffile.TiffFile(f).pages[0].tags[metadata_idx].value.split(":")[-1]) for f in filelist]
         )
     return rotation_angles
-
-
-# -----------------------------------
-# TODO
-# def _filter_by_metadata():
-#     """
-#     TODO: waiting on TIFFMetaData class
-#     """
-#     raise NotImplementedError

@@ -24,6 +24,7 @@ dependencies:
   - conda-verify
   - pytest
   - pytest-cov
+  - pydocstyle
   - pre-commit
   - sphinx
   - sphinx_rtd_theme

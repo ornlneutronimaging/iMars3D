@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-"""
-Data loading stage for iMars3D
-"""
+"""Data loading stage for iMars3D."""
 from pathlib import Path
 import param
 import panel as pn
@@ -9,6 +7,8 @@ from imars3d.backend.io.config import save_config
 
 
 class DataLoader(param.Parameterized):
+    """Data loading stage for iMars3D."""
+
     # take over config from previous step
     config_dict = param.Dict(
         default={
@@ -29,12 +29,14 @@ class DataLoader(param.Parameterized):
 
     @param.depends("save_config_to_disk", watch=True)
     def save_config_file(self):
+        """Save config file to disk."""
         wkdir = Path(self.config_dict["outputdir"])
         config_filename = str(wkdir / f"{self.config_dict['name']}.json")
         save_config(self.config_dict, config_filename)
 
     @param.depends("update_config_action", watch=True)
     def update_config(self):
+        """Update config dict."""
         # NOTE:
         # the filter name get be get by
         # left search bar entry: dataloader.radiograph_folder._selector._search[False].value
@@ -62,6 +64,7 @@ class DataLoader(param.Parameterized):
 
     @param.depends("config_dict", on_init=True)
     def file_selector(self):
+        """File selector."""
         # use user home directory if invalid one found in config file
         prjdir = str(Path.home())
         if self.config_dict["projectdir"] != "TBD":
@@ -85,10 +88,12 @@ class DataLoader(param.Parameterized):
         ("config_dict", param.Dict),
     )
     def as_dict(self):
+        """Return as dict."""
         return self.config_dict
 
     @param.depends("config_dict", on_init=True)
     def json_editor(self):
+        """JSON editor app for viewing config."""
         json_editor = pn.widgets.JSONEditor.from_param(
             self.param.config_dict,
             mode="view",
@@ -104,6 +109,7 @@ class DataLoader(param.Parameterized):
         return config_viewer
 
     def panel(self):
+        """App panel view."""
         save_json_button = pn.widgets.Button.from_param(self.param.save_config_to_disk, name="Save Config")
         update_config_button = pn.widgets.Button.from_param(self.param.update_config_action, name="Update Config")
         buttons = pn.Row(update_config_button, save_json_button)

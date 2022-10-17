@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-
+"""Widgets for denoise."""
 import param
 import panel as pn
 from imars3d.backend.corrections.denoise import denoise
 
 
 class Denoise(param.Parameterized):
-    """
+    """Noise reduction widget.
+
     Widget for the denoise filter from iMars3D, must have a parent widget with
     validate ct stack.
     """
@@ -35,6 +36,7 @@ class Denoise(param.Parameterized):
 
     @param.depends("denoise_action", watch=True)
     def apply(self):
+        """Apply denoise."""
         if self.parent.ct is None:
             pn.state.notifications.warning("no CT found")
         else:
@@ -49,6 +51,7 @@ class Denoise(param.Parameterized):
             pn.state.notifications.success("Denoise complete.", duration=3000)
 
     def panel(self, width=200):
+        """App card view."""
         #
         method_selector = pn.widgets.RadioButtonGroup.from_param(self.param.denoise_method)
         #

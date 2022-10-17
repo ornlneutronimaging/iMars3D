@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""iMars3D: gamma filter module."""
 import param
 import multiprocessing
 import numpy as np
@@ -11,7 +12,8 @@ logger.name = __name__
 
 
 class gamma_filter(param.ParameterizedFunction):
-    """
+    """Gamma filter.
+
     Replace near saturated pixels (due to gamma radiation) with median values.
     The median filtering is carried out by tomopy.remove_outlier.
     If selective median filtering is enabled (default), only the pixels greater than the specified threshold are replaced.
@@ -58,7 +60,7 @@ class gamma_filter(param.ParameterizedFunction):
     )
     max_workers = param.Integer(
         default=0,
-        bounds=(0, max(1, multiprocessing.cpu_count() - 2)),
+        bounds=(0, None),
         doc="Maximum number of processes allowed during processing",
     )
     selective_median_filter = param.Boolean(
@@ -71,6 +73,7 @@ class gamma_filter(param.ParameterizedFunction):
     )
 
     def __call__(self, **params):
+        """Replace near saturated pixels (due to gamma radiation) with median values."""
         logger.info(f"Executing Filter: Gamma Filter")
         # type*bounds check via Parameter
         _ = self.instance(**params)

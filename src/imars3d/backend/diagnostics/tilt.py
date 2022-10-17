@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""iMars3D's tilt correction module."""
+import param
+import multiprocessing
 import numpy as np
-import tomopy.util.mproc as mproc
 from typing import Tuple
 from functools import partial
 from scipy.optimize import minimize_scalar
@@ -12,114 +14,8 @@ from multiprocessing.managers import SharedMemoryManager
 from tqdm.contrib.concurrent import process_map
 
 
-def tilt_correction(
-    arrays: np.ndarray,
-    omegas: np.ndarray,
-    low_bound: float = -5.0,
-    high_bound: float = 5.0,
-    cut_off_angle_deg: float = 1e-3,
-    ncore: int = -1,
-):
-    """
-    Detect and correct the rotation axis tilt from the given radiograph stack.
-
-    Parameters
-    ----------
-    arrays:
-        The radiograph stack fro tilt correction
-    omegas:
-        The list of omega angles in radians (follow tomopy convention)
-    low_bound:
-        The lower bound of the tilt angle search space
-    high_bound:
-        The upper bound of the tilt angle search space
-    cut_off_angle_deg:
-        The angle in degrees to cut off the rotation axis tilt correction, i.e.
-        skip applying tilt correction for tilt angles that are too small.
-    ncore:
-        Number of cores to use for parallel median filtering, default is -1,
-        which means using all available cores.
-
-    Returns
-    -------
-        The tilt corrected array
-    """
-    if arrays.ndim != 3:
-        raise ValueError("arrays must be a 3d array")
-    # step 1: find the 180 degree pairs
-    idx_lowrange, idx_highrange = find_180_deg_pairs_idx(omegas, in_degrees=False)
-    # step 2: calculate the tilt from each pair
-    ncore = mproc.mp.cpu_count() if ncore == -1 else int(ncore)
-    with SharedMemoryManager() as smm:
-        # create shared memory
-        shm = smm.SharedMemory(arrays.nbytes)
-        shm_arrays = np.ndarray(arrays.shape, dtype=arrays.dtype, buffer=shm.buf)
-
-        np.copyto(shm_arrays, arrays)
-
-        rst = process_map(
-            partial(calculate_tilt, low_bound=low_bound, high_bound=high_bound),
-            [shm_arrays[il] for il in idx_lowrange],
-            [shm_arrays[ih] for ih in idx_highrange],
-            max_workers=ncore,
-            desc="Calculating tilt correction",
-        )
-    # extract the tilt angles from the optimization results
-    tilts = np.array([result.x for result in rst])
-    # use the average of the found tilt angles
-    tilt = np.mean(tilts)
-    # step 3: apply the tilt correction
-    if abs(tilt) < cut_off_angle_deg:
-        return arrays
-    else:
-        return apply_tilt_correction(arrays, tilt, ncore)
-
-
-def apply_tilt_correction(
-    arrays: np.ndarray,
-    tilt: float,
-    ncore: int = -1,
-) -> np.ndarray:
-    """
-    Apply the tilt correction to the given array.
-    For a 2 deg tilted rotation axis, this function will rotate each image -2
-    deg so that the rotation axis is upright.
-
-    Parameters
-    ----------
-    arrays:
-        The array for tilt correction
-    tilt:
-        The rotation axis tilt angle in degrees
-    ncore:
-        Number of cores to use for parallel median filtering, default is -1, which means using all available cores.
-
-    Returns
-    -------
-        The tilt corrected array
-    """
-    # dimensionality check
-    if arrays.ndim == 2:
-        return rotate(arrays, -tilt, resize=False, preserve_range=True)
-    elif arrays.ndim == 3:
-
-        # NOTE: have to switch to threadpool as we are using a nested function
-        ncore = mproc.mp.cpu_count() if ncore == -1 else int(ncore)
-        with SharedMemoryManager() as smm:
-            shm = smm.SharedMemory(arrays.nbytes)
-            shm_arrays = np.ndarray(arrays.shape, dtype=arrays.dtype, buffer=shm.buf)
-            np.copyto(shm_arrays, arrays)
-
-            rst = process_map(
-                partial(rotate, angle=-tilt, resize=False, preserve_range=True),
-                [shm_arrays[idx] for idx in range(arrays.shape[0])],
-                max_workers=ncore,
-                desc="Applying tilt corr",
-            )
-
-        return np.array(rst)
-    else:
-        raise ValueError("array must be a 2d/3d array")
+logger = param.get_logger(__name__)
+logger.name = __name__
 
 
 def find_180_deg_pairs_idx(
@@ -145,6 +41,7 @@ def find_180_deg_pairs_idx(
     """
     # ensure correct dimension
     if angles.ndim != 1:
+        logger.error(f"angles.ndim = {angles.ndim}, expected 1")
         raise ValueError("angles must be a 1d array")
     # ensure angles are in degrees
     angles = angles if in_degrees else np.degrees(angles)
@@ -160,7 +57,8 @@ def calculate_shift(
     reference_image: np.ndarray,
     moving_image: np.ndarray,
 ) -> float:
-    """
+    """Calculate relative shift between two images.
+
     Calculate the amount of shift needed to move the moving image to the
     reference image.
     This method requires the rotating object to be fully in the field of view.
@@ -189,6 +87,7 @@ def calculate_shift(
     # - errors: float
     # - phasediff: float
     # here we only care about the horizontal shift
+    logger.debug(f"calculate_shift.shift = {shift}")
     return shift[0][1]
 
 
@@ -197,7 +96,8 @@ def calculate_dissimilarity(
     image0: np.ndarray,
     image1: np.ndarray,
 ) -> float:
-    """
+    """Calculate the dissimilarity between two images with given tilt.
+
     Calculate the p3-norm based dissimilarity between the two images at a given
     tilt angle (in degrees).
 
@@ -236,6 +136,7 @@ def calculate_dissimilarity(
     #      the center, therefore no need to crop
     #   2. DO NOT use shift from scipy.ndimage as it will distort the image by
     #      its implied interpolation.
+    logger.debug(f"calculate_dissimilarity.shift_val = {shift_val}")
     if shift_val < -1.0:
         img0_tmp = image0[:, : int(shift_val)]
         img180_tmp = np.fliplr(image1)[:, -int(shift_val) :]
@@ -276,6 +177,9 @@ def calculate_dissimilarity(
     #       around the minimum.
     diff = np.abs(img0_tmp - img180_tmp)
     err = np.power(diff, 3).sum() / (np.linalg.norm(img0_tmp) * np.linalg.norm(img180_tmp))
+    logger.debug(f"calculate_dissimilarity.diff = {diff}")
+    logger.debug(f"calculate_dissimilarity.err = {err}")
+
     # cleanup
     del img0_tmp, img180_tmp
     return err
@@ -316,4 +220,191 @@ def calculate_tilt(
         bounds=(low_bound, high_bound),
     )
     #
+    logger.debug(f"calculate_tilt.res:\n{res}")
     return res
+
+
+class tilt_correction(param.ParameterizedFunction):
+    """
+    Detect and correct the rotation axis tilt from the given radiograph stack.
+
+    Parameters
+    ----------
+    arrays: np.ndarray
+        The radiograph stack fro tilt correction
+    rot_angles: np.ndarray
+        The list of rotation angles in radians (follow tomopy convention)
+    low_bound: float
+        The lower bound of the tilt angle search space
+    high_bound: float
+        The upper bound of the tilt angle search space
+    cut_off_angle_deg: float
+        The angle in degrees to cut off the rotation axis tilt correction, i.e.
+        skip applying tilt correction for tilt angles that are too small.
+    max_workers:
+        Number of cores to use for parallel median filtering, default is 0,
+        which means using all available cores.
+
+    Returns
+    -------
+    np.ndarray
+        The tilt corrected array
+    """
+
+    arrays = param.Array(
+        doc="The radiograph stack for tilt correction",
+    )
+    rot_angles = param.Array(
+        doc="The list of rotation angles in radians (follow tomopy convention)",
+    )
+    low_bound = param.Number(
+        default=-5.0,
+        doc="The lower bound of the tilt angle search space",
+    )
+    high_bound = param.Number(
+        default=5.0,
+        doc="The upper bound of the tilt angle search space",
+    )
+    cut_off_angle_deg = param.Number(
+        default=2.0,
+        doc="The angle in degrees to cut off the rotation axis tilt correction, i.e. skip applying tilt correction for tilt angles that are too small.",
+    )
+    # NOTE:
+    # The front and backend are sharing the same computing unit, therefore we can
+    # set a hard cap on the max_workers.
+    # This will have to be updated once we moved to a client-server architecture.
+    max_workers = param.Integer(
+        default=0,
+        bounds=(0, None),
+        doc="Number of cores to use for parallel median filtering, default is 0, which means using all available cores.",
+    )
+
+    def __call__(self, **params):
+        """Parse input and perform auto tilt correction."""
+        logger.info(f"Executing Filter: Auto Tilt correction")
+        # type*bounds check via Parameter
+        _ = self.instance(**params)
+        # sanitize arguments
+        params = param.ParamOverrides(self, params)
+
+        # type validation is done, now replacing max_worker with an actual integer
+        self.max_workers = multiprocessing.cpu_count() if params.max_workers == 0 else params.max_workers
+        logger.debug(f"max_worker={self.max_workers}")
+
+        # dimension check
+        if params.arrays.ndim != 3:
+            logger.error(f"Input array must be 3D, got {params.arrays.ndim}D")
+            raise ValueError(f"Input array must be 3D, got {params.arrays.ndim}D")
+
+        # step 1: find the 180 deg pairs
+        idx_lowrange, idx_highrange = find_180_deg_pairs_idx(params.rot_angles, in_degrees=False)
+        logger.debug(f"len(rot_angles) = {len(params.rot_angles)}")
+        logger.debug(f"len(idx_lowrange) = {len(idx_lowrange)}")
+        logger.debug(f"len(idx_highrange) = {len(idx_highrange)}")
+
+        # step 2: calculate tilt angle per 180 deg pair
+        with SharedMemoryManager() as smm:
+            # create shared memory
+            shm = smm.SharedMemory(params.arrays.nbytes)
+            shm_arrays = np.ndarray(params.arrays.shape, dtype=params.arrays.dtype, buffer=shm.buf)
+
+            np.copyto(shm_arrays, params.arrays)
+
+            rst = process_map(
+                partial(
+                    calculate_tilt,
+                    low_bound=params.low_bound,
+                    high_bound=params.high_bound,
+                ),
+                [shm_arrays[il] for il in idx_lowrange],
+                [shm_arrays[ih] for ih in idx_highrange],
+                max_workers=self.max_workers,
+                desc="Calculating tilt correction",
+            )
+        # extract the tilt angles from the optimization results
+        tilts = np.array([result.x for result in rst])
+        # use the average of the found tilt angles
+        tilt = np.mean(tilts)
+
+        # step 3: apply the tilt correction
+        if abs(tilt) < params.cut_off_angle_deg:
+            logger.info(f"Rotation axis tilt is too small, skip applying tilt correction")
+            return params.arrays
+        else:
+            logger.info(f"Applying rotation axis tilt correction: {tilt:.3f} deg")
+            return apply_tilt_correction(
+                arrays=params.arrays,
+                tilt=tilt,
+                max_workers=self.max_workers,
+            )
+
+
+class apply_tilt_correction(param.ParameterizedFunction):
+    """Apply the tilt correction to the given array.
+
+    For a 2 deg tilted rotation axis, this function will rotate each image -2
+    deg so that the rotation axis is upright.
+
+    Parameters
+    ----------
+    arrays: np.ndarray
+        The array for tilt correction
+    tilt: float
+        The rotation axis tilt angle in degrees
+    max_workers: int
+        Number of cores to use for parallel median filtering, default is 0, which means using all available cores.
+
+    Returns
+    -------
+    np.ndarray
+        The tilt corrected array
+    """
+
+    arrays = param.Array(
+        doc="The array for tilt correction",
+    )
+    tilt = param.Number(
+        doc="The rotation axis tilt angle in degrees",
+    )
+    # NOTE:
+    # The front and backend are sharing the same computing unit, therefore we can
+    # set a hard cap on the max_workers.
+    # This will have to be updated once we moved to a client-server architecture.
+    max_workers = param.Integer(
+        default=0,
+        bounds=(0, None),
+        doc="Number of cores to use for parallel median filtering, default is 0, which means using all available cores.",
+    )
+
+    def __call__(self, **params):
+        """Parse input and perform tilt correction with given tilt angle."""
+        logger.info(f"Executing Filter: Tilt correction")
+        # type*bounds check via Parameter
+        _ = self.instance(**params)
+        # sanitize arguments
+        params = param.ParamOverrides(self, params)
+
+        # type validation is done, now replacing max_worker with an actual integer
+        self.max_workers = multiprocessing.cpu_count() if params.max_workers == 0 else params.max_workers
+        logger.debug(f"max_worker={self.max_workers}")
+
+        # dimensionality check
+        if params.arrays.ndim == 2:
+            logger.info(f"2D image detected, applying tilt correction with tilt = {params.tilt:.3f} deg")
+            return rotate(params.arrays, -params.tilt, resize=False, preserve_range=True)
+        elif params.arrays.ndim == 3:
+            logger.info(f"3D array detected, applying tilt correction with tilt = {params.tilt:.3f} deg")
+            with SharedMemoryManager() as smm:
+                shm = smm.SharedMemory(params.arrays.nbytes)
+                shm_arrays = np.ndarray(params.arrays.shape, dtype=params.arrays.dtype, buffer=shm.buf)
+                np.copyto(shm_arrays, params.arrays)
+                rst = process_map(
+                    partial(rotate, angle=-params.tilt, resize=False, preserve_range=True),
+                    [shm_arrays[idx] for idx in range(params.arrays.shape[0])],
+                    max_workers=self.max_workers,
+                    desc="Applying tilt corr",
+                )
+            return np.array(rst)
+        else:
+            logger.error(f"Input array must be 2D or 3D, got {params.arrays.ndim}D")
+            raise ValueError(f"Input array must be 2D or 3D, got {params.arrays.ndim}D")
