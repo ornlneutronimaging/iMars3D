@@ -53,7 +53,7 @@ def test_find_rotation_center(center_ref):
     # NOTE: unit of omegas is handled by find_180_deg_pairs_idx
     omegas = np.linspace(0, np.pi * 2, 181)
     projs = get_synthetic_stack(center_ref, omegas)
-    center_calc = find_rotation_center(projs, omegas, in_degrees=False)
+    center_calc = find_rotation_center(arrays=projs, angles=omegas, in_degrees=False)
     # verify
     # NOTE:
     # answer within the same pixel should be sufficient for most cases
@@ -62,7 +62,7 @@ def test_find_rotation_center(center_ref):
     # case 1: wrong dimension
     projs = np.random.random(100).reshape(10, 10)
     with pytest.raises(ValueError):
-        find_rotation_center(projs, omegas)
+        find_rotation_center(arrays=projs, angles=omegas)
 
 
 if __name__ == "__main__":
