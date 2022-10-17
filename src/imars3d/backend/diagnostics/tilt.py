@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""iMars3D's tilt correction module."""
 import param
 import multiprocessing
 import numpy as np
@@ -56,7 +57,8 @@ def calculate_shift(
     reference_image: np.ndarray,
     moving_image: np.ndarray,
 ) -> float:
-    """
+    """Calculate relative shift between two images.
+
     Calculate the amount of shift needed to move the moving image to the
     reference image.
     This method requires the rotating object to be fully in the field of view.
@@ -94,7 +96,8 @@ def calculate_dissimilarity(
     image0: np.ndarray,
     image1: np.ndarray,
 ) -> float:
-    """
+    """Calculate the dissimilarity between two images with given tilt.
+
     Calculate the p3-norm based dissimilarity between the two images at a given
     tilt angle (in degrees).
 
@@ -277,6 +280,7 @@ class tilt_correction(param.ParameterizedFunction):
     )
 
     def __call__(self, **params):
+        """Parse input and perform auto tilt correction."""
         logger.info(f"Executing Filter: Auto Tilt correction")
         # type*bounds check via Parameter
         _ = self.instance(**params)
@@ -336,8 +340,8 @@ class tilt_correction(param.ParameterizedFunction):
 
 
 class apply_tilt_correction(param.ParameterizedFunction):
-    """
-    Apply the tilt correction to the given array.
+    """Apply the tilt correction to the given array.
+
     For a 2 deg tilted rotation axis, this function will rotate each image -2
     deg so that the rotation axis is upright.
 
@@ -373,6 +377,7 @@ class apply_tilt_correction(param.ParameterizedFunction):
     )
 
     def __call__(self, **params):
+        """Parse input and perform tilt correction with given tilt angle."""
         logger.info(f"Executing Filter: Tilt correction")
         # type*bounds check via Parameter
         _ = self.instance(**params)

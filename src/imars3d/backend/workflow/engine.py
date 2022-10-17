@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+"""Workflow engine for imars3d."""
 # package imports
 from imars3d.backend.workflow import validate
 
@@ -9,6 +11,8 @@ from typing import Any, List, Optional, Union
 
 
 class WorkflowEngineError(RuntimeError):
+    """Base class for workflow engine errors."""
+
     pass
 
 
@@ -76,7 +80,7 @@ def WorkflowEngine(
                 raise WorkflowEngineError(errors)
 
         def __init__(self, config: Union[str, dict]) -> None:
-            r"""
+            r"""Initialize the workflow engine.
 
             Parameters
             ----------
@@ -87,7 +91,7 @@ def WorkflowEngine(
             self._registry: Optional[dict] = None  # will store set or computed globals parameters
 
         def _instrospect_task_function(self, function_str: str) -> namedtuple:
-            r"""Obtain information from the function associated to one task in the workflow
+            r"""Obtain information from the function associated to one task in the workflow.
 
             Parameters
             ----------
@@ -126,7 +130,7 @@ def WorkflowEngine(
                 return value of the function carrying out the task. Should be an iterable, such as a ``List``.
 
             Raises
-            -------
+            ------
             WorkflowEngineError
                 The outputs, as defined in the task entry, don't match the actual return value of the function.
             """
@@ -142,7 +146,9 @@ def WorkflowEngine(
                 self._registry.update(dict(zip(task["outputs"], function_outputs)))
 
         def _resolve_inputs(self, inputs: dict, globals_required: set) -> dict:
-            r"""Populate the input parameters of the parameterized function with whatever global parameters
+            r"""Resolve inputs for tasks.
+
+            Populate the input parameters of the parameterized function with whatever global parameters
             it may require and that are missing in the task entry of the JSON configuration file.
 
             Parameters
@@ -152,6 +158,11 @@ def WorkflowEngine(
                 to the task currently being evaluated.
             globals_required
                 set of global parameters required as inputs by the parameterized function
+
+            Returns
+            -------
+            dict
+                the inputs for the parameterized function.
             """
             resolved = inputs
             resolved.update({key: None for key in globals_required})  # expand to include implicit globals
@@ -161,7 +172,9 @@ def WorkflowEngine(
             return resolved
 
         def _dryrun(self) -> None:
-            r"""Validate that the inputs of a task, which could be the output(s) of any previous task(s),
+            r"""Verify validity of the workflow configuration.
+
+            Validate that the inputs of a task, which could be the output(s) of any previous task(s),
             have been computed.
 
             Raises
@@ -205,7 +218,7 @@ def WorkflowEngine(
                     current_globals.update(new_globals)
 
         def run(self) -> None:
-            r"""Sequential execution of the tasks specified in the JSON configuration file"""
+            r"""Sequential execution of the tasks specified in the JSON configuration file."""
             self._dryrun()
             # initialize the registry of global parameters with the metadata
             self._registry = {k: v for k, v in self.config.items() if k not in ("name", "tasks")}

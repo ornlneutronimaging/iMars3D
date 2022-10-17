@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-"""
-Data handling for imars3d.
-"""
+"""Data handling for iMars3D."""
 import re
 import param
 import multiprocessing
@@ -31,10 +29,10 @@ logger.name = __name__
 
 class load_data(param.ParameterizedFunction):
     """
-    Load data with given input
+    Load data with given input.
 
     Parameters
-    ---------
+    ----------
     ct_files: List[str]
         explicit list of radiographs (full path)
     ob_files: List[str]
@@ -100,9 +98,7 @@ class load_data(param.ParameterizedFunction):
     )
 
     def __call__(self, **params):
-        """
-        This makes the class behaves like a function.
-        """
+        """Parse inputs and perform multiple dispatch."""
         # type*bounds check via Parameter
         _ = self.instance(**params)
         # sanitize arguments
@@ -451,12 +447,3 @@ def _extract_rotation_angles(
             [float(tifffile.TiffFile(f).pages[0].tags[metadata_idx].value.split(":")[-1]) for f in filelist]
         )
     return rotation_angles
-
-
-# -----------------------------------
-# TODO
-# def _filter_by_metadata():
-#     """
-#     TODO: waiting on TIFFMetaData class
-#     """
-#     raise NotImplementedError

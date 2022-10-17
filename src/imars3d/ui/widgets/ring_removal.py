@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-
+"""Widgets for ring removal."""
 import param
 import panel as pn
 from imars3d.backend.corrections.ring_removal import remove_ring_artifact
 
 
 class RemoveRingArtifact(param.Parameterized):
-    """
+    """Ring removal widget.
+
     widget of ring artifact removal filter from iMars3D, must have a parent
     widget with valid ct stack.
     """
@@ -32,6 +33,7 @@ class RemoveRingArtifact(param.Parameterized):
 
     @param.depends("execute", watch=True)
     def apply(self):
+        """Apply ring removal."""
         if self.parent.ct is None:
             pn.state.notifications.warning("no CT found", duration=3000)
         else:
@@ -47,6 +49,7 @@ class RemoveRingArtifact(param.Parameterized):
             pn.state.notifications.success("Ring removal complete.", duration=3000)
 
     def panel(self, width=200):
+        """App card view."""
         kernel_size_input = pn.widgets.IntInput.from_param(
             self.param.kernel_size,
             name="Kernel size",

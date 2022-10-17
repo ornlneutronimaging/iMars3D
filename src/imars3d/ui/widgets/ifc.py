@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-
+"""Widgets for intensity fluctuation correction."""
 import param
 import panel as pn
 from imars3d.backend.corrections.intensity_fluctuation_correction import intensity_fluctuation_correction
 
 
 class IntensityFluctuationCorrection(param.Parameterized):
-    """
+    """IFC widget.
+
     Widget for the intensity fluctuation correction filter from iMars3D, must have a
     parent with valid ct stack.
     """
@@ -32,6 +33,7 @@ class IntensityFluctuationCorrection(param.Parameterized):
 
     @param.depends("execute", watch=True)
     def apply(self):
+        """Apply IFC."""
         if self.parent.ct is None:
             pn.state.notifications.warning("no CT found", duration=3000)
         else:
@@ -52,6 +54,7 @@ class IntensityFluctuationCorrection(param.Parameterized):
             pn.state.notifications.success("IFC complete.", duration=3000)
 
     def panel(self, width=200):
+        """App card view."""
         #
         auto_air_toggle = pn.widgets.Toggle.from_param(
             self.param.auto_detect_air,

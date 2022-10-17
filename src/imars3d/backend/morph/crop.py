@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""iMars3D: crop module."""
 import numpy as np
 import param
 from scipy.ndimage import median_filter
@@ -13,7 +14,7 @@ class crop(param.ParameterizedFunction):
     Crop the image stack to provided limits or auto detected bound box.
 
     Parameters
-    -----------
+    ----------
     arrays: ndarray
         The image stack to crop. Can also be a 2D image.
     crop_limit: tuple
@@ -81,6 +82,7 @@ class crop(param.ParameterizedFunction):
     )
 
     def __call__(self, **params):
+        """Call the function."""
         logger.info(f"Executing Filter: Crop")
         # forced type+bounds check
         _ = self.instance(**params)
@@ -108,7 +110,7 @@ class crop(param.ParameterizedFunction):
         rel_intensity_threshold_fov,
         rel_intensity_threshold_sample,
     ) -> np.ndarray:
-
+        """Private function to crop the image stack."""
         if arrays.ndim not in (2, 3):
             raise ValueError("Only 2D and 3D arrays are supported.")
 
@@ -143,7 +145,7 @@ def detect_bounds(
     Auto detect bounds based on intensity thresholding.
 
     Parameters
-    -----------
+    ----------
     arrays:
         The image stack to crop. Can also be a 2D image.
     border_pix:
@@ -160,6 +162,7 @@ def detect_bounds(
         the relative intensity threshold used to determine pixels within the
         sample region, only valid for case 2, and the value is relative to the
         intensity of the air region (outter region in case 2).
+
     Returns
     -------
         The crop limits in (left, right, top, bottom) order.

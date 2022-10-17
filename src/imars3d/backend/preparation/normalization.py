@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""iMars3D normalization module."""
 import param
 import multiprocessing
 import numpy as np
@@ -48,6 +49,7 @@ class normalization(param.ParameterizedFunction):
     )
 
     def __call__(self, **params):
+        """Perform normalization via tomopy."""
         logger.info(f"Executing Filter: Normalization")
         # type*bounds check via Parameter
         _ = self.instance(**params)

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""reconstruction module for imars3d package."""
 import numpy as np
 from tomopy.recon.algorithm import recon as tomo_recon
 
@@ -12,7 +13,7 @@ def recon(
     **kwargs
 ) -> np.ndarray:
     """
-    Perform reconstruction on a stack of tomographic data
+    Perform reconstruction on a stack of tomographic data.
 
     Parameters
     ----------
@@ -31,7 +32,6 @@ def recon(
     ------
         Reconstructed tomographic data
     """
-
     if arrays.ndim != 3:
         raise ValueError("Expected input array to have 3 dimensions")
 

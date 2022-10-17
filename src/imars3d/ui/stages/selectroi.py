@@ -1,4 +1,5 @@
 #!/usr/env/bin python3
+"""Select region of interest stage for iMars3D."""
 import param
 import panel as pn
 import holoviews as hv
@@ -13,6 +14,8 @@ from imars3d.backend.morph.crop import crop
 
 
 class SelectROI(param.Parameterized):
+    """Stage for selecting region of interest."""
+
     # -- Input data from previous step
     # data container
     ct = param.Array(
@@ -82,6 +85,7 @@ class SelectROI(param.Parameterized):
         ("recn_name", param.String),
     )
     def output(self):
+        """Return output data for next step."""
         return (
             self.ct,
             self.ob,
@@ -94,6 +98,7 @@ class SelectROI(param.Parameterized):
 
     @param.depends("ct_checkpoint_action", watch=True)
     def save_checkpoint(self):
+        """Save current ct, ob, dc, omegas."""
         if self.ct is None:
             pn.state.warning("No CT to save")
         else:
@@ -116,6 +121,7 @@ class SelectROI(param.Parameterized):
 
     @param.depends("confirm_ROI_action", watch=True)
     def update_ROI(self):
+        """Update ROI box."""
         data = self.roi_box_stream.data
         self.top = int(data["y1"][0])
         self.bottom = int(data["y0"][0])
@@ -123,6 +129,7 @@ class SelectROI(param.Parameterized):
         self.right = int(data["x1"][0])
 
     def roi_control_pn(self, width=80):
+        """Return panel for ROI control."""
         top = pn.widgets.IntInput.from_param(self.param.top, name="", disabled=True, width=width // 3)
         bottom = pn.widgets.IntInput.from_param(self.param.bottom, name="", disabled=True, width=width // 3)
         left = pn.widgets.IntInput.from_param(
@@ -157,6 +164,7 @@ class SelectROI(param.Parameterized):
 
     @param.depends("crop2ROI_action", watch=True)
     def crop_to_RIO(self):
+        """Crop to ROI."""
         crop_limit = (self.left, self.right, self.top, self.bottom)
         #
         if self.ct is None:
@@ -184,6 +192,7 @@ class SelectROI(param.Parameterized):
             )
 
     def cross_hair_view(self, x, y):
+        """Return cross hair view."""
         return (hv.HLine(y) * hv.VLine(x)).opts(
             opts.HLine(
                 color="yellow",
@@ -303,6 +312,7 @@ class SelectROI(param.Parameterized):
         "colormap_scale",
     )
     def ct_viewer(self):
+        """Radiograph viewer."""
         if self.ct is None:
             return pn.pane.Markdown("no CT to display")
         # ct image object
@@ -349,6 +359,7 @@ class SelectROI(param.Parameterized):
         "colormap_scale",
     )
     def ob_viewer(self):
+        """Open beam viewer."""
         if self.ob is None:
             return pn.pane.Markdown("no OB to display")
         # no need for fancy viewer tools for OB
@@ -371,6 +382,7 @@ class SelectROI(param.Parameterized):
         "colormap_scale",
     )
     def dc_viewer(self):
+        """Dark current viewer."""
         if self.dc is None:
             return pn.pane.Markdown("no DC to display")
         #
@@ -387,6 +399,7 @@ class SelectROI(param.Parameterized):
         return pn.Column(dc_control, viewer)
 
     def plot_control(self, width=80):
+        """Plot control panel."""
         # color map
         cmap = pn.widgets.Select.from_param(
             self.param.colormap,
@@ -411,6 +424,7 @@ class SelectROI(param.Parameterized):
         return plot_pn
 
     def panel(self):
+        """App panel view."""
         side_pn = pn.Column(
             self.plot_control(width=self.frame_width // 3),
             self.roi_control_pn(width=self.frame_width // 3),
