@@ -22,17 +22,17 @@ class gamma_filter(param.ParameterizedFunction):
     ----------
     arrays: np.ndarray
         3D array of images, the first dimension is the rotation angle omega
-    threshold: int
+    threshold: int = -1
         threshold for saturation, default is -1, which means using the internally defined threshold (see source code)
-    median_kernel: int
+    median_kernel: int = 5
         size of the median filter kernel, default is 5
-    axis: int
+    axis: int = 0
         axis along which to chunk the array for parallel median filtering, default is 0.
-    max_workers: int
+    max_workers: int = 0
         number of cores to use for parallel median filtering, default is 0, which means using all available cores.
-    selective_median_filter: bool
+    selective_median_filter: bool = True
         whether to use selective median filtering, default is True.
-    diff_tomopy: float
+    diff_tomopy: float = -1
         threshold passed to tomopy for median filter based outlier detection. Negative values will use the internal default value (see source code).
 
     Returns
