@@ -19,7 +19,7 @@ def test_remove_ring_artifact():
     tomo_stack = get_synthetic_stack()
     # case 0: incorrect input
     with pytest.raises(ValueError):
-        remove_ring_artifact(tomo_stack[0, :, :])
+        remove_ring_artifact(arrays=tomo_stack[0, :, :])
     # case 1: with added ring artifact
     # randomly adding 4 rings to each sinogram
     tomo_with_ring = np.array(tomo_stack)
@@ -31,7 +31,7 @@ def test_remove_ring_artifact():
         tomo_with_ring[:, i, cols[3]] *= 0.90
     err_no_corr = np.linalg.norm(tomo_with_ring - tomo_stack)
     # perform correction
-    tomo_corr = remove_ring_artifact(tomo_with_ring)
+    tomo_corr = remove_ring_artifact(arrays=tomo_with_ring)
     err_corr = np.linalg.norm(tomo_corr - tomo_stack)
     # verify
     assert err_corr < err_no_corr
