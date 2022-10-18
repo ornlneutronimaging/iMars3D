@@ -4,44 +4,57 @@
   "type": "object",
   "properties": {
     "facility": {
-      "type": "string"
+      "type": "string",
+      "enum": ["HFIR", "SNS"],
+      "description": "Facility for the measurment"
     },
     "instrument": {
-      "type": "string"
+      "type": "string",
+      "enum": ["CG1D", "SNAP"],
+      "description": "Instrument for the measurment"
     },
     "ipts": {
-      "type": "string"
+      "type": "string",
+      "description": "The full IPTS identifier for the measurement"
     },
     "name": {
-      "type": "string"
+      "type": "string",
+      "description": "Rememberable name for the measurement"
     },
     "workingdir": {
-      "type": "string"
+      "type": "string",
+      "description": "Directory to write intermediate results when requested"
     },
     "outputdir": {
-      "type": "string"
+      "type": "string",
+      "description": "Directory to write final results"
     },
     "tasks": {
       "type": "array",
-      "minItems": 1,
+      "minItems": 0,
+      "description": "Each task is a step in the tomographic reconstruction",
       "items": {
         "properties": {
           "name": {
-            "type": "string"
+            "type": "string",
+            "description": "Friendly name for the task"
           },
           "function": {
-            "type": "string"
+            "type": "string",
+            "description": "Fully qualified python name for the task"
           },
           "inputs": {
-            "type": "object"
+            "type": "object",
+            "description": "Dictionary of inputs to the task. These are in the form of key value pairs that are passed into the task."
           },
           "outputs": {
-            "type": "array"
+            "type": "array",
+            "description": "List of outputs from the task"
           }
         },
         "required": ["name", "function"]
       }
     }
   },
-    "required": ["name", "workingdir", "outputdir", "tasks"]
+    "required": ["facility", "instrument", "ipts", "name", "workingdir", "outputdir", "tasks"]
 }
