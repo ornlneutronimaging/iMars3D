@@ -134,7 +134,7 @@ In this way it is the engine that maintains state for the reconstruction process
 
 The UI guides the user through a set of stages to prepare for and execute a reconstruction.  The stages are as follows:
 
-* **Loading** - which guides the user to provide all the basic configuration data the reconstruction process requires.  The configuration (metadata) is put into a dictionary.  It is then persisted in a json file to be use for any reconstruction process.
+* **Dataloading** - which guides the user to provide all the basic configuration data the reconstruction process requires.  The configuration (metadata) is put into a dictionary.  It is then persisted in a json file to be use for any reconstruction process.
 * **Select Region of Interest (ROI)** - This stage allows the user to interactively select a region of interest from the raw ct_scans to be used for reconstruction rather than the entire raw data set.
 * **Preprocess** - this stage allows the user to specify the filter/functions to be applied to the data and the order in which to apply them prior to the actual reconstruction
 * **Reconstruction** - This stage performs the actual reconstruction based on the intermediate results established during the preprocessing stage.
@@ -212,13 +212,13 @@ The widget handles the interaction with the user to collect the data (parameters
 
 DD: During Interactive reconstruction the UI software will wait for the user to execute the filter before saving the associated configuration (parameter) data.
 
-DD:The option to save to disk the result of running a filter/function (intermediate data) will be a checkbox.
+DD: The option to save to disk the result of running a filter/function (intermediate data) will be a checkbox.
 The intermediate data will be saved when the user selects to save the configuration data.
 If the box is checked prior to running the filter it is ignored.
 
-DD:The widget associated with the filter/function calls a single function (interface) on the interactive reconstruction engine method.  The filter/function widget serializes itself to a dictionary entry that is passed to this single interface on the engine.  There is one interface function all filter/functions user on the engine instead of the engine having an interface for each filter/function.
+DD: The widget associated with the filter/function calls a single function (interface) on the interactive reconstruction engine method.  The filter/function widget serializes itself to a dictionary entry that is passed to this single interface on the engine.  There is one interface function all filter/functions user on the engine instead of the engine having an interface for each filter/function.
 
-DD:There will be two buffers to hold results.
+DD: There will be two buffers to hold results.
 The current buffer holds the accepted result from the previous filter/function.
 A temporary buffer holds the result of the current filter/function execution.
 This is to allow the user the ability to reject the intermediate result if desired.
