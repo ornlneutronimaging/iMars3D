@@ -3,10 +3,14 @@
 """iMars3D's ring artifact correction module."""
 import scipy
 import numpy as np
+import param
 import tomopy.util.mproc as mproc
 from multiprocessing.managers import SharedMemoryManager
 from tqdm.contrib.concurrent import process_map
 from functools import partial
+
+logger = param.get_logger(__name__)
+logger.name = __name__
 
 
 def remove_ring_artifact(
@@ -37,6 +41,7 @@ def remove_ring_artifact(
     -------
         Radiograph stack with ring artifact removed.
     """
+    logger.info("Executing Filter: Remove Ring Artifact (tomopy)")
     # sanity check
     if arrays.ndim != 3:
         raise ValueError("This correction can only be used for a stack, i.e. a 3D image.")
@@ -70,6 +75,7 @@ def remove_ring_artifact(
     rst = np.array(rst)
     for i in range(arrays.shape[1]):
         arrays[:, i, :] = rst[i]
+    logger.info("FINISHED Executing Filter: Remove Ring Artifact (tomopy)")
     return arrays
 
 
