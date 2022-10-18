@@ -13,6 +13,7 @@ from functools import partial
 logger = param.get_logger(__name__)
 logger.name = __name__
 
+
 class remove_ring_artifact(param.ParameterizedFunction):
     """
     Remove ring artifact from radiograph stack using Ketcham method.
@@ -38,9 +39,15 @@ class remove_ring_artifact(param.ParameterizedFunction):
     """
 
     arrays = param.Array(doc="Input radiograph stack.")
-    kernel_size = param.Integer(default=5, doc="The size of the kernel (moving window) during local smoothing with median filter.")
-    sub_division = param.Integer(default=10, doc="Sub-dividing the sinogram into subsections (along rotation angle axis).")
-    correction_range = param.Tuple(default=(0.9, 1.1), doc="Multiplicative correction factor is capped within given range.")
+    kernel_size = param.Integer(
+        default=5, doc="The size of the kernel (moving window) during local smoothing with median filter."
+    )
+    sub_division = param.Integer(
+        default=10, doc="Sub-dividing the sinogram into subsections (along rotation angle axis)."
+    )
+    correction_range = param.Tuple(
+        default=(0.9, 1.1), doc="Multiplicative correction factor is capped within given range."
+    )
     max_workers = param.Integer(default=0, bounds=(0, None), doc="Number of cores to use for parallel processing.")
 
     def __call__(self, **params):
@@ -61,7 +68,7 @@ class remove_ring_artifact(param.ParameterizedFunction):
         correction_range: tuple = (0.9, 1.1),
         max_workers: int = 0,
     ) -> np.ndarray:
-        
+
         # sanity check
         if arrays.ndim != 3:
             raise ValueError("This correction can only be used for a stack, i.e. a 3D image.")
