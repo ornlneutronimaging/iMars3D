@@ -21,20 +21,20 @@ class remove_ring_artifact(param.ParameterizedFunction):
 
     Parameters
     ----------
-    arrays:
+    arrays: np.ndarray
         Input radiograph stack.
-    kernel_size:
+    kernel_size: int = 5
         The size of the kernel (moving window) during local smoothing with median filter.
-    sub_division:
+    sub_division: int = 10
         Sub-dividing the sinogram into subsections (along rotation angle axis).
-    correction_range:
+    correction_range: tuple = (0.9, 1.1)
         Multiplicative correction factor is capped within given range.
-    ncore:
+    max_workers: int = 0
         Number of cores to use for parallel processing.
 
     Returns
     -------
-    Radiograph stack with ring artifact removed.
+        Radiograph stack with ring artifact removed.
     """
 
     arrays = param.Array(doc="Input radiograph stack.")
