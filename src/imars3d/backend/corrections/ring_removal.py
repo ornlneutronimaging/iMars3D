@@ -90,7 +90,7 @@ class remove_ring_artifact(param.ParameterizedFunction):
             # invoke mp via tqdm wrapper
             rst = process_map(
                 partial(
-                    remove_ring_artifact_Ketcham,
+                    _remove_ring_artifact_Ketcham,
                     kernel_size=kernel_size,
                     sub_division=sub_division,
                     correction_range=correction_range,
@@ -105,12 +105,7 @@ class remove_ring_artifact(param.ParameterizedFunction):
         return arrays
 
 
-def remove_ring_artifact_Ketcham(
-    sinogram: np.ndarray,
-    kernel_size: int = 5,
-    sub_division: int = 10,
-    correction_range: tuple = (0.9, 1.1),
-) -> np.ndarray:
+class remove_ring_artifact_Ketcham(param.ParameterizedFunction):
     """Ketcham's ring artifact removal method.
 
     Use the Ketcham method (doi:`10.1117/12.680939 <https://doi.org/10.1117/12.680939>`_)
@@ -118,13 +113,13 @@ def remove_ring_artifact_Ketcham(
 
     Parameters
     ----------
-    sinogram:
+    sinogram: np.ndarray
         Input sinogram.
-    kernel_size:
+    kernel_size: int = 5
         The size of the kernel (moving window) during local smoothing via median filter.
-    sub_division:
+    sub_division: int = 10
         Sub-dividing the sinogram into subsections (along rotation angle axis).
-    correction_range:
+    correction_range: tuple = (0.9, 1.1)
         Multiplicative correction factor is capped within given range.
 
     Returns
@@ -137,6 +132,35 @@ def remove_ring_artifact_Ketcham(
         1. This method can only be used on a single sinogram.
         2. This method is assuming the ring artifact is of multiplicative nature, i.e. measured = signal * error.
     """
+
+    sinogram = param.Array(doc="Input sinogram.")
+    kernel_size = param.Integer(
+        default=5, doc="The size of the kernel (moving window) during local smoothing via median filter."
+    )
+    sub_division = param.Integer(
+        default=10, doc="Sub-dividing the sinogram into subsections (along rotation angle axis)."
+    )
+    correction_range = param.Tuple(
+        default=(0.9, 1.1), doc="Multiplicative correction factor is capped within given range."
+    )
+
+    def __call__(self, **params):
+        logger.info(f"Executing Filter: Remove Ring Artifact (Ketcham)")
+        _ = self.instance(**params)
+        params = param.ParamOverrides(self, params)
+        val = _remove_ring_artifact_Ketcham(
+            params.sinogram, params.kernel_size, params.sub_division, params.correction_range
+        )
+        logger.info(f"FINISHED Executing Filter: Remove Ring Artifact (Ketcham)")
+        return val
+
+
+def _remove_ring_artifact_Ketcham(
+    sinogram: np.ndarray,
+    kernel_size: int = 5,
+    sub_division: int = 10,
+    correction_range: tuple = (0.9, 1.1),
+) -> np.ndarray:
     # sanity check
     if sinogram.ndim != 2:
         raise ValueError("This correction can only be used for a sinogram, i.e. a 2D image.")
