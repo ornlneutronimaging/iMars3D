@@ -37,7 +37,7 @@ The Backend is responsible for managing and performing the actual reconstruction
 
 Backend Logical Partition
 =========================
-The Backend partition holds that codes that perform a reconstruction process.  
+The Backend partition holds that codes that perform a reconstruction process.
 
 Logically the software in the Backend partition is broken up as follows:
 
@@ -83,17 +83,17 @@ Reconstruction Workflow
 Workflow is the logical partition that contains the reconstruction engine capability.
 There are currently two logical workflow (or reconstrion) engines
 
-* One for interactive reconstruction and 
+* One for interactive reconstruction and
 * One for non-interactive reconstruction
 
 
 I/O
 ---
- 
+
 *  Reading (loading) from files that hold raw image data and other data that is used in the reconstruction process, e.g. Open Beam, Direct Current, etc.
 *  Extracting metadata that is embedded in the data files
 
- 
+
 
 Front End Logical Partition
 ===========================
@@ -218,4 +218,3 @@ The widget for the filter/function will have a viewer to display the intermediat
 Currently the UI Application only performs one reconstruction.  It must then be closed and restarted.
 
 [Future] Reset and clear all fields and release any numpy arrays retained by the kernel.  This would allow a user to execute another reconstruction without having to stop and restart the app.  This will be necessary prior to implementing this app as a web app.
-
