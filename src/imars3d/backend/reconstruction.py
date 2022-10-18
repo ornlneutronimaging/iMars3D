@@ -7,6 +7,7 @@ from tomopy.recon.algorithm import recon as tomo_recon
 logger = param.get_logger(__name__)
 logger.name = __name__
 
+
 class recon(param.ParameterizedFunction):
     """
     Perform reconstruction on a stack of tomographic data.
@@ -66,16 +67,8 @@ class recon(param.ParameterizedFunction):
         logger.info(f"FINISHED Executing Filter: Reconstruction: {params.filter_name}")
         return reconstructed_image
 
-    def _recon(
-        self,
-        arrays,
-        theta,
-        center,
-        algorithm,
-        filter_name,
-        **kwargs
-    ) -> np.ndarray:
-        
+    def _recon(self, arrays, theta, center, algorithm, filter_name, **kwargs) -> np.ndarray:
+
         if arrays.ndim != 3:
             raise ValueError("Expected input array to have 3 dimensions")
 
