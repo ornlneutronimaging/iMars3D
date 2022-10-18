@@ -75,7 +75,7 @@ The library contains the following exposes the following filter and functions fo
     * Rotation
     * Tilt
 
-.. note:: Currently the implementation is python so the user of the library has access to any and all codes in the library.  However, the filters and functions listed are the interfaces to those reconstruction processing logically exposed for use.  Direct use of other functions in the library is not supported
+.. note:: Currently the implementation is python so the user of the library has access to any and all codes in the library.  However, the filters and functions listed are the interfaces to those reconstruction processing logically exposed for use.
 
 Reconstruction Workflow
 -----------------------
@@ -93,8 +93,9 @@ I/O
 *  Reading (loading) from files that hold raw image data and other data that is used in the reconstruction process, e.g. Open Beam, Direct Current, etc.
 *  Extracting metadata that is embedded in the data files
 
- 
+.. note:: Currently metadata extraction only works for TIFF files as we don't know how the metadata is embedded in other image file formats
 
+ 
 Front End Logical Partition
 ===========================
 
@@ -119,22 +120,32 @@ iMars3D codes are packaged in a number of ways:
 iMars3D UI Application
 ======================
 
-The UI application is a relatively simple python application implemented in a Jupyter notebook.
-Logically it is a single threaded application that only does one thing at a time.
-Technically the UI operates in a separate thread and is event driven based on user interaction.
-As is typical with this type of UI technology, call back functions are registered to handle the user generated events.
-The application is not setup to handle multiple UI events at the same time.
-This means that as each filter/function is invoked from the UI it executes to completion before processing another filter/function.
+The UI application is a relatively simple python application that is intended to run in a Jupyter notebook.
+The application is composed of both front end parts (UI) and backend parts.
+The UI (part of the front end) operates in a separate thread and is event driven based on user interaction.
+As is typical with this type of UI technology, callback functions are registered to handle the user generated events and are implemented to be asynchronous.
+
+The UI itself is implemented using Panel widgets which is build on top of Bokeh.
+These aspects of the UI application are not specific to jupyter and can be refactored into a web application with nominal impact to the behavior of the UI or the application.
+
+As indicated the UI is implemented using a set of widgets.
+There is a widget for each filter/function to handle any user interaction required to collect filter/function specific data and invoke the filter/function when at the request of the user.
+This paring of filter/function widgets and the execution of the filter/function from the library is a logical pairing.
+The application contains an engine that actually executes the the filter/function upon request from the UI.
+In this way it is the engine that maintains state for the reconstruction process.
 
 The UI guides the user through a set of stages to prepare for and execute a reconstruction.  The stages are as follows:
-* **Downloading** - which guides the user to provide all the basic configuration data the reconstruction process requires.  The configuration (metadata) is put into a dictionary.  It is then persisted in a json file to be use for any reconstruction process.
+
+* **Loading** - which guides the user to provide all the basic configuration data the reconstruction process requires.  The configuration (metadata) is put into a dictionary.  It is then persisted in a json file to be use for any reconstruction process.
 * **Select Region of Interest (ROI)** - This stage allows the user to interactively select a region of interest from the raw ct_scans to be used for reconstruction rather than the entire raw data set.
 * **Preprocess** - this stage allows the user to specify the filter/functions to be applied to the data and the order in which to apply them prior to the actual reconstruction
 * **Reconstruction** - This stage performs the actual reconstruction based on the intermediate results established during the preprocessing stage.
 * **Visualization** - This stage allows the user to interactively view and explore the result of the reconstruction
 
-The downloading stage is always presented to the user to either fill out the required data or ensure the existing data is correct.
+The loading stage is always presented to the user to either fill out the required data or ensure the existing data is correct.
 However, when the user chooses to run a non-interactive reconstruction the software performs the reconstruction process based on the configuration data and a predefined workflow that has been specified in the json configuration file.
+
+
 
 Capabilities
 ------------
@@ -174,14 +185,14 @@ Auto reconstruction takes an already specified configuration json file which con
 Structure
 ---------
 
-The iMars3D auto reconstruction application si comprised of:
+The iMars3D auto reconstruction application is comprised of:
 
 * The Backend
 
     * iMars3D Filter/Function Library
     * IMars3D non-interactive Workflow Engine
 
-This application could also be run from the command line.
+The auto reduction application could also be run from the command line.
 
 For auto reconstruction a wrapper script is required.
 The system that invokes the auto reconstruction assumes an interface that takes the location of the raw ct_scans.
@@ -191,31 +202,33 @@ iMars3D Library
 
 The iMars3D (filter/function) library is simply the set of filters and functions involved in performing a reconstruction process.
 The library is expected to be used within a python application.
-It is the application that keeps track of the state of the reconstruction and maintains the intermediate results as required to transition from one filter/function to the next.
+It is the python application, which uses the iMars3D library, that needs to keep track of the state of the reconstruction and maintain the intermediate results as required to transition from one filter/function to the next.
 
 iMars3D Key Design Decisions
 ############################
 
-There is a UI widget for each filter/function.
+This section contains key design decision (DD)
+
+DD: There is a UI widget for each filter/function.
 The widget handles the interaction with the user to collect the data (parameters) required to execute the filter/function, if any.
 
-During Interactive reconstruction the UI software will wait for the user to execute the filter before saving the associated configuration (parameter) data.
+DD: During Interactive reconstruction the UI software will wait for the user to execute the filter before saving the associated configuration (parameter) data.
 
-The option to save to disk the result of running a filter/function (intermediate data) will be a checkbox.
+DD:The option to save to disk the result of running a filter/function (intermediate data) will be a checkbox.
 The intermediate data will be saved when the user selects to save the configuration data.
 If the box is checked prior to running the filter it is ignored.
 
-The widget associated with the filter/function calls the interactive reconstruction engine method ``run_single()`` and serializes itself a dictionary entry.
+DD:The widget associated with the filter/function calls a single function (interface) on the interactive reconstruction engine method.  The filter/function widget serializes itself to a dictionary entry that is passed to this single interface on the engine.  There is one interface function all filter/functions user on the engine instead of the engine having an interface for each filter/function.
 
-There will be two buffers to hold results.
+DD:There will be two buffers to hold results.
 The current buffer holds the accepted result from the previous filter/function.
 A temporary buffer holds the result of the current filter/function execution.
 This is to allow the user the ability to reject the intermediate result if desired.
 If/when the intermediate result from executing the current filter/function is satisfactory it will be copied to the current buffer and the temporary buffer will be used for the next filter/function to execute.
 
-The widget for the filter/function will have a viewer to display the intermediate result.
+DD: There is a single widget used for displaying the filter/function intermediate result. The viewer widget does not copy the data to be visualized but rather uses the content of temporary buffer directly.
 
-Currently the UI Application only performs one reconstruction.  It must then be closed and restarted.
+DD: Currently the UI Application only performs one reconstruction.  It must then be closed and restarted.
 
-[Future] Reset and clear all fields and release any numpy arrays retained by the kernel.  This would allow a user to execute another reconstruction without having to stop and restart the app.  This will be necessary prior to implementing this app as a web app.
+DD: [Future] Reset and clear all fields and release any numpy arrays retained by the kernel.  This would allow a user to execute another reconstruction without having to stop and restart the app.  This will be necessary prior to implementing this app as a web app.
 
