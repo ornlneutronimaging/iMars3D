@@ -12,3 +12,4 @@ Development Guide
    workflow
    ui_test
    release
+   highlevel_design
