@@ -37,7 +37,8 @@ The Backend is responsible for managing and performing the actual reconstruction
 
 Backend Logical Partition
 =========================
-The Backend partition holds that codes that perform a reconstruction process.  
+
+The Backend partition holds the codes that perform a reconstruction process.  
 
 Logically the software in the Backend partition is broken up as follows:
 
@@ -53,7 +54,7 @@ The logical library of filters and functions contains the core computational asp
 .. note:: The terms reconstruction process refer to the entire workflow for performing a reconstruction.  This includes the applying and any and all filters and any other process of the data so it can be reconstructed.
 
 The filters and functions are partitioned into categories that represent their role in a reconstruction process.
-The library contains the following exposes the following filter and functions for use in a reconstruction process:
+The library contains the following filter and functions for use in a reconstruction process:
 
 * Morph
 
@@ -81,11 +82,10 @@ Reconstruction Workflow
 -----------------------
 
 Workflow is the logical partition that contains the reconstruction engine capability.
-There are currently two logical workflow (or reconstrion) engines
+There are currently two logical workflow (or reconstruction) engines
 
-* One for interactive reconstruction and 
+* One for interactive reconstruction and
 * One for non-interactive reconstruction
-
 
 I/O
 ---
@@ -105,8 +105,6 @@ The front end is partitioned into:
 
 * Stages
 * Widgets
-
-
 
 iMars3D Logical Packages
 ##########################
