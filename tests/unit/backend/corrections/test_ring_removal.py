@@ -42,7 +42,7 @@ def test_remove_ring_artifact_Ketcham():
     tomo_stack = get_synthetic_stack()
     # case 0: incorrect input
     with pytest.raises(ValueError):
-        remove_ring_artifact_Ketcham(tomo_stack)
+        remove_ring_artifact_Ketcham(sinogram=tomo_stack)
     # case 1: with ring artifact
     tomo_with_ring = np.array(tomo_stack)
     tomo_with_ring[:, 100, 80] *= 1.07
@@ -52,7 +52,7 @@ def test_remove_ring_artifact_Ketcham():
     # select one sinogram for testing
     sino_ref = tomo_stack[:, 100, :]
     sino = tomo_with_ring[:, 100, :]
-    sino_corrected = remove_ring_artifact_Ketcham(sino, kernel_size=5)
+    sino_corrected = remove_ring_artifact_Ketcham(sinogram=sino, kernel_size=5)
     # verify
     #   The correction won't be perfect, but it should be better than the
     #   non-corrected one.
