@@ -13,10 +13,10 @@ def test_recon():
 
     with pytest.raises(ValueError):
         # check that input is 3-dimensional
-        recon(projs[0, :, :], omegas)
+        recon(arrays=projs[0, :, :], theta=omegas)
 
     # run reconstruction
-    result = recon(projs, omegas)
+    result = recon(arrays=projs, theta=omegas)
 
     # extract a region around the center of each slice to compare
     center = int(result[64].shape[1] / 2)
