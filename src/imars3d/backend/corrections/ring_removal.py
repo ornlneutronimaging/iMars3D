@@ -97,38 +97,45 @@ class remove_ring_artifact(param.ParameterizedFunction):
             arrays[:, i, :] = rst[i]
         return arrays
 
+
 class remove_ring_artifact_Ketcham(param.ParameterizedFunction):
     """Ketcham's ring artifact removal method.
 
-        Use the Ketcham method (doi:`10.1117/12.680939 <https://doi.org/10.1117/12.680939>`_)
-        to remove ring artifact from given sinogram.
+    Use the Ketcham method (doi:`10.1117/12.680939 <https://doi.org/10.1117/12.680939>`_)
+    to remove ring artifact from given sinogram.
 
-        Parameters
-        ----------
-        sinogram: np.ndarray
-            Input sinogram.
-        kernel_size: int = 5
-            The size of the kernel (moving window) during local smoothing via median filter.
-        sub_division: int = 10
-            Sub-dividing the sinogram into subsections (along rotation angle axis).
-        correction_range: tuple = (0.9, 1.1)
-            Multiplicative correction factor is capped within given range.
+    Parameters
+    ----------
+    sinogram: np.ndarray
+        Input sinogram.
+    kernel_size: int = 5
+        The size of the kernel (moving window) during local smoothing via median filter.
+    sub_division: int = 10
+        Sub-dividing the sinogram into subsections (along rotation angle axis).
+    correction_range: tuple = (0.9, 1.1)
+        Multiplicative correction factor is capped within given range.
 
-        Returns
-        -------
-            Sinogram with ring artifact removed.
+    Returns
+    -------
+        Sinogram with ring artifact removed.
 
-        NOTE
-        ----
-            0. The ring artifact refers to the halo type artifacts present in the final reconstruction results, which is often caused by local detector/pixel gain error during measurement.
-            1. This method can only be used on a single sinogram.
-            2. This method is assuming the ring artifact is of multiplicative nature, i.e. measured = signal * error.
+    NOTE
+    ----
+        0. The ring artifact refers to the halo type artifacts present in the final reconstruction results, which is often caused by local detector/pixel gain error during measurement.
+        1. This method can only be used on a single sinogram.
+        2. This method is assuming the ring artifact is of multiplicative nature, i.e. measured = signal * error.
     """
 
     sinogram = param.Array(doc="Input sinogram.")
-    kernel_size = param.Integer(default=5, doc="The size of the kernel (moving window) during local smoothing via median filter.")
-    sub_division = param.Integer(default=10, doc="Sub-dividing the sinogram into subsections (along rotation angle axis).")
-    correction_range = param.Tuple(default=(0.9, 1.1), doc="Multiplicative correction factor is capped within given range.")
+    kernel_size = param.Integer(
+        default=5, doc="The size of the kernel (moving window) during local smoothing via median filter."
+    )
+    sub_division = param.Integer(
+        default=10, doc="Sub-dividing the sinogram into subsections (along rotation angle axis)."
+    )
+    correction_range = param.Tuple(
+        default=(0.9, 1.1), doc="Multiplicative correction factor is capped within given range."
+    )
 
     def __call__(self, **params):
         logger.info(f"Executing Filter: Remove Ring Artifact (Ketcham)")
@@ -139,6 +146,7 @@ class remove_ring_artifact_Ketcham(param.ParameterizedFunction):
         )
         logger.info(f"FINISHED Executing Filter: Remove Ring Artifact (Ketcham)")
         return val
+
 
 def _remove_ring_artifact_Ketcham(
     sinogram: np.ndarray,
