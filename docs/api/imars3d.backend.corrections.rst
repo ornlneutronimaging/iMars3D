@@ -40,3 +40,4 @@ imars3d.backend.corrections.ring\_removal module
    :members:
    :undoc-members:
    :show-inheritance:
+   :exclude-members: arrays, correction_range, kernel_size, max_workers, name, sub_division
