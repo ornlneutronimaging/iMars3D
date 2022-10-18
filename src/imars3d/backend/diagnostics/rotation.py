@@ -13,50 +13,49 @@ from imars3d.backend.diagnostics.tilt import find_180_deg_pairs_idx
 logger = param.get_logger(__name__)
 logger.name = __name__
 
+
 class find_rotation_center(param.ParameterizedFunction):
     """
-        Automatically find the rotation center from a given radiograph stack.
+    Automatically find the rotation center from a given radiograph stack.
 
-        Parameters
-        ----------
-        arrays: 3D array of images, the first dimension is the rotation angle omega
-        angles: array of angles in degrees or radians, which must match the order of arrays
-        in_degrees: whether angles are in degrees or radians, default is True (degrees)
-        atol_deg: tolerance for the search of 180 deg paris, default is 0.1 degrees
-        max_workers: number of cores to use for parallel median filtering, default is 0, which means using all available cores.
+    Parameters
+    ----------
+    arrays: 3D array of images, the first dimension is the rotation angle omega
+    angles: array of angles in degrees or radians, which must match the order of arrays
+    in_degrees: whether angles are in degrees or radians, default is True (degrees)
+    atol_deg: tolerance for the search of 180 deg paris, default is 0.1 degrees
+    max_workers: number of cores to use for parallel median filtering, default is 0, which means using all available cores.
 
-        Returns
-        -------
-            rotation center in pixels
+    Returns
+    -------
+        rotation center in pixels
     """
+
     arrays = param.Array(doc="3D array of images, the first dimension is the rotation angle omega.")
     angles = param.Array(doc="array of angles in degrees or radians, which must match the order of arrays")
     in_degrees = param.Boolean(default=True, doc="whether angles are in degrees or radians, default is True (degrees)")
     atol_deg = param.Number(
-    default=1e-3,
-    doc="tolerance for the search of 180 deg paris, default is 0.1 degrees",
-)
+        default=1e-3,
+        doc="tolerance for the search of 180 deg paris, default is 0.1 degrees",
+    )
     max_workers = param.Integer(
-    default=0,
-    bounds=(0, max(1, multiprocessing.cpu_count() - 2)),
-    doc="Maximum number of processes to use for parallel median filtering, default is -1, which means using all available cores.",
-)
+        default=0,
+        bounds=(0, max(1, multiprocessing.cpu_count() - 2)),
+        doc="Maximum number of processes to use for parallel median filtering, default is -1, which means using all available cores.",
+    )
 
     def __call__(self, **params):
         logger.info(f"Executing Filter: Find Rotation Center")
         _ = self.instance(**params)
         params = param.ParamOverrides(self, params)
         val = self._find_rotation_center(
-            params.arrays, 
-            params.angles, 
-            params.in_degrees, 
-            params.atol_deg, 
-            params.max_workers
+            params.arrays, params.angles, params.in_degrees, params.atol_deg, params.max_workers
         )
         logger.info(f"FINISHED Executing Filter: Find Rotation Center")
         return val
 
-    def _find_rotation_center(self,
+    def _find_rotation_center(
+        self,
         arrays: np.ndarray,
         angles: np.ndarray,
         in_degrees: bool = True,
