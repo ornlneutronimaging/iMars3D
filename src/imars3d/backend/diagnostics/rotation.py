@@ -20,11 +20,16 @@ class find_rotation_center(param.ParameterizedFunction):
 
     Parameters
     ----------
-    arrays: 3D array of images, the first dimension is the rotation angle omega
-    angles: array of angles in degrees or radians, which must match the order of arrays
-    in_degrees: whether angles are in degrees or radians, default is True (degrees)
-    atol_deg: tolerance for the search of 180 deg paris, default is 0.1 degrees
-    max_workers: number of cores to use for parallel median filtering, default is 0, which means using all available cores.
+    arrays: np.ndarray
+        3D array of images, the first dimension is the rotation angle omega
+    angles: np.ndarray 
+        array of angles in degrees or radians, which must match the order of arrays
+    in_degrees: bool = True
+        whether angles are in degrees or radians, default is True (degrees)
+    atol_deg: float = 1e-3
+        tolerance for the search of 180 deg paris, default is 0.1 degrees
+    max_workers: int = -1
+        number of cores to use for parallel median filtering, default is 0, which means using all available cores.
 
     Returns
     -------
@@ -40,7 +45,7 @@ class find_rotation_center(param.ParameterizedFunction):
     )
     max_workers = param.Integer(
         default=0,
-        bounds=(0, max(1, multiprocessing.cpu_count() - 2)),
+        bounds=(0, None),
         doc="Maximum number of processes to use for parallel median filtering, default is -1, which means using all available cores.",
     )
 
@@ -71,7 +76,7 @@ class find_rotation_center(param.ParameterizedFunction):
         atol = atol_deg if in_degrees else np.radians(atol_deg)
         idx_low, idx_hgh = find_180_deg_pairs_idx(angles, atol=atol, in_degrees=in_degrees)
         # process
-        max_workers = max(1, multiprocessing.cpu_count() - 2) if max_workers <= 0 else max_workers
+        max_workers = None if max_workers <= 0 else max_workers
         # use shared memory model and tqdm wrapper for multiprocessing to reduce
         # runtime memory footprint
         with SharedMemoryManager() as smm:
