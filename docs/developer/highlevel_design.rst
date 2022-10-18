@@ -138,7 +138,7 @@ The UI guides the user through a set of stages to prepare for and execute a reco
 * **Select Region of Interest (ROI)** - This stage allows the user to interactively select a region of interest from the raw ct_scans to be used for reconstruction rather than the entire raw data set.
 * **Preprocess** - this stage allows the user to specify the filter/functions to be applied to the data and the order in which to apply them prior to the actual reconstruction
 * **Reconstruction** - This stage performs the actual reconstruction based on the intermediate results established during the preprocessing stage.
-* **Visualization** - This stage allows the user to interactively view and explore the result of the reconstruction
+* **Visualization** - This stage allows the user to interactively view and explore the result of the reconstruction.
 
 The loading stage is always presented to the user to either fill out the required data or ensure the existing data is correct.
 However, when the user chooses to run a non-interactive reconstruction the software performs the reconstruction process based on the configuration data and a predefined workflow that has been specified in the json configuration file.
