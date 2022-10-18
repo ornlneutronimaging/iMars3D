@@ -22,7 +22,7 @@ class find_rotation_center(param.ParameterizedFunction):
     ----------
     arrays: np.ndarray
         3D array of images, the first dimension is the rotation angle omega
-    angles: np.ndarray 
+    angles: np.ndarray
         array of angles in degrees or radians, which must match the order of arrays
     in_degrees: bool = True
         whether angles are in degrees or radians, default is True (degrees)
