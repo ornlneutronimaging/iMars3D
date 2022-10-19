@@ -22,13 +22,13 @@ class intensity_fluctuation_correction(param.ParameterizedFunction):
     ----------
     ct: np.ndarray
         The image/radiograph stack to correct for beam intensity fluctuation.
-    air_pixels: int
+    air_pixels: int = 5
         Number of pixels at each boundary to calculate the scaling factor. When a negative number
         is given, the auto air region detection will be used instead of tomopy.
-    sigma: int
+    sigma: int = 3
         The standard deviation of the Gaussian filter, only valid when using the auto air region
         detection via canny edge detection from skimage.
-    max_workers: int
+    max_workers: int = 0
         The number of cores to use for parallel processing, default is 0, which means using all available cores.
 
     Returns

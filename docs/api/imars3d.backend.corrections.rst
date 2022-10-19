@@ -16,6 +16,7 @@ imars3d.backend.corrections.denoise module
    :members:
    :undoc-members:
    :show-inheritance:
+   :exclude-members: arrays, max_workers, bilateral_sigma_color, bilateral_sigma_spatial, median_filter_kernel, method, name
 
 imars3d.backend.corrections.gamma\_filter module
 ------------------------------------------------
@@ -24,6 +25,7 @@ imars3d.backend.corrections.gamma\_filter module
    :members:
    :undoc-members:
    :show-inheritance:
+   :exclude-members: arrays, axis, diff_tomopy, max_workers, median_kernel, name, selective_median_filter, threshold
 
 imars3d.backend.corrections.intensity\_fluctuation\_correction module
 ---------------------------------------------------------------------
@@ -32,6 +34,7 @@ imars3d.backend.corrections.intensity\_fluctuation\_correction module
    :members:
    :undoc-members:
    :show-inheritance:
+   :exclude-members: ct, air_pixels, max_workers, name, sigma
 
 imars3d.backend.corrections.ring\_removal module
 ------------------------------------------------
@@ -40,3 +43,4 @@ imars3d.backend.corrections.ring\_removal module
    :members:
    :undoc-members:
    :show-inheritance:
+   :exclude-members: arrays, correction_range, kernel_size, max_workers, name, sub_division

@@ -205,15 +205,15 @@ class denoise(param.ParameterizedFunction):
     ----------
     arrays: np.ndarray
         The image stack to denoise.
-    method: str
+    method: str = 'bilateral'
         The denoise method to use.
-    median_filter_kernel: int
+    median_filter_kernel: int = 3
         The kernel size of the median filter, only valid for 'median' method.
-    bilateral_sigma_color: float
+    bilateral_sigma_color: float = 0.02
         The sigma of the color/gray space, only valid for 'bilateral' method.
-    bilateral_sigma_spatial: float
+    bilateral_sigma_spatial: float = 5.
         The sigma of the spatial space, only valid for 'bilateral' method.
-    max_workers:
+    max_workers: int = 0
         The number of cores to use for parallel processing, default is 0, which means using all available cores.
 
     Returns
