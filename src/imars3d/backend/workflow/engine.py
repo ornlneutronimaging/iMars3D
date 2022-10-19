@@ -16,7 +16,7 @@ class WorkflowEngineError(RuntimeError):
     pass
 
 
-def WorkflowEngine(
+def WorkflowEngineAuto(
     workflow_schema: dict = validate.SCHEMA, global_parameters: Optional[List[str]] = None
 ) -> "WorkflowEngineWithSchema":  # noqa F821
     r"""Workflow engine factory, given a particular workflow schema.

@@ -1,5 +1,5 @@
 # package imports
-from imars3d.backend.workflow.engine import WorkflowEngine, WorkflowEngineError
+from imars3d.backend.workflow.engine import WorkflowEngineAuto, WorkflowEngineError
 from imars3d.backend.workflow.validate import SCHEMA
 
 # third party imports
@@ -78,8 +78,8 @@ def config():
     return json.loads(config_str.replace("_MODULE_PATH_", __name__))
 
 
-class TestWorkflowEngine:
-    engine = WorkflowEngine(workflow_schema=SCHEMA)  # engine is a workflow factory
+class TestWorkflowEngineAuto:
+    engine = WorkflowEngineAuto(workflow_schema=SCHEMA)  # engine is a workflow factory
 
     def test_dryrun(self, config):
         workflow = self.engine(config)
