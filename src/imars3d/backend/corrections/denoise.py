@@ -193,7 +193,6 @@ def denoise_by_bilateral_2d(
     _sigma_color = sigma_color / array2d_max
     array_2d /= array2d_max
     array_2d = denoise_bilateral(array_2d, sigma_color=_sigma_color, sigma_spatial=sigma_spatial)
-    logger.info(f"Denoise completed via bilateral filter (2D).")
     return array_2d * array2d_max
 
 
@@ -273,8 +272,8 @@ class denoise(param.ParameterizedFunction):
             logger.info(f"Executing Filter: Denoise Filter with bilateral filter")
             return denoise_by_bilateral(
                 arrays=params.arrays,
-                bilateral_sigma_color=params.bilateral_sigma_color,
-                bilateral_sigma_spatial=params.bilateral_sigma_spatial,
+                sigma_color=params.bilateral_sigma_color,
+                sigma_spatial=params.bilateral_sigma_spatial,
                 max_workers=self.max_workers,
             )
         else:

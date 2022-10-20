@@ -18,7 +18,7 @@ class recon(param.ParameterizedFunction):
         Input stack of tomography data
     theta: np.array
         Projection angles (in radians)
-    center: np.array
+    center: float
         Rotation center
     algorithm: str
         Name of reconstruction algorithm
@@ -27,6 +27,7 @@ class recon(param.ParameterizedFunction):
 
     Return
     ------
+    np.ndarray
         Reconstructed tomographic data
     """
 
@@ -36,7 +37,7 @@ class recon(param.ParameterizedFunction):
     theta = param.Array(
         doc="Projection angles (in radians)",
     )
-    center = param.Array(
+    center = param.Number(
         default=None,
         doc="Rotation center",
     )

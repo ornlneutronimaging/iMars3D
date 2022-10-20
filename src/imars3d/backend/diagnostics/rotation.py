@@ -28,7 +28,7 @@ class find_rotation_center(param.ParameterizedFunction):
         whether angles are in degrees or radians, default is True (degrees)
     atol_deg: float = 1e-3
         tolerance for the search of 180 deg paris, default is 0.1 degrees
-    max_workers: int = -1
+    max_workers: int = 0
         number of cores to use for parallel median filtering, default is 0, which means using all available cores.
 
     Returns
@@ -53,8 +53,12 @@ class find_rotation_center(param.ParameterizedFunction):
         logger.info(f"Executing Filter: Find Rotation Center")
         _ = self.instance(**params)
         params = param.ParamOverrides(self, params)
+
+        # type validation is done, now replacing max_worker with an actual integer
+        self.max_workers = multiprocessing.cpu_count() if params.max_workers <= 0 else params.max_workers
+
         val = self._find_rotation_center(
-            params.arrays, params.angles, params.in_degrees, params.atol_deg, params.max_workers
+            params.arrays, params.angles, params.in_degrees, params.atol_deg, self.max_workers
         )
         logger.info(f"FINISHED Executing Filter: Find Rotation Center")
         return val
