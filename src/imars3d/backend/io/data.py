@@ -124,6 +124,7 @@ class load_data(param.ParameterizedFunction):
                 ct_fnmatch=params.get("ct_fnmatch", "*"),  # incase None got leaked here
                 ob_fnmatch=params.get("ob_fnmatch", "*"),
                 dc_fnmatch=params.get("dc_fnmatch", "*"),
+                max_workers=self.max_workers,
             )
             ct_files = params.get("ct_files")
         elif sigs.intersection(ref) == {"dir"}:
@@ -143,6 +144,7 @@ class load_data(param.ParameterizedFunction):
                 ct_fnmatch=params.get("ct_fnmatch", "*"),  # incase None got leaked here
                 ob_fnmatch=params.get("ob_fnmatch", "*"),
                 dc_fnmatch=params.get("dc_fnmatch", "*"),
+                max_workers=self.max_workers,
             )
         else:
             logger.warning("No valid signature found, need to specify either files or dir")
@@ -395,7 +397,12 @@ def _get_filelist_by_dir(
         else:
             dc_files = dc_dir.glob(dc_fnmatch)
 
-    return list(map(str, ct_files)), list(map(str, ob_files)), list(map(str, dc_files))
+    # since generator returns an unordered list, we need to force it to be sorted
+    # so that angles can be properly retrieved if needed
+    ct_files = list(map(str, ct_files))
+    ct_files.sort()
+
+    return ct_files, list(map(str, ob_files)), list(map(str, dc_files))
 
 
 def _extract_rotation_angles(
@@ -432,6 +439,7 @@ def _extract_rotation_angles(
     regex = r"\d{8}_\S*_\d{4}_(?P<deg>\d{3})_(?P<dec>\d{3})_\d*\.tiff"
     matches = [re.match(regex, Path(f).name) for f in filelist]
     if all(matches):
+        logger.info("Using rotation angles from filenames.")
         rotation_angles = np.array([float(".".join(m.groups())) for m in matches])
     else:
         # extract rotation angles from metadata
