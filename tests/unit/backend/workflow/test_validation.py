@@ -15,11 +15,12 @@ STRICT_SCHEMA["required"] = ["facility", "instrument", "name", "workingdir", "ou
 
 
 class MockContainer:
-    """Mock class for mimicing how json validation will work in practice"""
+    """Mock class for mimicking how json validation will work in practice"""
 
-    config = JSONValid(schema=STRICT_SCHEMA)
+    config = JSONValid()
 
     def __init__(self, obj):
+        self.schema = STRICT_SCHEMA
         self.config = obj
 
 
