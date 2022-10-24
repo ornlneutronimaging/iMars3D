@@ -1,0 +1,3 @@
+[submodule "tests/data/imars3d-data"]
+	path = tests/data/imars3d-data
+	url = https://code.ornl.gov/sns-hfir-scse/infrastructure/test-data/imars3d-data.git
