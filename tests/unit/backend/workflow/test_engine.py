@@ -79,16 +79,14 @@ def config():
 
 
 class TestWorkflowEngineAuto:
-    engine = WorkflowEngineAuto(workflow_schema=SCHEMA)  # engine is a workflow factory
-
     def test_dryrun(self, config):
-        workflow = self.engine(config)
+        workflow = WorkflowEngineAuto(config, SCHEMA)
         workflow._dryrun()
 
         # Error: adding a templated output not in globals
         config_bad = deepcopy(config)
         config_bad["tasks"][1].update({"outputs": ["path"]})
-        workflow = self.engine(config_bad)
+        workflow = WorkflowEngineAuto(config_bad, SCHEMA)
         with pytest.raises(WorkflowEngineError, match="path of task task2 should be global"):
             workflow._dryrun()
 
@@ -96,19 +94,19 @@ class TestWorkflowEngineAuto:
         task0 = {"name": "task0", "function": f"{__name__}.save", "outputs": ["ct"]}
         config_bad = deepcopy(config)
         config_bad["tasks"].insert(0, task0)
-        workflow = self.engine(config_bad)
+        workflow = WorkflowEngineAuto(config_bad, SCHEMA)
         with pytest.raises(WorkflowEngineError, match="ct for task task0 are missing"):
             workflow._dryrun()
 
         # Error: task for which templated rot_center has not been computed yet
         config_bad = deepcopy(config)
         config_bad["tasks"][2].pop("inputs")
-        workflow = self.engine(config_bad)
+        workflow = WorkflowEngineAuto(config_bad, SCHEMA)
         with pytest.raises(WorkflowEngineError, match="rot_center for task task3 are missing"):
             workflow._dryrun()
 
     def test_run(self, config):
-        workflow = self.engine(config)
+        workflow = WorkflowEngineAuto(config, SCHEMA)
         workflow.run()
 
 

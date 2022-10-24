@@ -9,9 +9,23 @@ from pathlib import Path
 from typing import Dict, Tuple, Union
 
 FilePath = Union[Path, str]
+JsonInputTypes = Union[str, dict, Path]
 
 # http://json-schema.org/learn/getting-started-step-by-step.html
 SCHEMA_FILE = Path(__file__).parent / "schema.json"
+# reverse strings for parameters denoting metadata or output items from the workflow steps
+GLOBAL_PARAMS = {
+    "facility",
+    "instrument",
+    "ipts",
+    "workingdir",
+    "outputdir",
+    "ct",  # array of radiograph intensities
+    "ob",  # array of open bean intensities
+    "dc",  # array of dark current intensities
+    "tilt_angle",
+    "rot_center",
+}
 
 
 def _load_schema():
@@ -77,7 +91,7 @@ def _validate_facility_and_instrument(json_obj: Dict) -> None:
     _validate_instrument(json_obj, allowed_instr)
 
 
-def _function_parts(func_str: str) -> Tuple[str, str]:
+def function_parts(func_str: str) -> Tuple[str, str]:
     """Convert the function specification into a module and function name."""
     mod_str = ".".join(func_str.split(".")[:-1])
     func_str = func_str.split(".")[-1]
@@ -86,7 +100,7 @@ def _function_parts(func_str: str) -> Tuple[str, str]:
 
 def _function_exists(func_str: str) -> bool:
     """Return True if the function exists."""
-    mod_str, func_str = _function_parts(func_str)
+    mod_str, func_str = function_parts(func_str)
 
     return bool(find_spec(mod_str, func_str))
 
@@ -104,7 +118,7 @@ def _validate_tasks_exist(json_obj: Dict) -> None:
             raise JSONValidationError(f'Step {step} specified nonexistent function "{func_str}"')
 
 
-def _todict(obj: Union[Dict, Path, str]) -> Dict:
+def _todict(obj: JsonInputTypes) -> Dict:
     """Convert the supplied object into a dict. Raise a TypeError if the object is not a type that has a conversion menthod."""
     if isinstance(obj, dict):
         return obj
@@ -129,9 +143,6 @@ class JSONValid:
     See https://realpython.com/python-descriptors/
     """
 
-    def __init__(self, schema):
-        self._schema = _todict(schema)
-
     def __get__(self, obj, type=None) -> Dict:
         """Return the json object."""
         return obj._json
@@ -139,15 +150,16 @@ class JSONValid:
     def __set__(self, obj, value) -> None:
         """Validate the json object."""
         obj._json = _todict(value)
-        self._validate(obj._json)
+        self._validate(obj._json, obj.schema)
 
-    def required(self, queryset: Iterable) -> bool:
+    def required(self, queryset: Iterable, schema: dict) -> bool:
         r"""Check if a set of input parameters are required by the schema.
 
         Parameters
         ----------
         queryset
             list of input parameters.
+        schema
 
         Returns
         -------
@@ -157,12 +169,12 @@ class JSONValid:
         # cat the set of query parameters into a python set
         queryset = {queryset} if isinstance(queryset, str) else set(queryset)
         # check if the set queryset is contained in the set of required parameters
-        return len(queryset - set(self._schema.get("required", {}))) == 0
+        return len(queryset - set(schema.get("required", {}))) == 0
 
-    def _validate(self, obj: Dict) -> None:
-        _validate_schema(obj, schema=self._schema)
+    def _validate(self, obj: Dict, schema: Dict) -> None:
+        _validate_schema(obj, schema=schema)
         # Additional validations only when required by the schema
-        if self.required({"facility", "instrument"}):
+        if self.required({"facility", "instrument"}, schema):
             _validate_facility_and_instrument(obj)
-        if self.required("tasks"):
+        if self.required("tasks", schema):
             _validate_tasks_exist(obj)
