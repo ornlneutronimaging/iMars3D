@@ -6,12 +6,9 @@ from pathlib import Path
 from imars3d.backend.workflow.validate import JSONValid, JSONValidationError, SCHEMA
 
 JSON_DATA_DIR = Path(__file__).parent.parent.parent.parent / "data" / "json"
-GOOD_FILE = JSON_DATA_DIR / "good.json"
+GOOD_NON_INTERACTIVE = JSON_DATA_DIR / "good_non_interactive.json"
+GOOD_INTERACTIVE = JSON_DATA_DIR / "good_interactive.json"
 ILL_FORMED_FILE = JSON_DATA_DIR / "ill_formed.json"
-
-# Force checking for instrument, facitlity, and tasks
-TEST_SCHEMA = deepcopy(SCHEMA)
-TEST_SCHEMA["required"] = ["facility", "instrument", "name", "workingdir", "outputdir", "tasks"]
 
 
 class MockContainer:
@@ -20,7 +17,7 @@ class MockContainer:
     config = JSONValid()
 
     def __init__(self, obj):
-        self.schema = TEST_SCHEMA
+        self.schema = SCHEMA
         self.config = obj
 
 
@@ -46,9 +43,10 @@ def test_file_ill_formed():
         MockContainer(ILL_FORMED_FILE)
 
 
-def test_file_good():
-    print("Testing file", GOOD_FILE)
-    MockContainer(GOOD_FILE)
+@pytest.mark.parametrize("filename", [GOOD_NON_INTERACTIVE, GOOD_NON_INTERACTIVE])
+def test_file_good(filename):
+    print("Testing file", filename)
+    MockContainer(filename)
 
 
 # tests from string
@@ -66,14 +64,14 @@ def test_string_ill_formed():
 
 
 def test_string_good():
-    doc = load_file(GOOD_FILE)
+    doc = load_file(GOOD_NON_INTERACTIVE)
     obj = MockContainer(doc)
     # verify that the instrument is as expected
     assert obj._json["instrument"] == "CG1D"
 
 
 def test_string_missing_tasks():
-    doc = load_file(GOOD_FILE)
+    doc = load_file(GOOD_NON_INTERACTIVE)
     json_obj = json.loads(doc)
     del json_obj["tasks"]
     with pytest.raises(JSONValidationError):
@@ -84,7 +82,7 @@ def test_string_missing_tasks():
     "facility,instrument", [("hfir", "CG1D"), ("HFIR", "cg1d"), ("HFIR", "SNAP"), ("HFIR", "junk"), ("SNS", "junk")]
 )
 def test_bad_instrument(facility, instrument):
-    doc = load_file(GOOD_FILE)
+    doc = load_file(GOOD_NON_INTERACTIVE)
     json_obj = json.loads(doc)
     json_obj["facility"] = facility
     json_obj["instrument"] = instrument
@@ -93,7 +91,7 @@ def test_bad_instrument(facility, instrument):
 
 
 def test_string_empty_function():
-    doc = load_file(GOOD_FILE)
+    doc = load_file(GOOD_NON_INTERACTIVE)
     json_obj = json.loads(doc)
     json_obj["tasks"][0]["function"] = ""
     with pytest.raises(JSONValidationError):
@@ -101,7 +99,7 @@ def test_string_empty_function():
 
 
 def test_string_bad_function():
-    doc = load_file(GOOD_FILE)
+    doc = load_file(GOOD_NON_INTERACTIVE)
     json_obj = json.loads(doc)
     json_obj["tasks"][0]["function"] = "nonexistent.function"
     with pytest.raises(JSONValidationError):
