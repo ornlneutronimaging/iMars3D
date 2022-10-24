@@ -10,8 +10,8 @@ GOOD_FILE = JSON_DATA_DIR / "good.json"
 ILL_FORMED_FILE = JSON_DATA_DIR / "ill_formed.json"
 
 # Force checking for instrument, facitlity, and tasks
-STRICT_SCHEMA = deepcopy(SCHEMA)
-STRICT_SCHEMA["required"] = ["facility", "instrument", "name", "workingdir", "outputdir", "tasks"]
+TEST_SCHEMA = deepcopy(SCHEMA)
+TEST_SCHEMA["required"] = ["facility", "instrument", "name", "workingdir", "outputdir", "tasks"]
 
 
 class MockContainer:
@@ -20,7 +20,7 @@ class MockContainer:
     config = JSONValid()
 
     def __init__(self, obj):
-        self.schema = STRICT_SCHEMA
+        self.schema = TEST_SCHEMA
         self.config = obj
 
 

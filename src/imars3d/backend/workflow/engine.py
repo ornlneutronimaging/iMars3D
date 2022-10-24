@@ -72,9 +72,8 @@ class WorkflowEngine:
                 that are the outputs of other functions or are part of the metadata.
         """
         # load the ParameterizedFunction derived class associated to the function string
-        module_str = ".".join(function_str.split(".")[:-1])
+        module_str, function_name = validate.function_parts(function_str)
         module = importlib.import_module(module_str)
-        function_name = function_str.split(".")[-1]
         f = getattr(module, function_name)
 
         param_names = set(f.param.params().keys())

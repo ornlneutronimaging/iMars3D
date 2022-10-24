@@ -13,6 +13,7 @@ JsonInputTypes = Union[str, dict, Path]
 
 # http://json-schema.org/learn/getting-started-step-by-step.html
 SCHEMA_FILE = Path(__file__).parent / "schema.json"
+# reverse strings for parameters denoting metadata or output items from the workflow steps
 GLOBAL_PARAMS = {
     "facility",
     "instrument",
@@ -90,7 +91,7 @@ def _validate_facility_and_instrument(json_obj: Dict) -> None:
     _validate_instrument(json_obj, allowed_instr)
 
 
-def _function_parts(func_str: str) -> Tuple[str, str]:
+def function_parts(func_str: str) -> Tuple[str, str]:
     """Convert the function specification into a module and function name."""
     mod_str = ".".join(func_str.split(".")[:-1])
     func_str = func_str.split(".")[-1]
@@ -99,7 +100,7 @@ def _function_parts(func_str: str) -> Tuple[str, str]:
 
 def _function_exists(func_str: str) -> bool:
     """Return True if the function exists."""
-    mod_str, func_str = _function_parts(func_str)
+    mod_str, func_str = function_parts(func_str)
 
     return bool(find_spec(mod_str, func_str))
 
