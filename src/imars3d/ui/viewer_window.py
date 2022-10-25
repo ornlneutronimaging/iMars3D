@@ -22,9 +22,10 @@ import param
 from pathlib import Path
 from imars3d.ui.base_window import BaseWindow
 from imars3d.ui.widgets.viewer2d import Viewer2D
+from imars3d.ui.widgets.hyperstack_view import HyperstackView
 from imars3d.backend.io.data import _load_images
 
-logger = param.get_logger(__name__)
+logger = logging.get_logger(__name__)
 
 
 class ViewerWindow(BaseWindow):
@@ -165,7 +166,7 @@ class ViewerWindow(BaseWindow):
         elif self.view_type == "2D":
             return Viewer2D(data=self.recon)
         elif self.view_type == "H-stack":
-            return pn.panel("H-stack viewer")
+            return HyperstackView(data=self.recon)
 
     @param.depends("recon")
     def viewer_3d(self):
