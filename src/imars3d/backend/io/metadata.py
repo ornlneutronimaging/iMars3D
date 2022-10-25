@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Metadata class for IMars3D."""
+import logging
 import numpy as np
 import param
 import tifffile
@@ -7,7 +8,7 @@ from pathlib import Path
 
 
 # setup module level logger
-logger = param.get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class MetaData(param.Parameterized):

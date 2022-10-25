@@ -23,7 +23,7 @@ from pathlib import Path
 from imars3d.ui.base_window import BaseWindow
 from imars3d.backend.io.data import _load_images
 
-logger = param.get_logger(__name__)
+logger = logging.getLogger("imars3d.ui.viewer_window")
 
 
 class ViewerWindow(BaseWindow):
@@ -110,8 +110,16 @@ class ViewerWindow(BaseWindow):
             name="Log Level",
             height=30,
         )
+        #
+        self.console = pn.widgets.Debugger(
+            name="Console",
+            level=self.log_lv,
+            sizing_mode="stretch_width",
+            logger_names=["panel", "imars3d"],
+        )
+        #
         console_pn = pn.Column(
-            self.log_console,
+            self.console,
             log_lv_selector,
             sizing_mode="stretch_width",
         )
@@ -189,35 +197,19 @@ class ViewerWindow(BaseWindow):
         integers, therefore the automated display cannot display the proper
         name.
         """
-        if self.log_lv_str == "DEBUG":
-            logger.debug("Switching to DEBUG log level.")
-            self.log_lv = logging.DEBUG
-        elif self.log_lv_str == "INFO":
-            logger.info("Switching to INFO log level.")
-            self.log_lv = logging.INFO
-        elif self.log_lv_str == "WARNING":
-            logger.warning("Switching to WARNING log level.")
-            self.log_lv = logging.WARNING
-        elif self.log_lv_str == "ERROR":
-            logger.error("Switching to ERROR log level.")
-            self.log_lv = logging.ERROR
-        elif self.log_lv_str == "CRITICAL":
-            logger.critical("Switching to CRITICAL log level.")
-            self.log_lv = logging.CRITICAL
+        self.log_lv = logging.getLevelName(self.log_lv_str)
+        # this is a bad way to do things but works around a missing callback in panels
+        logging.getLogger("imars3d").setLevel(self.log_lv)
+        logger.log(self.log_lv, f"Switching to {self.log_lv_str} log level.")
 
     def get_imars3d_loggers(self):
         """Return a list of iMars3D loggers."""
         return [name for name in logging.root.manager.loggerDict if "imars3d" in name]
 
-    @param.depends("log_lv")
+    @param.depends("log_lv", watch=True)
     def log_console(self):
         """Log console."""
-        return pn.widgets.Debugger(
-            name="Console",
-            level=self.log_lv,
-            sizing_mode="stretch_width",
-            logger_names=["panel", "imars3d"],
-        )
+        self.console.level = self.log_lv
 
     def __panel__(self):
         return self._panel
