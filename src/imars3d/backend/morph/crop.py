@@ -93,6 +93,10 @@ class crop(param.ParameterizedFunction):
     def __call__(self, **params):
         """Call the function."""
         logger.info(f"Executing Filter: Crop")
+
+        # Json does not support tuple, check and convert crop_limit if it is not of type tuple
+        # if params.crop_limit:
+        #     params.crop_limit = tuple(params.crop_limit) if type(params.crop_limit) is not tuple else params.crop_limit
         # forced type+bounds check
         _ = self.instance(**params)
         # sanitize args

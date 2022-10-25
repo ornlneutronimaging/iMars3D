@@ -273,6 +273,7 @@ def _load_by_file_list(
     if dc_files == []:
         logger.warning("dc_files is [].")
 
+    max_workers = None if max_workers <= 0 else max_workers
     # explicit list is the most straight forward solution
     # -- radiograph
     ct = _load_images(
