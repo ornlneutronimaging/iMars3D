@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """iMars3D: crop module."""
+import logging
 import numpy as np
 import param
 from scipy.ndimage import median_filter
 
-logger = param.get_logger(__name__)
-logger.name = __name__
+logger = logging.getLogger(__name__)
 
 
 class crop(param.ParameterizedFunction):

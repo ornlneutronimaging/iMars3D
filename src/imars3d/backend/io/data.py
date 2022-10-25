@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Data handling for iMars3D."""
+import logging
 import re
 import logging
 import param
@@ -16,7 +17,7 @@ from imars3d.backend.io.metadata import MetaData
 
 
 # setup module level logger
-logger = logging.getLogger("imars3d.io.data")
+logger = logging.getLogger(__name__)
 # METADATA_DICT = {
 #     65026: "ManufacturerStr:Andor",  # [ct, ob, dc]
 #     65027: "ExposureTime:70.000000",  # [ct, ob, dc]

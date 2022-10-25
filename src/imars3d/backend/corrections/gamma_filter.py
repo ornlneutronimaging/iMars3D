@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """iMars3D: gamma filter module."""
+import logging
 import param
 import multiprocessing
 import numpy as np
 import tomopy
 
 
-logger = param.get_logger(__name__)
-logger.name = __name__
+logger = logging.getLogger(__name__)
 
 
 class gamma_filter(param.ParameterizedFunction):

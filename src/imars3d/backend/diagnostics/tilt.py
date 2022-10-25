@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """iMars3D's tilt correction module."""
+import logging
 import param
 import multiprocessing
 import numpy as np
@@ -14,8 +15,7 @@ from multiprocessing.managers import SharedMemoryManager
 from tqdm.contrib.concurrent import process_map
 
 
-logger = param.get_logger(__name__)
-logger.name = __name__
+logger = logging.getLogger(__name__)
 
 
 def find_180_deg_pairs_idx(

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """iMars3D: rotation center finding module."""
+import logging
 import numpy as np
 import param
 import multiprocessing
@@ -10,8 +11,7 @@ import tomopy.util.mproc as mproc
 from tomopy.recon.rotation import find_center_pc
 from imars3d.backend.diagnostics.tilt import find_180_deg_pairs_idx
 
-logger = param.get_logger(__name__)
-logger.name = __name__
+logger = logging.getLogger(__name__)
 
 
 class find_rotation_center(param.ParameterizedFunction):

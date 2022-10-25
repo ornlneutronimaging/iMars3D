@@ -14,11 +14,12 @@ pn.extension(
 interactive_window = InteractiveWindow()
 interactive_window  # or pn.panel(interactive_window) or interactive_window.show() or interactive_window.servable()
 """
+import logging
 import panel as pn
 import param
 from imars3d.ui.base_window import BaseWindow
 
-logger = param.get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class InteractiveWindow(BaseWindow):

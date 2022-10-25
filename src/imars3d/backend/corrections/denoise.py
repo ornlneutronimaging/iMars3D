@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Image noise reduction (denoise) module."""
+import logging
 import param
 import multiprocessing
 import numpy as np
@@ -14,8 +15,7 @@ from scipy.ndimage import median_filter
 from skimage.restoration import denoise_bilateral
 
 
-logger = param.get_logger(__name__)
-logger.name = __name__
+logger = logging.getLogger(__name__)
 
 
 def measure_noiseness(image: np.ndarray) -> float:

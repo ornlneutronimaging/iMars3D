@@ -15,12 +15,13 @@ pn.extension(
 welcome_window = WelcomeWindow()
 welcome_window  # or pn.panel(welcome_window) or welcome_window.show() or welcome_window.servable()
 """
+import logging
 import panel as pn
 import param
 from pathlib import Path
 from imars3d.ui.base_window import BaseWindow
 
-logger = param.get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class WelcomeWindow(BaseWindow):
