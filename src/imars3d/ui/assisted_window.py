@@ -14,11 +14,12 @@ pn.extension(
 assisted_window = AssistedWindow()
 assisted_window  # or pn.panel(assisted_window) or assisted_window.show() or assisted_window.servable()
 """
+import logging
 import panel as pn
 import param
 from imars3d.ui.base_window import BaseWindow
 
-logger = param.get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class AssistedWindow(BaseWindow):

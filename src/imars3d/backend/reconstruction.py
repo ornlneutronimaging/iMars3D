@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """reconstruction module for imars3d package."""
+import logging
 import numpy as np
 import param
 from tomopy.recon.algorithm import recon as tomo_recon
 
-logger = param.get_logger(__name__)
-logger.name = __name__
+logger = logging.getLogger(__name__)
 
 
 class recon(param.ParameterizedFunction):
