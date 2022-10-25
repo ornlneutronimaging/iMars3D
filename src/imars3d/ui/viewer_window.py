@@ -25,7 +25,7 @@ from imars3d.ui.widgets.viewer2d import Viewer2D
 from imars3d.ui.widgets.hyperstack_view import HyperstackView
 from imars3d.backend.io.data import _load_images
 
-logger = logging.get_logger(__name__)
+logger = logging.getLogger("imars3d.ui.viewer_window")
 
 
 class ViewerWindow(BaseWindow):
