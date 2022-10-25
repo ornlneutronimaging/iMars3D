@@ -21,6 +21,7 @@ import panel as pn
 import param
 from pathlib import Path
 from imars3d.ui.base_window import BaseWindow
+from imars3d.ui.widgets.viewer2d import Viewer2D
 from imars3d.backend.io.data import _load_images
 
 logger = param.get_logger(__name__)
@@ -162,7 +163,7 @@ class ViewerWindow(BaseWindow):
         elif self.view_type == "3D with control":
             return self.viewer_3d_with_control
         elif self.view_type == "2D":
-            return pn.panel("2D viewer")
+            return Viewer2D(data=self.recon)
         elif self.view_type == "H-stack":
             return pn.panel("H-stack viewer")
 
