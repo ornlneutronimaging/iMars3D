@@ -10,6 +10,7 @@ from pathlib import Path
 
 
 JSON_DATA_DIR = Path(__file__).parent.parent.parent / "data" / "json"
+ILL_FORMED_FILE = JSON_DATA_DIR / "ill_formed.json"
 
 
 @pytest.fixture(scope="module")
@@ -44,6 +45,21 @@ class TestWorkflowEngineAuto:
     def test_config(self, config):
         workflow = WorkflowEngineAuto(config)
         workflow.run()
+
+    def test_no_config(self):
+        with pytest.raises(TypeError):
+            workflow = WorkflowEngineAuto()
+            workflow.run()
+
+        with pytest.raises(json.decoder.JSONDecodeError):
+            workflow = WorkflowEngineAuto("")
+            workflow.run()
+
+    def test_invalid_config(self):
+        with pytest.raises(JSONValidationError):
+            with open(ILL_FORMED_FILE, "r") as file:
+                workflow = WorkflowEngineAuto(json.load(file))
+                workflow.run()
 
     def test_bad_filter_name_config(self):
         BAD_FILTER_JSON = JSON_DATA_DIR / "bad_filter.json"
