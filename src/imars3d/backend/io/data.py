@@ -2,6 +2,7 @@
 """Data handling for iMars3D."""
 import logging
 import re
+import logging
 import param
 import multiprocessing
 import numpy as np
