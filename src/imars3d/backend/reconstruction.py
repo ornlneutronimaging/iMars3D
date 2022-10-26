@@ -49,6 +49,10 @@ class recon(param.ParameterizedFunction):
         default="hann",
         doc="Name of filter used for reconstruction",
     )
+    is_radians = param.Boolean(
+        default=True,
+        doc="Whether or not input angle is in radians"
+    )
 
     def __call__(self, **params):
         logger.info(f"Executing Filter: Reconstruction")
@@ -62,13 +66,17 @@ class recon(param.ParameterizedFunction):
             params.center,
             params.algorithm,
             params.filter_name,
+            params.is_radians,
             **params.extra_keywords(),
         )
 
         logger.info(f"FINISHED Executing Filter: Reconstruction: {params.filter_name}")
         return reconstructed_image
 
-    def _recon(self, arrays, theta, center, algorithm, filter_name, **kwargs) -> np.ndarray:
+    def _recon(self, arrays, theta, center, algorithm, filter_name, is_radians, **kwargs) -> np.ndarray:
+
+        if not is_radians:
+            theta = np.radians(theta)
 
         if arrays.ndim != 3:
             raise ValueError("Expected input array to have 3 dimensions")

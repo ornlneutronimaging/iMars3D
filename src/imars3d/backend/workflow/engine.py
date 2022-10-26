@@ -108,8 +108,11 @@ class WorkflowEngine:
             self._registry.update({k: v for k, v in task["inputs"].items() if k in globals_explicit})
         # insert the outputs of the function carrying out the task
         if "outputs" in task or function_outputs is not None:
+            # single output case, convert to tuple for processing
+            if(type(function_outputs) != tuple): function_outputs = (function_outputs,)
+
             if len(task["outputs"]) != len(function_outputs):
-                e = f"Output(s) {task['outputs']} for task {task['name']} don't have corresponding return values"
+                e = f"Output(s) {task['outputs']} for task {task['name']} do not match total actual outputs."
                 raise WorkflowEngineError(e)
             self._registry.update(dict(zip(task["outputs"], function_outputs)))
 
@@ -137,13 +140,10 @@ class WorkflowEngine:
         for key in resolved:
             if key in self._registry:
                 resolved[key] = self._registry[key]
+            if resolved and isinstance(resolved[key], str):
+                if resolved[key] in self._registry:
+                    resolved[key] = self._registry[resolved[key]]
         return resolved
-
-class NumpyEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-        return json.JSONEncoder.default(self, obj)
 
 class WorkflowEngineAuto(WorkflowEngine):
     config = validate.JSONValid()
@@ -226,8 +226,8 @@ class WorkflowEngineAuto(WorkflowEngine):
         self._registry = {k: v for k, v in self.config.items() if k not in ("name", "tasks")}
         for task in self.config["tasks"]:
             peek = self._instrospect_task_function(task["function"])
-            f = self._get_module(task["function"])
             inputs = self._resolve_inputs(task.get("inputs", {}), peek.globals_required)
-            outputs = peek.function(**f.param.deserialize_parameters(json.dumps(inputs,cls=NumpyEncoder)))
+            import pdb; pdb.set_trace()
+            outputs = peek.function(**inputs)
             self._validate_outputs(outputs)
             self._update_registry(task, outputs)

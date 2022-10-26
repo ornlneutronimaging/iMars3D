@@ -100,7 +100,6 @@ class gamma_filter(param.ParameterizedFunction):
         # NOTE: use 20% of the total dynamic range as the outlier detection criterion
         diff_tomopy = 0.2 * saturation_intensity if params.diff_tomopy < 0.0 else params.diff_tomopy
         logger.debug(f"diff_tomopy={diff_tomopy}")
-
         # median filtering
         arrays_filtered = tomopy.remove_outlier(
             params.arrays,

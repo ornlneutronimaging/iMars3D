@@ -67,10 +67,10 @@ class crop(param.ParameterizedFunction):
         doc="The image stack to crop. Can also be a 2D image.",
         precedence=-1,  # hide arrays from auto GUI
     )
-    crop_limit = param.Tuple(
-        default=(-1, -1, -1, -1),
-        precedence=1,  # mandatory
+    crop_limit = param.List(
+        default=[-1, -1, -1, -1],
         doc="The four limits for cropping. Default is (-1, -1, -1, -1), which will trigger the automatic bounds detection.",
+        precedence=1,  # mandatory
     )
     border_pix = param.Integer(
         default=10,
@@ -93,11 +93,6 @@ class crop(param.ParameterizedFunction):
     def __call__(self, **params):
         """Call the function."""
         logger.info(f"Executing Filter: Crop")
-
-        # Json does not support tuple, check and convert crop_limit if it is not of type tuple
-        # if params.crop_limit:
-        #     params.crop_limit = tuple(params.crop_limit) if type(params.crop_limit) is not tuple else params.crop_limit
-        # forced type+bounds check
         _ = self.instance(**params)
         # sanitize args
         params = param.ParamOverrides(self, params)
@@ -124,6 +119,7 @@ class crop(param.ParameterizedFunction):
         rel_intensity_threshold_sample,
     ) -> np.ndarray:
         """Private function to crop the image stack."""
+        
         if arrays.ndim not in (2, 3):
             raise ValueError("Only 2D and 3D arrays are supported.")
 

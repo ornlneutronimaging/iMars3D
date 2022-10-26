@@ -58,19 +58,37 @@ def config():
 			"outputs": ["ct", "ob", "dc", "rot_angles"]
 		},
 		{
-			"name": "task2",
+			"name": "task2.1",
 			"function": "imars3d.backend.morph.crop.crop",
 			"inputs": {
-                "ct": "ct",
+                "arrays": "ct",
 				"crop_limit": [552, 1494, 771, 1296]
 			},
-			"outputs": ["ct", "ob", "dc"]
+			"outputs": ["ct"]
+		},
+		{
+			"name": "task2.2",
+			"function": "imars3d.backend.morph.crop.crop",
+			"inputs": {
+                "arrays": "ob",
+				"crop_limit": [552, 1494, 771, 1296]
+			},
+			"outputs": ["ob"]
+		},
+		{
+			"name": "task2.3",
+			"function": "imars3d.backend.morph.crop.crop",
+			"inputs": {
+                "arrays": "dc",
+				"crop_limit": [552, 1494, 771, 1296]
+			},
+			"outputs": ["dc"]
 		},
 		{
 			"name": "task3",
 			"function": "imars3d.backend.corrections.gamma_filter.gamma_filter",
 			"inputs": {
-				"rot_center": "0.0"
+                "arrays" : "ct"
 			},
 			"outputs": ["ct"]
 		},
@@ -109,7 +127,7 @@ def config():
 				"in_degrees": true,
 				"atol_deg": 0.5
 			},
-			"outputs": ["ct"]
+			"outputs": ["rot_center"]
 		},
 		{
 			"name": "task8",
@@ -117,9 +135,9 @@ def config():
 			"inputs": {
 				"arrays": "ct",
 				"theta": "rot_angles",
-				"center": "rot_cnt"
+				"center": "rot_center"
 			},
-			"outputs": ["ct"]
+			"outputs": ["result"]
 		}
 	]
 }"""
@@ -128,7 +146,6 @@ def config():
 class TestWorkflowEngineAuto:
     def test_config(self, config):
         workflow = WorkflowEngineAuto(config)
-        workflow.run()
         assert workflow.config == config
 
     def test_run(self, config):

@@ -45,8 +45,8 @@ class remove_ring_artifact(param.ParameterizedFunction):
     sub_division = param.Integer(
         default=10, doc="Sub-dividing the sinogram into subsections (along rotation angle axis)."
     )
-    correction_range = param.Tuple(
-        default=(0.9, 1.1), doc="Multiplicative correction factor is capped within given range."
+    correction_range = param.List(
+        default=[0.9, 1.1], doc="Multiplicative correction factor is capped within given range."
     )
     max_workers = param.Integer(default=0, bounds=(0, None), doc="Number of cores to use for parallel processing.")
 
