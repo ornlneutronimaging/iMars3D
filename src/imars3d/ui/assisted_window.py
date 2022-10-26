@@ -71,6 +71,8 @@ class AssistedWindow(BaseWindow):
         left_column = pn.Column(self.go_button, self.log_level_radio, self.console, sizing_mode='stretch_both')
         right_column = pn.Column(self.json_editor(), self.file_input, sizing_mode='stretch_both')
         self._panel = pn.Row(left_column, right_column)
+        
+        self.wfEngine = WorkflowEngineAuto(self.config_dict)
 
     @param.depends('log_level_str', watch=True)
     def set_log_level(self):
@@ -82,9 +84,13 @@ class AssistedWindow(BaseWindow):
     def update_config_dict(self):
         logger.info("Updating config dict with uploaded json file.")
         new_config_dict = json.loads(self.file_input.value)
-        self.config_dict=new_config_dict
+        try:
+            self.wfEngine = WorkflowEngineAuto(new_config_dict)
+            self.config_dict = new_config_dict
+        except:
+            log.error("Could not update config file. Reverting to previous config.")
+            self.wfEngine = WorkflowEngineAuto(self.config_dict)
    
     def launch_assisted_reconstruction(self, event): 
-        logger.info('Launching assisted reconstruction')
-        wfEngine = WorkflowEngineAuto(self.config_dict)
-        wfEngine.run()
+        logger.info('Launching assisted reconstruction.')
+        self.wfEngine.run()
