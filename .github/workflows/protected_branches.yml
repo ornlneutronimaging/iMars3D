@@ -21,8 +21,23 @@ jobs:
           miniforge-variant: Mambaforge
           environment-file: conda_development.yml
           use-mamba: true
+      - name: Add status to commit
+        uses: peter-evans/commit-comment@v2
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        with:
+          body: |
+            Github job ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
       - name: Unit integration tests
         run: python -m pytest tests/integration
+      - name: Add status to commit
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        uses: Sibz/github-status-action@v1
+        with:
+          authToken: ${{secrets.GITHUB_TOKEN}}
+          context: "Integration tests"
+          description: "${{ job.status }}"
+          state: "${{ job.status }}"
+          sha: "${{ github.sha }}"
 
   build-conda:
     runs-on: ubuntu-latest
