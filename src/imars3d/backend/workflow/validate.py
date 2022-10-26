@@ -25,6 +25,7 @@ GLOBAL_PARAMS = {
     "dc",  # array of dark current intensities
     "tilt_angle",
     "rot_center",
+    "rot_angles",
 }
 
 
@@ -45,15 +46,13 @@ SCHEMA: dict = _load_schema()
 del _load_schema
 
 
-def _validate_schema(json_obj: Dict, schema: Dict = SCHEMA) -> None:
+def _validate_schema(json_obj: Dict) -> None:
     """Validate the data against the schema for jobs.
 
     Parameters
     ----------
     json_obj : Dict
         The data to validate
-    schema : Dict, optional
-        The schema to validate against, by default SCHEMA
 
     Raises
     ------
@@ -65,7 +64,7 @@ def _validate_schema(json_obj: Dict, schema: Dict = SCHEMA) -> None:
     None
     """
     try:
-        jsonschema.validate(json_obj, schema=schema)
+        jsonschema.validate(json_obj, schema=SCHEMA)
     except jsonschema.ValidationError as e:
         raise JSONValidationError("While validation configuration file") from e
 
@@ -150,16 +149,15 @@ class JSONValid:
     def __set__(self, obj, value) -> None:
         """Validate the json object."""
         obj._json = _todict(value)
-        self._validate(obj._json, obj.schema)
+        self._validate(obj._json)
 
-    def required(self, queryset: Iterable, schema: dict) -> bool:
+    def required(self, queryset: Iterable) -> bool:
         r"""Check if a set of input parameters are required by the schema.
 
         Parameters
         ----------
         queryset
             list of input parameters.
-        schema
 
         Returns
         -------
@@ -169,12 +167,12 @@ class JSONValid:
         # cat the set of query parameters into a python set
         queryset = {queryset} if isinstance(queryset, str) else set(queryset)
         # check if the set queryset is contained in the set of required parameters
-        return len(queryset - set(schema.get("required", {}))) == 0
+        return len(queryset - set(SCHEMA.get("required", {}))) == 0
 
-    def _validate(self, obj: Dict, schema: Dict) -> None:
-        _validate_schema(obj, schema=schema)
+    def _validate(self, obj: Dict) -> None:
+        _validate_schema(obj)
         # Additional validations only when required by the schema
-        if self.required({"facility", "instrument"}, schema):
+        if self.required({"facility", "instrument"}):
             _validate_facility_and_instrument(obj)
-        if self.required("tasks", schema):
+        if self.required("tasks"):
             _validate_tasks_exist(obj)

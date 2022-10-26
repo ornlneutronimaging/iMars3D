@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """iMars3D's ring artifact correction module."""
+import logging
 import param
 import multiprocessing
 import scipy
@@ -10,8 +11,7 @@ from multiprocessing.managers import SharedMemoryManager
 from tqdm.contrib.concurrent import process_map
 from functools import partial
 
-logger = param.get_logger(__name__)
-logger.name = __name__
+logger = logging.getLogger(__name__)
 
 
 class remove_ring_artifact(param.ParameterizedFunction):
