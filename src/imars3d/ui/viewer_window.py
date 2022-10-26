@@ -49,12 +49,12 @@ class ViewerWindow(BaseWindow):
     # console strip
     log_lv = param.Selector(
         default=logging.INFO,
-        objects=[logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL],
+        objects=[logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR],
         doc="Log level.",
     )
     log_lv_str = param.Selector(
         default="INFO",
-        objects=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+        objects=["DEBUG", "INFO", "WARNING", "ERROR"],
         doc="Log level.",
     )
 
