@@ -16,6 +16,7 @@ now you can use either
 - viewer or pn.Row(viewer) or viewer.servable() to check the widget in cell
 - viewer.show() to check the widget in a separate window (on a bokeh server)
 """
+import logging
 import numpy as np
 import panel as pn
 import param
@@ -24,7 +25,7 @@ from holoviews import opts
 from holoviews import streams
 from imars3d.ui.widgets.viewer2d import Viewer2D
 
-logger = param.get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class HyperstackView(Viewer2D):
