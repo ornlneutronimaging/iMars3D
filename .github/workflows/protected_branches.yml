@@ -6,8 +6,27 @@ on:
     branches: [next, qa, main]
 
 jobs:
+  integration-tests:
+    runs-on: cades
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+          lfs: true
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          miniforge-variant: Mambaforge
+          environment-file: conda_development.yml
+          use-mamba: true
+      - name: Unit integration tests
+        run: python -m pytest tests/integration
+
   build-conda:
     runs-on: ubuntu-latest
+    needs: [integration-tests]
     defaults:
       run:
         shell: bash -l {0}
