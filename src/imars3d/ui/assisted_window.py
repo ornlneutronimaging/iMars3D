@@ -87,7 +87,7 @@ class AssistedWindow(BaseWindow):
             validate_dict = WorkflowEngineAuto(new_config_dict)
             self.config_dict = new_config_dict
         except:
-            log.error("Could not update config file. Reverting to previous config.")
+            logger.error("Could not update config file. Reverting to previous config.")
    
     def launch_assisted_reconstruction(self, event): 
         logger.info('Launching assisted reconstruction.')
