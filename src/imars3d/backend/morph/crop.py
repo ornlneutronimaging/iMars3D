@@ -63,22 +63,31 @@ class crop(param.ParameterizedFunction):
     #
     # NOTE: fails early if the array dimension is incorrect
 
-    arrays = param.Array(doc="The image stack to crop. Can also be a 2D image.")
+    arrays = param.Array(
+        doc="The image stack to crop. Can also be a 2D image.",
+        precedence=-1,  # hide arrays from auto GUI
+    )
     crop_limit = param.Tuple(
         default=(-1, -1, -1, -1),
+        precedence=1,  # mandatory
         doc="The four limits for cropping. Default is (-1, -1, -1, -1), which will trigger the automatic bounds detection.",
     )
     border_pix = param.Integer(
         default=10,
+        precedence=0.5,  # advanced option
         doc="the width of border region to estimate the background intensity, which helps to determine which case we are in.",
     )
-    expand_ratio = param.Number(default=0.1, doc="The ratio to expand the cropped region.")
-    rel_intensity_threshold_air_or_slit = param.Number(
-        default=0.05, doc="Passing through keyword arguments to detect_bounds."
+    expand_ratio = param.Number(
+        default=0.1, precedence=0.4, doc="The ratio to expand the cropped region."  # advanced option
     )
-    rel_intensity_threshold_fov = param.Number(default=0.1, doc="Passing through keyword arguments to detect_bounds.")
+    rel_intensity_threshold_air_or_slit = param.Number(
+        default=0.05, precedence=0.3, doc="Passing through keyword arguments to detect_bounds."  # advanced option
+    )
+    rel_intensity_threshold_fov = param.Number(
+        default=0.1, precedence=0.2, doc="Passing through keyword arguments to detect_bounds."  # advanced option
+    )
     rel_intensity_threshold_sample = param.Number(
-        default=0.95, doc="Passing through keyword arguments to detect_bounds."
+        default=0.95, precedence=0.1, doc="Passing through keyword arguments to detect_bounds."  # advanced option
     )
 
     def __call__(self, **params):
