@@ -1,5 +1,6 @@
 """iMars3D: a Python package for neutron imaging and tomography reconstruction."""
 import logging
+from .backend import corrections, diagnostics, io, morph, preparation, reconstruction
 
 logging.getLogger("imars3d").setLevel(logging.INFO)
 try:
