@@ -1,0 +1,60 @@
+{
+    "facility": "HFIR",
+    "instrument": "CG1D",
+    "ipts": "IPTS-1234",
+    "name": "name for reconstruced ct scans",
+    "workingdir": "/path/to/dir",
+    "outputdir": "/path/to/dir",
+    "tasks": [
+        {
+            "name": "load",
+            "function": "imars3d.backend.io.data.load_data",
+            "inputs": {
+                "filenames": []
+            },
+            "outputs": ["ct"]
+        },
+        {
+            "name": "bad_gamma",
+            "function": "imars3d.backend.corrections.bad_gamma_filter.BadGammaFilter",
+            "inputs": {
+                "ct_series": "ct",
+                "workdir": "workingdir"
+            },
+            "outputs": ["ct"]
+        },
+        {
+            "name": "bad_save",
+            "function": "imars3d.backend.io.data.bad_save_data",
+            "inputs": {
+                "ct_series": "ct",
+                "path": "workingdir"
+            }
+        },
+        {
+            "name": "determine_tilt_correction",
+            "function": "imars3d.backend.diagnostics.tilt.tilt_correction",
+            "inputs": {
+                "ct_series": "ct"
+            },
+            "outputs": ["tilt_angle"]
+        },
+        {
+            "name": "tilt_corection",
+            "function": "imars3d.backend.diagnostics.tilt.apply_tilt_correction_correction",
+            "inputs": {
+                "ct_series": "ct",
+                "angle": "determine_tilt_correction.tilt_angle"
+            },
+            "outputs": ["ct"]
+        },
+        {
+            "name": "save",
+            "function": "imars3d.backend.io.data.save_data",
+            "inputs": {
+                "ct_series": "ct",
+                "path": "ouputdir"
+            }
+        }
+    ]
+}
