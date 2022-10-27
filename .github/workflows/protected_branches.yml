@@ -16,21 +16,33 @@ jobs:
         with:
           submodules: true
           lfs: true
+      - name: Add pending status
+        uses: Sibz/github-status-action@v1
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        with:
+          authToken: ${{secrets.GITHUB_TOKEN}}
+          context: "Integration tests"
+          description: "pending"
+          state: "pending"
+          sha: "${{ github.sha }}"
+          target_url: "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
       - uses: conda-incubator/setup-miniconda@v2
         with:
           miniforge-variant: Mambaforge
           environment-file: conda_development.yml
           use-mamba: true
-      - name: Add pending status
-        uses: ouzi-dev/commit-status-updater@v2
-        if: ${{ always() && github.event_name == 'workflow_dispatch' }}
       - name: Unit integration tests
         run: python -m pytest tests/integration
       - name: Update job status
+        uses: Sibz/github-status-action@v1
         if: ${{ always() && github.event_name == 'workflow_dispatch' }}
-        uses: ouzi-dev/commit-status-updater@v2
         with:
-          status: "${{ job.status }}"
+          authToken: ${{secrets.GITHUB_TOKEN}}
+          context: "Integration tests"
+          description: "${{ job.status }}"
+          state: "${{ job.status }}"
+          sha: "${{ github.sha }}"
+          target_url: "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
 
   build-conda:
     runs-on: ubuntu-latest
