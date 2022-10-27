@@ -43,7 +43,7 @@ def test_file_ill_formed():
         MockContainer(ILL_FORMED_FILE)
 
 
-@pytest.mark.parametrize("filename", [GOOD_NON_INTERACTIVE, GOOD_NON_INTERACTIVE])
+@pytest.mark.parametrize("filename", [GOOD_NON_INTERACTIVE, GOOD_INTERACTIVE])
 def test_file_good(filename):
     print("Testing file", filename)
     MockContainer(filename)
