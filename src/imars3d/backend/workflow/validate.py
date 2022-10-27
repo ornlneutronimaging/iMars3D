@@ -25,6 +25,7 @@ GLOBAL_PARAMS = {
     "dc",  # array of dark current intensities
     "tilt_angle",
     "rot_center",
+    "rot_angles",
 }
 
 
