@@ -62,7 +62,6 @@ class CropWidget(BaseWindow, Viewer2D):
     )
     # load data button
     load_data = param.Action(lambda x: x.param.trigger("load_data"))
-    record_roi = param.Action(lambda x: x.param.trigger("record_roi"))
     #
     roi_box = hv.Polygons([])
     roi_box_stream = streams.BoxEdit()
