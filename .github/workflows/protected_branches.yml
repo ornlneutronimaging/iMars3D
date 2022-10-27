@@ -12,10 +12,6 @@ jobs:
       run:
         shell: bash -l {0}
     steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
-          lfs: true
       - name: Add pending status
         uses: Sibz/github-status-action@v1
         if: ${{ github.event_name == 'workflow_dispatch' }}
@@ -25,7 +21,11 @@ jobs:
           description: "pending"
           state: "pending"
           sha: "${{ github.sha }}"
-          target_url: "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          target_url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+          lfs: true
       - uses: conda-incubator/setup-miniconda@v2
         with:
           miniforge-variant: Mambaforge
@@ -42,7 +42,7 @@ jobs:
           description: "${{ job.status }}"
           state: "${{ job.status }}"
           sha: "${{ github.sha }}"
-          target_url: "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          target_url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
   build-conda:
     runs-on: ubuntu-latest
