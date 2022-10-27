@@ -13,7 +13,7 @@ To test this widget in isolation within Jupyter, do the following:
     crop_widget = CropWidget()
     # manual update the embedded config to make sure the load task
     # has valid entries as we will be using those to test the widget.
-    crop_widget.config_dict[tasks] = [
+    crop_widget.config_dict["tasks"] = [
         {
             "name": "load",
             "function": "imars3d.backend.io.data.load_data",
@@ -43,6 +43,7 @@ from holoviews import streams
 from imars3d.ui.base_window import BaseWindow
 from imars3d.ui.widgets.viewer2d import Viewer2D
 from imars3d.backend.morph.crop import crop
+from imars3d.ui.util import run_task
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +67,7 @@ class CropWidget(BaseWindow, Viewer2D):
     roi_box = hv.Polygons([])
     roi_box_stream = streams.BoxEdit()
 
-    def __init__(self, data, **params):
+    def __init__(self, data=None, **params):
         super().__init__(data=data, **params)
 
         self.func_name = f"{crop.__module__}.crop"
@@ -127,20 +128,14 @@ class CropWidget(BaseWindow, Viewer2D):
             if task["function"] == "imars3d.backend.io.data.load_data":
                 load_task = task
                 break
+        # process load task
         if load_task is None:
             logger.warning("No task entry for loading data.")
         else:
-            inputs = load_task["inputs"]
-            argstr = ", ".join([f"{k}={v}" for k, v in inputs.items()])
-            funcstr = f"load({argstr})"
-            ct, ob, dc, rot_angs = eval(funcstr)
-            self.data = np.sum(ct, axis=0)
-            # clean up
-            ct, ob, dc, rot_angs = 0, 0, 0, 0
-            del ct
-            del ob
-            del dc
-            del rot_angs
+            mtd = {}
+            run_task(mtd, task=load_task)
+            self.data = np.sum(mtd["ct"], axis=0)
+            mtd.clear()
 
     @param.depends(
         "data",
