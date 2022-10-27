@@ -227,7 +227,6 @@ class WorkflowEngineAuto(WorkflowEngine):
         for task in self.config["tasks"]:
             peek = self._instrospect_task_function(task["function"])
             inputs = self._resolve_inputs(task.get("inputs", {}), peek.globals_required)
-            import pdb; pdb.set_trace()
             outputs = peek.function(**inputs)
             self._validate_outputs(outputs)
             self._update_registry(task, outputs)

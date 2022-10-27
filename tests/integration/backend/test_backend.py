@@ -151,6 +151,7 @@ class TestWorkflowEngineAuto:
     def test_run(self, config):
         workflow = WorkflowEngineAuto(config)
         workflow.run()
+        import pdb; pdb.set_trace()
         assert workflow.tasks[0].outputs["ct"] == ["ct1", "ct2", "ct3"]
         assert workflow.tasks[1].outputs["ct"] == ["ct1", "ct2", "ct3"]
         assert workflow.tasks[2].outputs["ct"] == ["ct1", "ct2", "ct3"]

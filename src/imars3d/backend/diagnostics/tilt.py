@@ -4,6 +4,7 @@
 import logging
 import param
 import multiprocessing
+from imars3d.backend.util.util import clamp_max_workers
 import numpy as np
 from typing import Tuple
 from functools import partial
@@ -288,7 +289,7 @@ class tilt_correction(param.ParameterizedFunction):
         params = param.ParamOverrides(self, params)
 
         # type validation is done, now replacing max_worker with an actual integer
-        self.max_workers = multiprocessing.cpu_count() if params.max_workers == 0 else params.max_workers
+        self.max_workers = clamp_max_workers(params.max_workers)
         logger.debug(f"max_worker={self.max_workers}")
 
         # dimension check

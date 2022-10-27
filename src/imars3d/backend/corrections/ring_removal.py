@@ -4,6 +4,7 @@
 import logging
 import param
 import multiprocessing
+from imars3d.backend.util.util import clamp_max_workers
 import scipy
 import numpy as np
 import tomopy.util.mproc as mproc
@@ -74,7 +75,7 @@ class remove_ring_artifact(param.ParameterizedFunction):
             raise ValueError("This correction can only be used for a stack, i.e. a 3D image.")
         # NOTE:
         # additional work is needed to avoid duplicating arrays in memory
-        max_workers = None if max_workers <= 0 else max_workers
+        max_workers = clamp_max_workers(max_workers)
         # use shared memory to reduce memory footprint
         with SharedMemoryManager() as smm:
             # create the shared memory

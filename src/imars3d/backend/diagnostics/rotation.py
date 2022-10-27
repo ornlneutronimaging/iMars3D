@@ -3,8 +3,11 @@
 """iMars3D: rotation center finding module."""
 import logging
 import numpy as np
+
 import param
+from imars3d.backend.util.util import clamp_max_workers
 import multiprocessing
+from concurrent.futures import ProcessPoolExecutor
 from multiprocessing.managers import SharedMemoryManager
 from tqdm.contrib.concurrent import process_map
 import tomopy.util.mproc as mproc
@@ -55,7 +58,7 @@ class find_rotation_center(param.ParameterizedFunction):
         params = param.ParamOverrides(self, params)
 
         # type validation is done, now replacing max_worker with an actual integer
-        self.max_workers = multiprocessing.cpu_count() if params.max_workers <= 0 else params.max_workers
+        self.max_workers = clamp_max_workers(params.max_workers)
 
         val = self._find_rotation_center(
             params.arrays, params.angles, params.in_degrees, params.atol_deg, self.max_workers
@@ -95,6 +98,9 @@ class find_rotation_center(param.ParameterizedFunction):
             # copy data
             np.copyto(shm_arrays, arrays)
             # map the multiprocessing calls
+            # rst = []
+            # for i in range(len(idx_low)):
+            #     rst.append(find_center_pc(shm_arrays[idx_low[i]], shm_arrays[idx_hgh[i]]))
             rst = process_map(
                 find_center_pc,
                 [shm_arrays[il] for il in idx_low],
@@ -103,4 +109,4 @@ class find_rotation_center(param.ParameterizedFunction):
                 desc="Finding rotation center",
             )
         # use the median value
-        return np.median(rst)
+        return (np.median(rst),)

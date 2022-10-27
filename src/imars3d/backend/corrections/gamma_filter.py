@@ -3,6 +3,7 @@
 """iMars3D: gamma filter module."""
 import logging
 import param
+from imars3d.backend.util.util import clamp_max_workers
 import multiprocessing
 import numpy as np
 import tomopy
@@ -81,7 +82,7 @@ class gamma_filter(param.ParameterizedFunction):
         params = param.ParamOverrides(self, params)
 
         # type validation is done, now replacing max_worker with an actual integer
-        self.max_workers = multiprocessing.cpu_count() - 2 if params.max_workers <= 0 else params.max_workers
+        self.max_workers = clamp_max_workers(params.max_workers)
         logger.debug(f"max_worker={self.max_workers}")
 
         # NOTE:
