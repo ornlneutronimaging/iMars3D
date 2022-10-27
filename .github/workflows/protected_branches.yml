@@ -12,6 +12,16 @@ jobs:
       run:
         shell: bash -l {0}
     steps:
+      - name: Add pending status
+        uses: Sibz/github-status-action@v1
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        with:
+          authToken: ${{secrets.GITHUB_TOKEN}}
+          context: "Integration tests"
+          description: "pending"
+          state: "pending"
+          sha: "${{ github.sha }}"
+          target_url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
       - uses: actions/checkout@v3
         with:
           submodules: true
@@ -23,6 +33,16 @@ jobs:
           use-mamba: true
       - name: Unit integration tests
         run: python -m pytest tests/integration
+      - name: Update job status
+        uses: Sibz/github-status-action@v1
+        if: ${{ always() && github.event_name == 'workflow_dispatch' }}
+        with:
+          authToken: ${{secrets.GITHUB_TOKEN}}
+          context: "Integration tests"
+          description: "${{ job.status }}"
+          state: "${{ job.status }}"
+          sha: "${{ github.sha }}"
+          target_url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
   build-conda:
     runs-on: ubuntu-latest
