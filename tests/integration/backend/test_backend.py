@@ -10,7 +10,6 @@ from pathlib import Path
 
 
 JSON_DATA_DIR = Path(__file__).parent.parent.parent / "data" / "json"
-ILL_FORMED_FILE = JSON_DATA_DIR / "ill_formed.json"
 
 
 @pytest.fixture(scope="module")
@@ -56,8 +55,10 @@ class TestWorkflowEngineAuto:
             workflow.run()
 
     def test_invalid_config(self):
+        # tests an invalid configuration (no facility present)
+        INVALID_CONFIG_FILE = JSON_DATA_DIR / "invalid_test.json"
         with pytest.raises(JSONValidationError):
-            with open(ILL_FORMED_FILE, "r") as file:
+            with open(INVALID_CONFIG_FILE, "r") as file:
                 workflow = WorkflowEngineAuto(json.load(file))
                 workflow.run()
 
