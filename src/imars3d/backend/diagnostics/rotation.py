@@ -98,9 +98,6 @@ class find_rotation_center(param.ParameterizedFunction):
             # copy data
             np.copyto(shm_arrays, arrays)
             # map the multiprocessing calls
-            # rst = []
-            # for i in range(len(idx_low)):
-            #     rst.append(find_center_pc(shm_arrays[idx_low[i]], shm_arrays[idx_hgh[i]]))
             rst = process_map(
                 find_center_pc,
                 [shm_arrays[il] for il in idx_low],

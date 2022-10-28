@@ -3,6 +3,7 @@
 import logging
 import numpy as np
 import param
+import tomopy
 from tomopy.recon.algorithm import recon as tomo_recon
 
 logger = logging.getLogger(__name__)
@@ -24,7 +25,10 @@ class recon(param.ParameterizedFunction):
         Name of reconstruction algorithm
     filter_name: str
         Name of filter used for reconstruction
-
+    is_radians: boolean
+        True if input theta is in radians, false if in degrees
+    perform_minus_log: boolean
+        True if we want to run tomopy.minus_log on the arrays data before reconstruction
     Return
     ------
     np.ndarray
@@ -53,6 +57,10 @@ class recon(param.ParameterizedFunction):
         default=True,
         doc="Whether or not input angle is in radians"
     )
+    perform_minus_log = param.Boolean(
+        default=False,
+        doc="Whether or not to run tomopy.minus_log on arrays"
+    )
 
     def __call__(self, **params):
         logger.info(f"Executing Filter: Reconstruction")
@@ -67,19 +75,23 @@ class recon(param.ParameterizedFunction):
             params.algorithm,
             params.filter_name,
             params.is_radians,
+            params.perform_minus_log,
             **params.extra_keywords(),
         )
 
         logger.info(f"FINISHED Executing Filter: Reconstruction: {params.filter_name}")
         return reconstructed_image
 
-    def _recon(self, arrays, theta, center, algorithm, filter_name, is_radians, **kwargs) -> np.ndarray:
+    def _recon(self, arrays, theta, center, algorithm, filter_name, is_radians, perform_minus_log, **kwargs) -> np.ndarray:
 
         if not is_radians:
             theta = np.radians(theta)
 
         if arrays.ndim != 3:
             raise ValueError("Expected input array to have 3 dimensions")
+
+        if perform_minus_log:
+            arrays = tomopy.minus_log(arrays)
 
         # TODO: allow different backends besides tomopy
         result = tomo_recon(arrays, theta, center=center, algorithm=algorithm, filter_name=filter_name, **kwargs)

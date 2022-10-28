@@ -4,36 +4,13 @@
 import json
 
 from imars3d.backend.workflow.engine import WorkflowEngineAuto
-import pytest
+import numpy as np
+import pytest 
+from pathlib import Path
 
-
-@pytest.fixture(scope="module")
-def config():
-    config_str = """
-{
-    "facility": "HFIR",
-    "instrument": "CG1D",
-    "ipts": "IPTS-1234",
-    "name": "name for reconstructed ct scans",
-    "workingdir": "/path/to/working/dir",
-    "outputdir": "/path/to/output/dir",
-    "tasks": [{
-    "name": "task1",
-    "function": "imars3d.backend.io.data.load_data",
-    "inputs": {
-    "ct_dir": "tests/data/imars3d-data/HFIR/CG1D/IPTS-25777/raw/ct_scans/iron_man",
-    "ob_dir": "tests/data/imars3d-data/HFIR/CG1D/IPTS-25777/raw/ob/Oct29_2019/",
-    "dc_dir": "tests/data/imars3d-data/HFIR/CG1D/IPTS-25777/raw/df/Oct29_2019/",
-    "ct_fnmatch": "*.tiff",
-    "ob_fnmatch": "*.tiff",
-    "dc_fnmatch": "*.tiff"
-    },
-    "outputs": ["ct", "ob", "dc", "rot_angles"]
-    }
-    ]
-}"""
-    return json.loads(config_str)
-
+DATA_DIR = Path(__file__).parent.parent.parent / "data" / "integration" / "backend"
+ROI_X = (400, 600)
+ROI_Y = (400, 600)
 
 @pytest.fixture(scope="module")
 def config():
@@ -46,16 +23,16 @@ def config():
 	"outputdir": "/path/to/output/dir",
 	"tasks": [{
 			"name": "task1",
-			"function": "imars3d.backend.io.data.load_data",
-			"inputs": {
-				"ct_dir": "/HFIR/CG1D/IPTS-25777/raw/ct_scans/iron_man",
-				"ob_dir": "/HFIR/CG1D/IPTS-25777/raw/ob/Oct29_2019/",
-				"dc_dir": "/HFIR/CG1D/IPTS-25777/raw/df/Oct29_2019/",
-				"ct_fnmatch": "*.tiff",
-				"ob_fnmatch": "*.tiff",
-				"dc_fnmatch": "*.tiff"
-			},
-			"outputs": ["ct", "ob", "dc", "rot_angles"]
+            "function": "imars3d.backend.io.data.load_data",
+            "inputs": {
+                "ct_dir": "tests/data/imars3d-data/HFIR/CG1D/IPTS-25777/raw/ct_scans/iron_man",
+                "ob_dir": "tests/data/imars3d-data/HFIR/CG1D/IPTS-25777/raw/ob/Oct29_2019/",
+                "dc_dir": "tests/data/imars3d-data/HFIR/CG1D/IPTS-25777/raw/df/Oct29_2019/",
+                "ct_fnmatch": "*.tiff",
+                "ob_fnmatch": "*.tiff",
+                "dc_fnmatch": "*.tiff"
+            },
+            "outputs": ["ct", "ob", "dc", "rot_angles"]
 		},
 		{
 			"name": "task2.1",
@@ -135,13 +112,18 @@ def config():
 			"inputs": {
 				"arrays": "ct",
 				"theta": "rot_angles",
-				"center": "rot_center"
+				"center": "rot_center",
+				"is_radians": false,
+				"perform_minus_log": true
 			},
 			"outputs": ["result"]
 		}
 	]
 }"""
     return json.loads(config_str)
+
+def crop_roi(slice_input):
+    return slice_input[ROI_X[0]:ROI_X[1]][ROI_Y[0]:ROI_Y[1]]
 
 class TestWorkflowEngineAuto:
     def test_config(self, config):
@@ -150,9 +132,9 @@ class TestWorkflowEngineAuto:
 
     def test_run(self, config):
         workflow = WorkflowEngineAuto(config)
+        expected_slice_300 = np.load(str(DATA_DIR) + "/expected_slice_300.npy")
         workflow.run()
-        import pdb; pdb.set_trace()
-        assert workflow.tasks[0].outputs["ct"] == ["ct1", "ct2", "ct3"]
-        assert workflow.tasks[1].outputs["ct"] == ["ct1", "ct2", "ct3"]
-        assert workflow.tasks[2].outputs["ct"] == ["ct1", "ct2", "ct3"]
+        # extract slice and crop to region of interest
+        slice_300 = crop_roi(workflow._registry["result"][300])
+        np.allclose(slice_300, expected_slice_300)
 
