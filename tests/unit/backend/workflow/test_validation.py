@@ -98,14 +98,14 @@ def test_string_empty_function():
         MockContainer(json.dumps(json_obj))
 
 
-def test_string_bad_function():
+@pytest.mark.parametrize(
+    "bad_func_name",
+    ["nonexistent.function", "toplevelfunction", "imars3d.backend.corrections.gamma_filter.GammaFilter"],
+)
+def test_string_bad_function(bad_func_name):
     doc = load_file(GOOD_NON_INTERACTIVE)
     json_obj = json.loads(doc)
-    json_obj["tasks"][0]["function"] = "nonexistent.function"
-    with pytest.raises(JSONValidationError):
-        MockContainer(json.dumps(json_obj))
-
-    json_obj["tasks"][0]["function"] = "toplevelfunction"
+    json_obj["tasks"][0]["function"] = bad_func_name
     with pytest.raises(JSONValidationError):
         MockContainer(json.dumps(json_obj))
 
