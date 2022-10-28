@@ -4,7 +4,12 @@
 import json
 
 from imars3d.backend.workflow.engine import WorkflowEngineAuto
+from imars3d.backend.workflow.validate import JSONValidationError
 import pytest
+from pathlib import Path
+
+
+JSON_DATA_DIR = Path(__file__).parent.parent.parent / "data" / "json"
 
 
 @pytest.fixture(scope="module")
@@ -39,3 +44,10 @@ class TestWorkflowEngineAuto:
     def test_config(self, config):
         workflow = WorkflowEngineAuto(config)
         workflow.run()
+
+    def test_bad_filter_name_config(self):
+        BAD_FILTER_JSON = JSON_DATA_DIR / "bad_filter.json"
+        with pytest.raises(JSONValidationError):
+            with open(BAD_FILTER_JSON, "r") as config:
+                workflow = WorkflowEngineAuto(json.load(config))
+                workflow.rn()
