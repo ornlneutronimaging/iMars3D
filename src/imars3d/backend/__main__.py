@@ -13,7 +13,9 @@ import logging
 from pathlib import Path
 
 
-def main():
+# args are exposed to allow for testing
+# passing in None causes argparse to use sys.argv
+def main(args=None):
     # set up the command line parser
     import argparse
 
@@ -31,7 +33,8 @@ def main():
         choices=["debug", "info", "warn", "error"],
         help="The log level (default: %(default)s)",
     )
-    args = parser.parse_args()
+    # configure
+    args = parser.parse_args(args)
 
     # configure logging
     logging.basicConfig(level=getattr(logging, args.log.upper()))
