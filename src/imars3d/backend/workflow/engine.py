@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Workflow engine for imars3d."""
 # package imports
+from ._util import get_function_ref
 from imars3d.backend.workflow import validate
 
 # standard imports
@@ -72,9 +73,7 @@ class WorkflowEngine:
                 that are the outputs of other functions or are part of the metadata.
         """
         # load the ParameterizedFunction derived class associated to the function string
-        module_str, function_name = validate.function_parts(function_str)
-        module = importlib.import_module(module_str)
-        f = getattr(module, function_name)
+        f = get_function_ref(function_str)
 
         param_names = set(f.param.params().keys())
         outputs = dict(function=f, globals_required=param_names.intersection(self._global_params))
