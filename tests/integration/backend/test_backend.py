@@ -5,12 +5,13 @@ import json
 
 from imars3d.backend.workflow.engine import WorkflowEngineAuto
 import numpy as np
-import pytest 
+import pytest
 from pathlib import Path
 
 DATA_DIR = Path(__file__).parent.parent.parent / "data" / "integration" / "backend"
 ROI_X = (400, 600)
 ROI_Y = (400, 600)
+
 
 @pytest.fixture(scope="module")
 def config():
@@ -122,8 +123,10 @@ def config():
 }"""
     return json.loads(config_str)
 
+
 def crop_roi(slice_input):
-    return slice_input[ROI_X[0]:ROI_X[1]][ROI_Y[0]:ROI_Y[1]]
+    return slice_input[ROI_X[0] : ROI_X[1]][ROI_Y[0] : ROI_Y[1]]
+
 
 class TestWorkflowEngineAuto:
     def test_config(self, config):
@@ -137,4 +140,3 @@ class TestWorkflowEngineAuto:
         # extract slice and crop to region of interest
         slice_300 = crop_roi(workflow._registry["result"][300])
         np.allclose(slice_300, expected_slice_300)
-

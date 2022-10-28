@@ -26,7 +26,7 @@ GLOBAL_PARAMS = {
     "tilt_angle",
     "rot_center",
     "rot_angles",
-    "result"
+    "result",
 }
 
 

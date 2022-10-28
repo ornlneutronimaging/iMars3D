@@ -109,7 +109,8 @@ class WorkflowEngine:
         # insert the outputs of the function carrying out the task
         if "outputs" in task or function_outputs is not None:
             # single output case, convert to tuple for processing
-            if(type(function_outputs) != tuple): function_outputs = (function_outputs,)
+            if type(function_outputs) != tuple:
+                function_outputs = (function_outputs,)
 
             if len(task["outputs"]) != len(function_outputs):
                 e = f"Output(s) {task['outputs']} for task {task['name']} do not match total actual outputs."
@@ -144,6 +145,7 @@ class WorkflowEngine:
                 if resolved[key] in self._registry:
                     resolved[key] = self._registry[resolved[key]]
         return resolved
+
 
 class WorkflowEngineAuto(WorkflowEngine):
     config = validate.JSONValid()

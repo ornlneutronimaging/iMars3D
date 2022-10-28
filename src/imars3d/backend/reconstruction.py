@@ -53,14 +53,8 @@ class recon(param.ParameterizedFunction):
         default="hann",
         doc="Name of filter used for reconstruction",
     )
-    is_radians = param.Boolean(
-        default=True,
-        doc="Whether or not input angle is in radians"
-    )
-    perform_minus_log = param.Boolean(
-        default=False,
-        doc="Whether or not to run tomopy.minus_log on arrays"
-    )
+    is_radians = param.Boolean(default=True, doc="Whether or not input angle is in radians")
+    perform_minus_log = param.Boolean(default=False, doc="Whether or not to run tomopy.minus_log on arrays")
 
     def __call__(self, **params):
         logger.info(f"Executing Filter: Reconstruction")
@@ -82,7 +76,9 @@ class recon(param.ParameterizedFunction):
         logger.info(f"FINISHED Executing Filter: Reconstruction: {params.filter_name}")
         return reconstructed_image
 
-    def _recon(self, arrays, theta, center, algorithm, filter_name, is_radians, perform_minus_log, **kwargs) -> np.ndarray:
+    def _recon(
+        self, arrays, theta, center, algorithm, filter_name, is_radians, perform_minus_log, **kwargs
+    ) -> np.ndarray:
 
         if not is_radians:
             theta = np.radians(theta)
