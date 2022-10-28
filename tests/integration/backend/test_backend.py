@@ -9,8 +9,8 @@ import pytest
 from pathlib import Path
 
 
-
 JSON_DATA_DIR = Path(__file__).parent.parent.parent / "data" / "json"
+
 
 @pytest.fixture(scope="module")
 def config():
@@ -38,6 +38,7 @@ def config():
     ]
 }"""
     return json.loads(config_str)
+
 
 class TestWorkflowEngineAuto:
     def test_config(self, config):
