@@ -39,18 +39,14 @@ def config():
 }"""
     return json.loads(config_str)
 
-
 class TestWorkflowEngineAuto:
-
-
     def test_config(self, config):
         workflow = WorkflowEngineAuto(config)
         workflow.run()
-
 
     def test_bad_filter_name_config(self):
         BAD_FILTER_JSON = JSON_DATA_DIR / "bad_filter.json"
         with pytest.raises(JSONValidationError):
             with open(BAD_FILTER_JSON, "r") as config:
-                    workflow = WorkflowEngineAuto(json.load(config))
-                    workflow.rn()
+                workflow = WorkflowEngineAuto(json.load(config))
+                workflow.rn()
