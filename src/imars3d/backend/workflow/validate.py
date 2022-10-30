@@ -13,20 +13,6 @@ JsonInputTypes = Union[str, dict, Path]
 
 # http://json-schema.org/learn/getting-started-step-by-step.html
 SCHEMA_FILE = Path(__file__).parent / "schema.json"
-# reverse strings for parameters denoting metadata or output items from the workflow steps
-GLOBAL_PARAMS = {
-    "facility",
-    "instrument",
-    "ipts",
-    "workingdir",
-    "outputdir",
-    "ct",  # array of radiograph intensities
-    "ob",  # array of open bean intensities
-    "dc",  # array of dark current intensities
-    "tilt_angle",
-    "rot_center",
-    "rot_angles",
-}
 
 
 def _load_schema():
@@ -103,7 +89,7 @@ def _validate_tasks_exist(json_obj: Dict) -> None:
             raise JSONValidationError(f'Step {step} specified nonexistent function "{func_str}"')
 
 
-def _todict(obj: JsonInputTypes) -> Dict:
+def todict(obj: JsonInputTypes) -> Dict:
     """Convert the supplied object into a dict. Raise a TypeError if the object is not a type that has a conversion menthod."""
     if isinstance(obj, dict):
         return obj
@@ -134,7 +120,7 @@ class JSONValid:
 
     def __set__(self, obj, value) -> None:
         """Validate the json object."""
-        obj._json = _todict(value)
+        obj._json = todict(value)
         self._validate(obj._json)
 
     def required(self, queryset: Iterable) -> bool:
