@@ -5,7 +5,7 @@ from ._util import get_function_ref
 from imars3d.backend.workflow import validate
 
 # third-party imports
-from param.parameterized import String as StringParam
+import param as libparam
 
 # standard imports
 from collections import namedtuple
@@ -101,13 +101,16 @@ class WorkflowEngine:
         for pname, parm in paramdict.items():
             if pname == "name":  # not an actual input parameter, just an attribute of the function
                 continue
-            if pname in task_inputs:  # value passed explicitly
+            if pname in task_inputs:  # value passed explicitly, but it could refer to a value stored in the registry
                 val = task_inputs[pname]
                 if isinstance(val, str):  # Examples: `"array": "ct"`, `"exec_mode": "f"`
-                    if isinstance(parm, StringParam):
-                        inputs[pname] = val  # Example: "exec_mode": "f"
-                    else:
-                        inputs[pname] = self._registry[pname]  # Example: "array": "ct"
+                    if isinstance(parm, (libparam.Foldername, libparam.String)):
+                        if val in self._registry:  # val is a reference to a value stored in the registry
+                            inputs[pname] = self._registry[val]  # Example: "savedir": "outputdir"
+                        else:  # val is an explicit value
+                            inputs[pname] = val  # Example: "ct_dir": "/home/path/to/ctdir/"
+                    else:  # must be a reference to a value stored in the registry
+                        inputs[pname] = self._registry[val]  # Example: "array": "ct"
                 else:
                     inputs[pname] = val  # Example: "rot_center": 0.0
             elif pname in self._registry:  # implicit
@@ -165,7 +168,7 @@ class WorkflowEngineAuto(WorkflowEngine):
                     if pname in task.get("inputs", {}):  # parameter explicitly set
                         val = task["inputs"][pname]  # is "val" an actual value or a registry key?
                         if isinstance(val, str):  # Examples: `"array": "ct"`, `"exec_mode": "f"`
-                            if isinstance(parm, StringParam):
+                            if isinstance(parm, libparam.String):
                                 continue  # In "exec_mode": "f", is "f" a registry key or an actual exec_mode value?
                             if val not in registry:  # "val" is a templated value, so it should be a registry key
                                 missing.add(val)
