@@ -1,7 +1,0 @@
-# run the following
-docker run -it linjiao/imars3d-ubuntu-py3:14.04
-
-# and then in the docker environ, do
-# git pull
-# python setup.py install
-# py.test
