@@ -6,6 +6,9 @@ imars3d.backend package
    :undoc-members:
    :show-inheritance:
 
+.. automodule:: imars3d.backend.__main__
+
+
 Subpackages
 -----------
 
