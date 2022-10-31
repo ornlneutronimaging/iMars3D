@@ -50,4 +50,4 @@ class TestWorkflowEngineAuto:
         with pytest.raises(JSONValidationError):
             with open(BAD_FILTER_JSON, "r") as config:
                 workflow = WorkflowEngineAuto(json.load(config))
-                workflow.rn()
+                workflow.run()

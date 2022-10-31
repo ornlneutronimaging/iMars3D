@@ -5,6 +5,7 @@ from imars3d.backend.workflow.validate import SCHEMA
 # third party imports
 import numpy as np
 from param import Parameter, ParameterizedFunction
+from param.parameterized import String as StringParam
 
 # standard library imports
 from copy import deepcopy
@@ -14,8 +15,8 @@ import pytest
 
 class load_data(ParameterizedFunction):
     r"""mock loading a set of radiographs into a numpy array"""
-    ct_files = Parameter()
-    ct_dir = Parameter()
+    ct_files = Parameter(default=None)
+    ct_dir = StringParam(default=None)
 
     def __call__(self, **params):
         return [
@@ -25,17 +26,35 @@ class load_data(ParameterizedFunction):
 
 class save(ParameterizedFunction):
     r"""mock saving a set or radiographs to some directory"""
-    ct = Parameter()
+    ct = Parameter(default=None)
     workingdir = Parameter()
 
     def __call__(self, **params):
-        return None
+        return []
+
+
+class find_rot_center(ParameterizedFunction):
+    ct = Parameter(default=None)
+
+    def __call__(self, **params):
+        return [0.0]
 
 
 class reconstruction(ParameterizedFunction):
     r"""mock the reconstruction of the radiographs"""
-    ct = Parameter()
-    rot_center = Parameter()
+    ct = Parameter(default=None)
+    rot_center = Parameter(default=None)
+
+    def __call__(self, **params):
+        return [
+            params["ct"],
+        ]
+
+
+class reconstruction_with_default(ParameterizedFunction):
+    r"""mock the reconstruction of the radiographs"""
+    ct = Parameter(default=None)
+    rot_center = Parameter(default=0.0)
 
     def __call__(self, **params):
         return [
@@ -57,7 +76,8 @@ def config():
             "name": "task1",
             "function": "_MODULE_PATH_.load_data",
             "inputs": {
-                "ct_files": ["ct1", "ct2", "ct3"]
+                "ct_files": ["ct1", "ct2", "ct3"],
+                "ct_dir": "_MODULE_PATH_"
             },
             "outputs": ["ct"]
         },
@@ -67,9 +87,27 @@ def config():
         },
         {
             "name": "task3",
+            "function": "_MODULE_PATH_.reconstruction_with_default",
+            "outputs": ["ct"]
+        },
+        {
+            "name": "task4",
             "function": "_MODULE_PATH_.reconstruction",
             "inputs": {
-                "rot_center": "0.0"
+                "rot_center": 0.0
+            },
+            "outputs": ["ct2"]
+        },
+        {
+            "name": "task5",
+            "function": "_MODULE_PATH_.find_rot_center",
+            "outputs": ["rot_center"]
+        },
+        {
+            "name": "task6",
+            "function": "_MODULE_PATH_.reconstruction",
+            "inputs": {
+                "ct": "ct2"
             },
             "outputs": ["ct"]
         }
@@ -83,15 +121,8 @@ class TestWorkflowEngineAuto:
         workflow = WorkflowEngineAuto(config, SCHEMA)
         workflow._dryrun()
 
-        # Error: adding a templated output not in globals
-        config_bad = deepcopy(config)
-        config_bad["tasks"][1].update({"outputs": ["path"]})
-        workflow = WorkflowEngineAuto(config_bad, SCHEMA)
-        with pytest.raises(WorkflowEngineError, match="path of task task2 should be global"):
-            workflow._dryrun()
-
         # Error: task for which implicit ct has not been computed yet
-        task0 = {"name": "task0", "function": f"{__name__}.save", "outputs": ["ct"]}
+        task0 = {"name": "task0", "function": f"{__name__}.save"}
         config_bad = deepcopy(config)
         config_bad["tasks"].insert(0, task0)
         workflow = WorkflowEngineAuto(config_bad, SCHEMA)
@@ -100,9 +131,9 @@ class TestWorkflowEngineAuto:
 
         # Error: task for which templated rot_center has not been computed yet
         config_bad = deepcopy(config)
-        config_bad["tasks"][2].pop("inputs")
+        config_bad["tasks"][3].pop("inputs")
         workflow = WorkflowEngineAuto(config_bad, SCHEMA)
-        with pytest.raises(WorkflowEngineError, match="rot_center for task task3 are missing"):
+        with pytest.raises(WorkflowEngineError, match="rot_center for task task4 are missing"):
             workflow._dryrun()
 
     def test_run(self, config):
