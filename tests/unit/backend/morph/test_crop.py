@@ -42,7 +42,7 @@ def test_crop_manual():
     """
     n_imgs = 3
     img_shape = (512, 1024)
-    slit_pos = (400, 824, 100, 412)  # left, right, top, bottom
+    slit_pos = [400, 824, 100, 412]  # left, right, top, bottom
     imgstack = np.array([generate_fake_proj(img_shape, slit_pos) for _ in range(n_imgs)])
     # manual crop
     imgstack_cropped = crop(arrays=imgstack, crop_limit=slit_pos)

@@ -56,7 +56,7 @@ def test_crop_page(page: Page, port: int):
     task_entry = app.get_task_list()[0]
     print(task_entry)
     assert task_entry["inputs"]["array"] == "ct"
-    assert task_entry["inputs"]["crop_limit"] == (127, 127, 127, 127)
+    assert task_entry["inputs"]["crop_limit"] == [127, 127, 127, 127]
 
 
 if __name__ == "__main__":
