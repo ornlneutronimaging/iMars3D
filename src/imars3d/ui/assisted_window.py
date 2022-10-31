@@ -77,9 +77,9 @@ class AssistedWindow(BaseWindow):
         new_config_dict = json.loads(self.file_input.value)
         try:
             # Validating new config file by instantiating WorkflowEngineAuto
-            validate_dict = WorkflowEngineAuto(new_config_dict)
+            _ = WorkflowEngineAuto(new_config_dict)
             self.config_dict = new_config_dict
-        except:
+        except Exception:
             logger.error("Could not update config file. Reverting to previous config.")
 
     def launch_assisted_reconstruction(self, event):
