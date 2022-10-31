@@ -121,23 +121,14 @@ class WorkflowEngine:
 class WorkflowEngineAuto(WorkflowEngine):
     config = validate.JSONValid()
 
-    @property
-    def schema(self):
-        r"""Read-only schema file"""
-        return self._schema
-
-    def __init__(
-        self, config: validate.JsonInputTypes, schema: Optional[validate.JsonInputTypes] = validate.SCHEMA
-    ) -> None:
+    def __init__(self, config: validate.JsonInputTypes) -> None:
         r"""Initialize the workflow engine.
 
         Parameters
         ----------
         config
             JSON configuration for reconstruction-reduction
-        schema
         """
-        self._schema: dict = validate.todict(schema)
         self.config: dict = config  # validated JSON configuration file
         super().__init__()
 
