@@ -10,7 +10,7 @@
             "name": "determine_tilt_correction",
             "function": "imars3d.backend.diagnostics.tilt.tilt_correction",
             "inputs": {
-                "ct_series": "ct",
+                "arrays": "ct",
                 "rot_angles": "rot_angles"
             },
             "outputs": ["tilt_angle"]
