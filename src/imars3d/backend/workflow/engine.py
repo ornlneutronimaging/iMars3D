@@ -4,6 +4,9 @@
 from ._util import get_function_ref
 from imars3d.backend.workflow import validate
 
+# third-party imports
+import param as libparam
+
 # standard imports
 from collections import namedtuple
 from collections.abc import Iterable
@@ -21,9 +24,9 @@ class WorkflowEngineError(RuntimeError):
 
 class WorkflowEngine:
     @staticmethod
-    def _validate_outputs(function_outputs: Union[None, Iterable[Any]]):
+    def _validate_outputs(task_outputs: Iterable[Any], function_outputs: Optional[Iterable[Any]] = None) -> None:
         r"""
-        Verify the function outputs is either None or a valid iterable.
+        Verify the function outputs is a valid iterable and of same length as task["outputs"].
 
         Parameters
         ----------
@@ -34,27 +37,22 @@ class WorkflowEngine:
         ------
         WorkflowEngineError
         """
-        if function_outputs is None:
-            return
-        tests = {
-            "Return value must be an iterable ": hasattr(function_outputs, "__iter__"),
-            "Return value cannot be a string": not isinstance(function_outputs, str),
-        }
-        errors = " and ".join([k for k, v in tests.items() if v is False])
-        if errors:
-            raise WorkflowEngineError(errors)
 
-    def __init__(self, global_params: Union[Set[str], List[str]]) -> None:
-        r"""
+        def validate_type(outputs):
+            if not hasattr(outputs, "__iter__"):
+                raise WorkflowEngineError(f"Task and Function outputs must be iterable")
+            if isinstance(outputs, str):
+                raise WorkflowEngineError("Task and Function outputs cannot be string")
 
-        Parameters
-        ----------
-        global_params
-            List of JSON entries deemed as accessible by any workflow task. These are the metadata
-            and the task outputs.
-        """
-        self._global_params: set = set(global_params)
-        self._registry: Optional[dict] = None  # will store set or computed globals parameters
+        validate_type(task_outputs)
+        if function_outputs:
+            validate_type(function_outputs)
+            if len(task_outputs) != len(function_outputs):
+                error = f"Task and Function have different number of outputs"
+                raise WorkflowEngineError(error)
+
+    def __init__(self) -> None:
+        self._registry: Optional[dict] = None  # will store set or computed parameters
 
 
     def _instrospect_task_function(self, function_str: str) -> namedtuple:
@@ -76,71 +74,51 @@ class WorkflowEngine:
                 that are the outputs of other functions or are part of the metadata.
         """
         # load the ParameterizedFunction derived class associated to the function string
-        f = get_function_ref(function_str)
-
-        param_names = set(f.param.params().keys())
-        outputs = dict(function=f, globals_required=param_names.intersection(self._global_params))
+        module_str = ".".join(function_str.split(".")[:-1])
+        module = importlib.import_module(module_str)
+        function_name = function_str.split(".")[-1]
+        f = getattr(module, function_name)
+        # Some functions, like `load_data`, have parameters that may or may not be needed
+        # depending on the value of other parameters. Methods `dryrun()` assume that
+        # parameters are independent of each other
+        independent = False if function_name in ["load_data"] else True
+        outputs = dict(function=f, paramdict=f.params(), params_independent=independent)
         return namedtuple("TaskFuncionInstrospection", outputs.keys())(**outputs)
 
-    def _update_registry(self, task: dict, function_outputs: Optional[Iterable[Any]] = None) -> None:
-        r"""
-        Fetch the values for the global parameters that have just been set or computed.
+    def _resolve_inputs(self, task_inputs: dict, paramdict: dict) -> dict:
+        r"""Populate the required parameters missing from the task's `inputs` entry with the contents of the registry
 
         Parameters
         ----------
-        task
-            task entry as it appears in the JSON configuration file
-        function_outputs
-            return value of the function carrying out the task. Should be an iterable, such as a ``List``.
-
-        Raises
-        ------
-        WorkflowEngineError
-            The outputs, as defined in the task entry, don't match the actual return value of the function.
-        """
-        # insert explicitly passed globals values
-        if "inputs" in task:
-            globals_explicit = set(task["inputs"]).intersection(self._global_params)
-            self._registry.update({k: v for k, v in task["inputs"].items() if k in globals_explicit})
-        # insert the outputs of the function carrying out the task
-        if "outputs" in task or function_outputs is not None:
-            # single output case, convert to tuple for processing
-            if type(function_outputs) != tuple:
-                function_outputs = (function_outputs,)
-
-            if len(task["outputs"]) != len(function_outputs):
-                e = f"Output(s) {task['outputs']} for task {task['name']} do not match total actual outputs."
-                raise WorkflowEngineError(e)
-            self._registry.update(dict(zip(task["outputs"], function_outputs)))
-
-    def _resolve_inputs(self, inputs: dict, globals_required: set) -> dict:
-        r"""Resolve inputs for tasks.
-
-        Populate the input parameters of the parameterized function with whatever global parameters
-        it may require and that are missing in the task entry of the JSON configuration file.
-
-        Parameters
-        ----------
-        inputs
-            the "inputs" entry in the JSON configuration file corresponding
-            to the task currently being evaluated.
-        globals_required
-            set of global parameters required as inputs by the parameterized function
+        task_inputs
+            the "inputs" entry in the JSON configuration file for the task being evaluated.
+        paramdict
+            dictionary of `name: instance` parameters for the task being evaluated
 
         Returns
         -------
         dict
-            the inputs for the parameterized function.
+            all necessary inputs for the function to be evaluated
         """
-        resolved = inputs
-        resolved.update({key: None for key in globals_required})  # expand to include implicit globals
-        for key in resolved:
-            if key in self._registry:
-                resolved[key] = self._registry[key]
-            if resolved and isinstance(resolved[key], str):
-                if resolved[key] in self._registry:
-                    resolved[key] = self._registry[resolved[key]]
-        return resolved
+        inputs = dict()
+        for pname, parm in paramdict.items():
+            if pname == "name":  # not an actual input parameter, just an attribute of the function
+                continue
+            if pname in task_inputs:  # value passed explicitly, but it could refer to a value stored in the registry
+                val = task_inputs[pname]
+                if isinstance(val, str):  # Examples: `"array": "ct"`, `"exec_mode": "f"`
+                    if isinstance(parm, (libparam.Foldername, libparam.String)):
+                        if val in self._registry:  # val is a reference to a value stored in the registry
+                            inputs[pname] = self._registry[val]  # Example: "savedir": "outputdir"
+                        else:  # val is an explicit value
+                            inputs[pname] = val  # Example: "ct_dir": "/home/path/to/ctdir/"
+                    else:  # must be a reference to a value stored in the registry
+                        inputs[pname] = self._registry[val]  # Example: "array": "ct"
+                else:
+                    inputs[pname] = val  # Example: "rot_center": 0.0
+            elif pname in self._registry:  # implicit
+                inputs[pname] = self._registry[pname]
+        return inputs
 
 
 class WorkflowEngineAuto(WorkflowEngine):
@@ -152,10 +130,7 @@ class WorkflowEngineAuto(WorkflowEngine):
         return self._schema
 
     def __init__(
-        self,
-        config: validate.JsonInputTypes,
-        schema: Optional[validate.JsonInputTypes] = validate.SCHEMA,
-        global_params: Optional[Union[Set[str], List[str]]] = validate.GLOBAL_PARAMS,
+        self, config: validate.JsonInputTypes, schema: Optional[validate.JsonInputTypes] = validate.SCHEMA
     ) -> None:
         r"""Initialize the workflow engine.
 
@@ -164,13 +139,10 @@ class WorkflowEngineAuto(WorkflowEngine):
         config
             JSON configuration for reconstruction-reduction
         schema
-        global_params
-            List of JSON entries deemed as accessible by any workflow task. These are the metadata
-            and the task outputs.
         """
-        self._schema: dict = validate._todict(schema)
+        self._schema: dict = validate.todict(schema)
         self.config: dict = config  # validated JSON configuration file
-        super().__init__(global_params)
+        super().__init__()
 
     def _dryrun(self) -> None:
         r"""Verify validity of the workflow configuration.
@@ -183,39 +155,38 @@ class WorkflowEngineAuto(WorkflowEngine):
         WorkflowEngineError
             one or more global inputs are not the output(s) of any previous task(s).
         """
-        # `current_globals` stores global parameters that have already been computed
-        current_globals = set([x for x in self.config if x not in ("name", "tasks")])
+        # registry stores parameters that have already been set or computed. Initialize with metadata
+        registry = set([x for x in self.config if x not in ("name", "tasks")])
 
-        # cycle over each task and carry out the following steps:
-        # 1. any global parameter required by task["function"] as input must be accounted for in `current_globals`
-        # 2. assume any global parameter in task["inputs"] is being passed an actual value
-        #    in `current_globals`
-        # 3. update `current_globals` with task["outputs"], if present
         for task in self.config["tasks"]:
             peek = self._instrospect_task_function(task["function"])
-
-            # does the task need globals not explicitly stated as "inputs"?
-            globals_explicit = set(task.get("inputs", {})).intersection(self._global_params)
-            globals_implicit = peek.globals_required - globals_explicit
-            missing = globals_implicit - current_globals
-            if missing:
-                raise WorkflowEngineError(f"input(s) {', '.join(missing)} for task {task['name']} are missing")
-
-            # mocks running the task
-            outputs = None  # noqa F841
-
-            # insert explicitly passed globals values, or computed, after the task is carried out
-            if "inputs" in task:
-                globals_explicit = set(task["inputs"]).intersection(self._global_params)
-                current_globals.update(globals_explicit)
-            if "outputs" in task:
-                new_globals = set([x for x in task["outputs"] if isinstance(x, str)])
-                unaccounted = new_globals - self._global_params  # these parameters should be globals
-                if unaccounted:
-                    raise WorkflowEngineError(
-                        f"Output(s) {', '.join(unaccounted)} of task {task['name']} " "should be global but aren't!"
-                    )
-                current_globals.update(new_globals)
+            if peek.params_independent:
+                # assess each function parameter. Is it missing?
+                missing = set([])
+                for pname, parm in peek.paramdict.items():
+                    if pname == "name":  # not an actual input parameter, just an attribute of the function
+                        continue
+                    if parm.default is not None:  # the parameter has a default value
+                        continue  # irrelevant if parameter value is missing
+                    if pname in task.get("inputs", {}):  # parameter explicitly set
+                        val = task["inputs"][pname]  # is "val" an actual value or a registry key?
+                        if isinstance(val, str):  # Examples: `"array": "ct"`, `"exec_mode": "f"`
+                            if isinstance(parm, libparam.String):
+                                continue  # In "exec_mode": "f", is "f" a registry key or an actual exec_mode value?
+                            if val not in registry:  # "val" is a templated value, so it should be a registry key
+                                missing.add(val)
+                                continue
+                        else:  # parameter is explicitly set. Example: "rot_center": 0.2
+                            continue
+                    # From here on, the parameter has no default value and has not been set in task["inputs"]
+                    if pname not in registry:
+                        missing.add(pname)
+                if missing:
+                    raise WorkflowEngineError(f"input(s) {', '.join(missing)} for task {task['name']} are missing")
+            # update the registry with contents of task["outputs"]
+            if task.get("outputs", []):
+                self._validate_outputs(task["outputs"])
+                registry.update(set(task["outputs"]))
 
     def run(self) -> None:
         r"""Sequential execution of the tasks specified in the JSON configuration file."""
@@ -224,7 +195,8 @@ class WorkflowEngineAuto(WorkflowEngine):
         self._registry = {k: v for k, v in self.config.items() if k not in ("name", "tasks")}
         for task in self.config["tasks"]:
             peek = self._instrospect_task_function(task["function"])
-            inputs = self._resolve_inputs(task.get("inputs", {}), peek.globals_required)
+            inputs = self._resolve_inputs(task.get("inputs", {}), peek.paramdict)
             outputs = peek.function(**inputs)
-            self._validate_outputs(outputs)
-            self._update_registry(task, outputs)
+            if task.get("outputs", []):
+                self._validate_outputs(task["outputs"], outputs)
+                self._registry.update(dict(zip(task["outputs"], outputs)))
