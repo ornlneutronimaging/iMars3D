@@ -53,7 +53,7 @@ class find_rotation_center(param.ParameterizedFunction):
     )
 
     def __call__(self, **params):
-        logger.info(f"Executing Filter: Find Rotation Center")
+        logger.info("Executing Filter: Find Rotation Center")
         _ = self.instance(**params)
         params = param.ParamOverrides(self, params)
 
@@ -63,7 +63,7 @@ class find_rotation_center(param.ParameterizedFunction):
         val = self._find_rotation_center(
             params.arrays, params.angles, params.in_degrees, params.atol_deg, self.max_workers
         )
-        logger.info(f"FINISHED Executing Filter: Find Rotation Center")
+        logger.info("FINISHED Executing Filter: Find Rotation Center")
         return val
 
     def _find_rotation_center(

@@ -252,7 +252,7 @@ class denoise(param.ParameterizedFunction):
 
     def __call__(self, **params):
         """Call the denoise function."""
-        logger.info(f"Executing Filter: Denoise Filter")
+        logger.info("Executing Filter: Denoise Filter")
         # type*bounds check via Parameter
         _ = self.instance(**params)
         # sanitize arguments
@@ -263,14 +263,14 @@ class denoise(param.ParameterizedFunction):
         logger.debug(f"max_worker={self.max_workers}")
         denoised_array = None
         if params.method == "median":
-            logger.info(f"Executing Filter: Denoise Filter with median filter")
+            logger.info("Executing Filter: Denoise Filter with median filter")
             denoised_array = denoise_by_median(
                 arrays=params.arrays,
                 median_filter_kernel=params.median_filter_kernel,
                 max_workers=self.max_workers,
             )
         elif params.method == "bilateral":
-            logger.info(f"Executing Filter: Denoise Filter with bilateral filter")
+            logger.info("Executing Filter: Denoise Filter with bilateral filter")
             denoised_array = denoise_by_bilateral(
                 arrays=params.arrays,
                 sigma_color=params.bilateral_sigma_color,

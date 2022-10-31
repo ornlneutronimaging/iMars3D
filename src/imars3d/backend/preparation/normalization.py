@@ -51,7 +51,7 @@ class normalization(param.ParameterizedFunction):
 
     def __call__(self, **params):
         """Perform normalization via tomopy."""
-        logger.info(f"Executing Filter: Normalization")
+        logger.info("Executing Filter: Normalization")
         # type*bounds check via Parameter
         _ = self.instance(**params)
         # sanitize arguments
@@ -76,6 +76,6 @@ class normalization(param.ParameterizedFunction):
             params.arrays, self.flats, self.darks, cutoff=tomopy_cut_off, ncore=self.max_workers
         )
         # return
-        logger.info(f"FINISHED Executing Filter: Normalization")
+        logger.info("FINISHED Executing Filter: Normalization")
 
         return arrays_normalized

@@ -54,7 +54,7 @@ class intensity_fluctuation_correction(param.ParameterizedFunction):
 
     def __call__(self, **params):
         """Call the function."""
-        logger.info(f"Executing Filter: Intensity Fluctuation Correction")
+        logger.info("Executing Filter: Intensity Fluctuation Correction")
         # forced type+bounds check
         _ = self.instance(**params)
         # sanitize arguments
@@ -66,7 +66,7 @@ class intensity_fluctuation_correction(param.ParameterizedFunction):
         corrected_array = self._intensity_fluctuation_correction(
             params.ct, params.air_pixels, params.sigma, self.max_workers
         )
-        logger.info(f"FINISHED Executing Filter: Intensity Fluctuation Correction")
+        logger.info("FINISHED Executing Filter: Intensity Fluctuation Correction")
         return corrected_array
 
     def _intensity_fluctuation_correction(

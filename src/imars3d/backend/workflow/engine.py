@@ -40,7 +40,7 @@ class WorkflowEngine:
 
         def validate_type(outputs):
             if not hasattr(outputs, "__iter__"):
-                raise WorkflowEngineError(f"Task and Function outputs must be iterable")
+                raise WorkflowEngineError("Task and Function outputs must be iterable")
             if isinstance(outputs, str):
                 raise WorkflowEngineError("Task and Function outputs cannot be string")
 
@@ -48,7 +48,7 @@ class WorkflowEngine:
         if function_outputs is not None:
             validate_type(function_outputs)
             if len(task_outputs) != len(function_outputs):
-                error = f"Task and Function have different number of outputs"
+                error = "Task and Function have different number of outputs"
                 raise WorkflowEngineError(error)
 
     def __init__(self) -> None:
