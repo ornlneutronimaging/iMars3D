@@ -156,7 +156,7 @@ class CropWidget(BaseWindow, Viewer2D):
                 vdims=["count"],
             )
             self.roi_box_stream = streams.BoxEdit(source=self.roi_box, num_objects=1)
-            #
+
             def update_roi(data):
                 """Internal function.
 
@@ -170,7 +170,7 @@ class CropWidget(BaseWindow, Viewer2D):
                     right = int(data["x1"][0])
                     self.update_crop_limit(top, bottom, left, right)
                     return hv.Text(0, -10, "Trick bokeh to update ROI.")
-                except:
+                except Exception:
                     logger.debug("no ROI found.")
                     return hv.Text(0, -10, "Trick bokeh to update ROI.")
 
@@ -258,10 +258,6 @@ class CropWidget(BaseWindow, Viewer2D):
 
 
 if __name__ == "__main__":
-    import panel as pn
-    import holoviews as hv
-    from imars3d.ui.widgets.crop import CropWidget
-
     pn.extension()
     hv.extension("bokeh")
 

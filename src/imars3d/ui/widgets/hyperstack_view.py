@@ -189,9 +189,6 @@ class HyperstackView(Viewer2D):
 
 if __name__ == "__main__":
     import skimage
-    import panel as pn
-    import holoviews as hv
-    from imars3d.ui.widgets.hyperstack_view import HyperstackView
 
     pn.extension()
     hv.extension("bokeh")

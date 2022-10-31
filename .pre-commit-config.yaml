@@ -35,9 +35,7 @@ repos:
     - id: flake8
       exclude: |
         (?x)^(
-                ^src/imars3d/ui/.+ |
-                ^docs/conf.py |
-                ^builders/.+
+                ^docs/conf.py
             )$
   - repo: https://github.com/adrienverge/yamllint.git
     rev: v1.28.0
