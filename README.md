@@ -1,7 +1,9 @@
 <!-- Badges -->
 
-![Build Status](https://github.com/ornlneutronimaging/iMars3D/actions/workflows/actions.yml/badge.svg?branch=next)
+[![Build Status](https://github.com/ornlneutronimaging/iMars3D/actions/workflows/actions.yml/badge.svg?branch=next)](https://github.com/ornlneutronimaging/iMars3D/actions/workflows/actions.yml?query=branch?next)
 [![Documentation Status](https://readthedocs.org/projects/imars3d/badge/?version=latest)](https://imars3d.readthedocs.io/en/latest/?badge=latest)
+[![codecov](https://codecov.io/gh/ornlneutronimaging/iMars3D/branch/next/graph/badge.svg)](https://codecov.io/gh/ornlneutronimaging/iMars3D/tree/next)
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/6650/badge)](https://bestpractices.coreinfrastructure.org/projects/6650)
 
 <!-- End Badges -->
 
