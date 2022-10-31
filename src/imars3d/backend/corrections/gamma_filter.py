@@ -74,7 +74,7 @@ class gamma_filter(param.ParameterizedFunction):
 
     def __call__(self, **params):
         """Replace near saturated pixels (due to gamma radiation) with median values."""
-        logger.info(f"Executing Filter: Gamma Filter")
+        logger.info("Executing Filter: Gamma Filter")
         # type*bounds check via Parameter
         _ = self.instance(**params)
         # sanitize arguments
@@ -82,7 +82,7 @@ class gamma_filter(param.ParameterizedFunction):
 
         # type validation is done, now replacing max_worker with an actual integer
         self.max_workers = multiprocessing.cpu_count() - 2 if params.max_workers <= 0 else params.max_workers
-        logger.debug(f"max_worker={self.max_workers}")
+        logger.debug("max_worker={self.max_workers}")
 
         # NOTE:
         # gamma_filter is intended to screen out over-saturated pixels, which are caused by gamma radiation.
@@ -122,5 +122,5 @@ class gamma_filter(param.ParameterizedFunction):
         logger.debug(f"arrays_selective_filtered.shape={arrays_filtered.shape}")
 
         #
-        logger.info(f"FINISHED Executing Filter: Gamma Filter")
+        logger.info("FINISHED Executing Filter: Gamma Filter")
         return arrays_filtered

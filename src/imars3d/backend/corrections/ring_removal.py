@@ -51,13 +51,13 @@ class remove_ring_artifact(param.ParameterizedFunction):
     max_workers = param.Integer(default=0, bounds=(0, None), doc="Number of cores to use for parallel processing.")
 
     def __call__(self, **params):
-        logger.info(f"Executing Filter: Remove Ring Artifact")
+        logger.info("Executing Filter: Remove Ring Artifact")
         _ = self.instance(**params)
         params = param.ParamOverrides(self, params)
         val = self._remove_ring_artifact(
             params.arrays, params.kernel_size, params.sub_division, params.correction_range, params.max_workers
         )
-        logger.info(f"FINISHED Executing Filter: Remove Ring Artifact")
+        logger.info("FINISHED Executing Filter: Remove Ring Artifact")
         return val
 
     def _remove_ring_artifact(
@@ -145,13 +145,13 @@ class remove_ring_artifact_Ketcham(param.ParameterizedFunction):
     )
 
     def __call__(self, **params):
-        logger.info(f"Executing Filter: Remove Ring Artifact (Ketcham)")
+        logger.info("Executing Filter: Remove Ring Artifact (Ketcham)")
         _ = self.instance(**params)
         params = param.ParamOverrides(self, params)
         val = _remove_ring_artifact_Ketcham(
             params.sinogram, params.kernel_size, params.sub_division, params.correction_range
         )
-        logger.info(f"FINISHED Executing Filter: Remove Ring Artifact (Ketcham)")
+        logger.info("FINISHED Executing Filter: Remove Ring Artifact (Ketcham)")
         return val
 
 

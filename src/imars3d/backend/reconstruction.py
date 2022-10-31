@@ -51,7 +51,7 @@ class recon(param.ParameterizedFunction):
     )
 
     def __call__(self, **params):
-        logger.info(f"Executing Filter: Reconstruction")
+        logger.info("Executing Filter: Reconstruction")
         # forced type+bounds check
         _ = self.instance(**params)
         # sanitize args

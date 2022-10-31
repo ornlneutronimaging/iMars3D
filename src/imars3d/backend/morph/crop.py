@@ -92,7 +92,7 @@ class crop(param.ParameterizedFunction):
 
     def __call__(self, **params):
         """Call the function."""
-        logger.info(f"Executing Filter: Crop")
+        logger.info("Executing Filter: Crop")
         # forced type+bounds check
         _ = self.instance(**params)
         # sanitize args
@@ -106,7 +106,7 @@ class crop(param.ParameterizedFunction):
             params.rel_intensity_threshold_fov,
             params.rel_intensity_threshold_sample,
         )
-        logger.info(f"FINISHED Executing Filter: Crop")
+        logger.info("FINISHED Executing Filter: Crop")
         return cropped_array
 
     def _crop(

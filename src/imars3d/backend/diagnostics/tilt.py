@@ -281,7 +281,7 @@ class tilt_correction(param.ParameterizedFunction):
 
     def __call__(self, **params):
         """Parse input and perform auto tilt correction."""
-        logger.info(f"Executing Filter: Auto Tilt correction")
+        logger.info("Executing Filter: Auto Tilt correction")
         # type*bounds check via Parameter
         _ = self.instance(**params)
         # sanitize arguments
@@ -328,7 +328,7 @@ class tilt_correction(param.ParameterizedFunction):
 
         # step 3: apply the tilt correction
         if abs(tilt) < params.cut_off_angle_deg:
-            logger.info(f"Rotation axis tilt is too small, skip applying tilt correction")
+            logger.info("Rotation axis tilt is too small, skip applying tilt correction")
             return params.arrays
         else:
             logger.info(f"Applying rotation axis tilt correction: {tilt:.3f} deg")
@@ -378,7 +378,7 @@ class apply_tilt_correction(param.ParameterizedFunction):
 
     def __call__(self, **params):
         """Parse input and perform tilt correction with given tilt angle."""
-        logger.info(f"Executing Filter: Tilt correction")
+        logger.info("Executing Filter: Tilt correction")
         # type*bounds check via Parameter
         _ = self.instance(**params)
         # sanitize arguments

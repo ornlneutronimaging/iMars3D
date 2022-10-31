@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """Data handling for iMars3D."""
-import logging
 import re
 import logging
 import param
@@ -186,7 +185,7 @@ def _forgiving_reader(
     """
     try:
         return reader(filename)
-    except:
+    except Exception:
         logger.error(f"Cannot read {filename}, skipping.")
         return None
 
