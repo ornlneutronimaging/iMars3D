@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Workflow engine for imars3d."""
 # package imports
+from ._util import get_function_ref
 from imars3d.backend.workflow import validate
 
 # standard imports
@@ -55,11 +56,6 @@ class WorkflowEngine:
         self._global_params: set = set(global_params)
         self._registry: Optional[dict] = None  # will store set or computed globals parameters
 
-    def _get_module(self, function_str: str):
-        module_str, function_name = validate.function_parts(function_str)
-        module = importlib.import_module(module_str)
-        f = getattr(module, function_name)
-        return f
 
     def _instrospect_task_function(self, function_str: str) -> namedtuple:
         r"""Obtain information from the function associated to one task in the workflow.
@@ -80,7 +76,7 @@ class WorkflowEngine:
                 that are the outputs of other functions or are part of the metadata.
         """
         # load the ParameterizedFunction derived class associated to the function string
-        f = self._get_module(function_str)
+        f = get_function_ref(function_str)
 
         param_names = set(f.param.params().keys())
         outputs = dict(function=f, globals_required=param_names.intersection(self._global_params))

@@ -1,13 +1,15 @@
 # backend module integration tests
 
-# create json test data
-import json
 
 from imars3d.backend.workflow.engine import WorkflowEngineAuto
+from imars3d.backend.workflow.validate import JSONValidationError
+
+import json
 import numpy as np
 import pytest
 from pathlib import Path
 
+JSON_DATA_DIR = Path(__file__).parent.parent.parent / "data" / "json"
 DATA_DIR = Path(__file__).parent.parent.parent / "data" / "integration" / "backend"
 ROI_X = (400, 600)
 ROI_Y = (400, 600)
@@ -140,3 +142,10 @@ class TestWorkflowEngineAuto:
         # extract slice and crop to region of interest
         slice_300 = crop_roi(workflow._registry["result"][300])
         np.allclose(slice_300, expected_slice_300)
+
+    def test_bad_filter_name_config(self):
+        BAD_FILTER_JSON = JSON_DATA_DIR / "bad_filter.json"
+        with pytest.raises(JSONValidationError):
+            with open(BAD_FILTER_JSON, "r") as config:
+                workflow = WorkflowEngineAuto(json.load(config))
+                workflow.rn()

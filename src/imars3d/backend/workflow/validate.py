@@ -2,11 +2,11 @@
 """iMars3D's config validation module."""
 # standard imports
 from collections.abc import Iterable
-from importlib.util import find_spec
 import json
 import jsonschema
 from pathlib import Path
 from typing import Dict, Tuple, Union
+from ._util import function_exists
 
 FilePath = Union[Path, str]
 JsonInputTypes = Union[str, dict, Path]
@@ -91,20 +91,6 @@ def _validate_facility_and_instrument(json_obj: Dict) -> None:
     _validate_instrument(json_obj, allowed_instr)
 
 
-def function_parts(func_str: str) -> Tuple[str, str]:
-    """Convert the function specification into a module and function name."""
-    mod_str = ".".join(func_str.split(".")[:-1])
-    func_str = func_str.split(".")[-1]
-    return (mod_str, func_str)
-
-
-def _function_exists(func_str: str) -> bool:
-    """Return True if the function exists."""
-    mod_str, func_str = function_parts(func_str)
-
-    return bool(find_spec(mod_str, func_str))
-
-
 def _validate_tasks_exist(json_obj: Dict) -> None:
     """Go through the list of tasks and verify that all tasks exist."""
     for step, task in enumerate(json_obj["tasks"]):
@@ -114,7 +100,7 @@ def _validate_tasks_exist(json_obj: Dict) -> None:
             raise JSONValidationError(f'Step {step} specified empty "function"')
         if "." not in func_str:
             raise JSONValidationError(f"Function '{func_str}' does not appear to be absolute specification")
-        if not _function_exists(func_str):
+        if not function_exists(func_str):
             raise JSONValidationError(f'Step {step} specified nonexistent function "{func_str}"')
 
 
