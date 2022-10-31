@@ -45,7 +45,7 @@ class WorkflowEngine:
                 raise WorkflowEngineError("Task and Function outputs cannot be string")
 
         validate_type(task_outputs)
-        if function_outputs:
+        if function_outputs is not None:
             validate_type(function_outputs)
             if len(task_outputs) != len(function_outputs):
                 error = f"Task and Function have different number of outputs"
@@ -175,7 +175,8 @@ class WorkflowEngineAuto(WorkflowEngine):
                                 continue  # In "exec_mode": "f", is "f" a registry key or an actual exec_mode value?
                             if val not in registry:  # "val" is a templated value, so it should be a registry key
                                 missing.add(val)
-                                continue
+                            
+                            continue
                         else:  # parameter is explicitly set. Example: "rot_center": 0.2
                             continue
                     # From here on, the parameter has no default value and has not been set in task["inputs"]
@@ -197,6 +198,8 @@ class WorkflowEngineAuto(WorkflowEngine):
             peek = self._instrospect_task_function(task["function"])
             inputs = self._resolve_inputs(task.get("inputs", {}), peek.paramdict)
             outputs = peek.function(**inputs)
+            if type(outputs) is not tuple: 
+                outputs = (outputs,)
             if task.get("outputs", []):
                 self._validate_outputs(task["outputs"], outputs)
                 self._registry.update(dict(zip(task["outputs"], outputs)))
