@@ -1,6 +1,5 @@
 # package imports
 from imars3d.backend.workflow.engine import WorkflowEngineAuto, WorkflowEngineError
-from imars3d.backend.workflow.validate import SCHEMA
 
 # third party imports
 import numpy as np
@@ -118,26 +117,26 @@ def config():
 
 class TestWorkflowEngineAuto:
     def test_dryrun(self, config):
-        workflow = WorkflowEngineAuto(config, SCHEMA)
+        workflow = WorkflowEngineAuto(config)
         workflow._dryrun()
 
         # Error: task for which implicit ct has not been computed yet
         task0 = {"name": "task0", "function": f"{__name__}.save"}
         config_bad = deepcopy(config)
         config_bad["tasks"].insert(0, task0)
-        workflow = WorkflowEngineAuto(config_bad, SCHEMA)
+        workflow = WorkflowEngineAuto(config_bad)
         with pytest.raises(WorkflowEngineError, match="ct for task task0 are missing"):
             workflow._dryrun()
 
         # Error: task for which templated rot_center has not been computed yet
         config_bad = deepcopy(config)
         config_bad["tasks"][3].pop("inputs")
-        workflow = WorkflowEngineAuto(config_bad, SCHEMA)
+        workflow = WorkflowEngineAuto(config_bad)
         with pytest.raises(WorkflowEngineError, match="rot_center for task task4 are missing"):
             workflow._dryrun()
 
     def test_run(self, config):
-        workflow = WorkflowEngineAuto(config, SCHEMA)
+        workflow = WorkflowEngineAuto(config)
         workflow.run()
 
 
