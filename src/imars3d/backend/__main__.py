@@ -37,7 +37,10 @@ def main(args=None):
     args = parser.parse_args(args)
 
     # configure logging
-    logging.basicConfig(level=getattr(logging, args.log.upper()))
+    logging.basicConfig()  # setup default handlers and formatting
+    # override log level
+    for handler in logging.getLogger().handlers:
+        handler.setLevel(args.log.upper())
     logger = logging.getLogger("imars3d.backend")
 
     # run the workflow
