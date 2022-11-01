@@ -24,6 +24,7 @@ class WorkflowEngineError(RuntimeError):
 
 class WorkflowEngine:
     TaskOutputTypes = (None, list, tuple)
+
     @staticmethod
     def _validate_outputs(task_outputs: TaskOutputTypes, function_outputs: Optional[Any] = None) -> (tuple, None):
         r"""
@@ -42,7 +43,7 @@ class WorkflowEngine:
         def validate_type(outputs):
             if not isinstance(outputs, (list, tuple)):
                 raise WorkflowEngineError("Task outputs must be a list or a tuple")
-        
+
         validate_type(task_outputs)
         if function_outputs is not None:
             if type(function_outputs) is not tuple:
@@ -54,7 +55,6 @@ class WorkflowEngine:
 
     def __init__(self) -> None:
         self._registry: Optional[dict] = None  # will store set or computed parameters
-
 
     def _instrospect_task_function(self, function_str: str) -> namedtuple:
         r"""Obtain information from the function associated to one task in the workflow.
@@ -176,7 +176,7 @@ class WorkflowEngineAuto(WorkflowEngine):
                                 continue  # In "exec_mode": "f", is "f" a registry key or an actual exec_mode value?
                             if val not in registry:  # "val" is a templated value, so it should be a registry key
                                 missing.add(val)
-                            
+
                             continue
                         else:  # parameter is explicitly set. Example: "rot_center": 0.2
                             continue
