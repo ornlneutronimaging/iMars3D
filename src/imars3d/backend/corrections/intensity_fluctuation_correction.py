@@ -3,7 +3,7 @@
 """iMars3D's intensity fluctuation correction module."""
 import logging
 import multiprocessing
-from imars3d.backend.util.util import clamp_max_workers
+from imars3d.backend.util.functions import clamp_max_workers
 import numpy as np
 import param
 import tomopy

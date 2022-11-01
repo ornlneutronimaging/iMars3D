@@ -3,7 +3,7 @@
 """Image noise reduction (denoise) module."""
 import logging
 import param
-from imars3d.backend.util.util import clamp_max_workers
+from imars3d.backend.util.functions import clamp_max_workers
 import multiprocessing
 import numpy as np
 import tomopy

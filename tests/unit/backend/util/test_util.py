@@ -1,5 +1,5 @@
 import pytest
-from imars3d.backend.util.util import clamp_max_workers
+from imars3d.backend.util.functions import clamp_max_workers
 
 
 def test_clamp_max_workers():
