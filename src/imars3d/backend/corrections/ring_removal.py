@@ -38,7 +38,7 @@ class remove_ring_artifact(param.ParameterizedFunction):
         Radiograph stack with ring artifact removed.
     """
 
-    arrays = param.Array(doc="Input radiograph stack.")
+    arrays = param.Array(doc="Input radiograph stack.", default=None)
     kernel_size = param.Integer(
         default=5, doc="The size of the kernel (moving window) during local smoothing with median filter."
     )
@@ -133,7 +133,7 @@ class remove_ring_artifact_Ketcham(param.ParameterizedFunction):
         2. This method is assuming the ring artifact is of multiplicative nature, i.e. measured = signal * error.
     """
 
-    sinogram = param.Array(doc="Input sinogram.")
+    sinogram = param.Array(doc="Input sinogram.", default=None)
     kernel_size = param.Integer(
         default=5, doc="The size of the kernel (moving window) during local smoothing via median filter."
     )

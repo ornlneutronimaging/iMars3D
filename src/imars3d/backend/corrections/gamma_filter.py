@@ -41,9 +41,7 @@ class gamma_filter(param.ParameterizedFunction):
         corrected 3D array of images, the first dimension is the rotation angle omega
     """
 
-    arrays = param.Array(
-        doc="3D array of images, the first dimension is the rotation angle omega",
-    )
+    arrays = param.Array(doc="3D array of images, the first dimension is the rotation angle omega", default=None)
     threshold = param.Integer(
         default=-1,
         doc="threshold for saturation, default is -1, which means using the internally defined threshold (see source code)",

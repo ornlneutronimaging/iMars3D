@@ -36,7 +36,7 @@ class intensity_fluctuation_correction(param.ParameterizedFunction):
         The corrected image/radiograph stack.
     """
 
-    ct = param.Array(doc="The image/radiograph stack to correct for beam intensity fluctuation.")
+    ct = param.Array(doc="The image/radiograph stack to correct for beam intensity fluctuation.", default=None)
     air_pixels = param.Integer(
         default=5,
         doc="Number of pixels at each boundary to calculate the scaling factor. When a negative number is given, the auto air region detection will be used instead of tomopy.",

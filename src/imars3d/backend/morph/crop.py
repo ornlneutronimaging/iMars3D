@@ -65,7 +65,8 @@ class crop(param.ParameterizedFunction):
 
     arrays = param.Array(
         doc="The image stack to crop. Can also be a 2D image.",
-        precedence=-1,  # hide arrays from auto GUI
+        precedence=-1,  # hide arrays from auto GUI,
+        default=None,
     )
     crop_limit = param.Tuple(
         default=(-1, -1, -1, -1),

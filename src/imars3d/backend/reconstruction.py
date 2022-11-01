@@ -31,12 +31,8 @@ class recon(param.ParameterizedFunction):
         Reconstructed tomographic data
     """
 
-    arrays = param.Array(
-        doc="Input stack of tomography data",
-    )
-    theta = param.Array(
-        doc="Projection angles (in radians)",
-    )
+    arrays = param.Array(doc="Input stack of tomography data", default=None)
+    theta = param.Array(doc="Projection angles (in radians)", default=None)
     center = param.Number(
         default=None,
         doc="Rotation center",

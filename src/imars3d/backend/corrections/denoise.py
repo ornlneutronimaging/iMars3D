@@ -220,9 +220,7 @@ class denoise(param.ParameterizedFunction):
         The denoised image stack.
     """
 
-    arrays = param.Array(
-        doc="The image stack to denoise.",
-    )
+    arrays = param.Array(doc="The image stack to denoise.", default=None)
     method = param.Selector(
         default="bilateral",
         objects=["median", "bilateral"],

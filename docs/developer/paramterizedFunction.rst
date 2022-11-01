@@ -56,7 +56,8 @@ Then, we can use the ``param.ParameterizedFunction`` to create a callable functi
         """
         base = param.Number(default=0, bounds=(0, 1), doc="base value")
         phase = param.Number(default=0, bounds=(0, 1), doc="phase value")
-        exponent = param.Integer(default=0, bounds=(0, 10), doc="exponent value")
+        # default=None is required if the parameter doesn't have a default value
+        exponent = param.Integer(default=None, bounds=(0, 10), doc="exponent value")
 
         def __call__(self, **params) -> float:
             # forced type+bounds check
