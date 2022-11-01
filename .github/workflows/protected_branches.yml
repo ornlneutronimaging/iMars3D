@@ -29,7 +29,7 @@ jobs:
       - uses: conda-incubator/setup-miniconda@v2
         with:
           miniforge-variant: Mambaforge
-          environment-file: conda_development.yml
+          environment-file: environment.yml
           use-mamba: true
       - name: Unit integration tests
         run: python -m pytest tests/integration
@@ -56,9 +56,7 @@ jobs:
         with:
           auto-update-conda: true
           mamba-version: "*"
-          environment-file: conda_environment.yml
-      - name: Install testing requirements
-        run: mamba env update --name test --file conda_development.yml
+          environment-file: environment.yml
       - name: Build Conda Package
         run: |
           conda build --output-folder . -c conda-forge .

@@ -14,34 +14,7 @@ normalization, corrections, and reconstruction (using [tomopy](https://tomopy.re
 
 # Install
 
-## Install the Conda Environment
-
-``` bash
-conda env create -f conda_environment.yml
-activate imars3d
-```
-
-### Install Dev Dependencies
-
-If you plan on developing iMars3d itself then it is recommended you also install the dependencies is `conda_development.yml`
-
-``` bash
-conda env update --file conda_development.yml
-```
-
-## Install iMars3D
-
-### Build a Wheel
-
-``` bash
-python -m build --no-isolation --wheel
-```
-
-### Install from Wheel
-
-``` bash
-python3 -m pip install dist/imars3d-*.whl
-```
+The suggested method for installing imars3d is to create a new environment and install the package from https://anaconda.org/neutronimaging/imars3d.
 
 # Run
 
@@ -51,10 +24,6 @@ Refer to `path/to/unittests` for use/implementation examples.
 
 Note: Explicit use examples to be included in docs at a later date.
 
-# Test
+# Develop
 
-Run unit tests with:
-
-``` bash
-python -m pytest tests/unit
-```
+Developer guide is on [readthedocs](https://imars3d.readthedocs.io/en/latest/developer/)

@@ -3,11 +3,11 @@ channels:
   - conda-forge
   - defaults
 dependencies:
+  - pip
   - astropy
   - tomopy
   - dxchange
   - jsonschema
-  - pooch
   - panel
   - param
   - pyvista
@@ -17,6 +17,14 @@ dependencies:
   - hvplot
   - build
   - toml
+  - conda-build
+  - conda-verify
+  - pytest
+  - pytest-cov
+  - pre-commit
+  - sphinx
+  - sphinx_rtd_theme
   - pip:
     - versioningit
     - check-wheel-contents
+    - pytest-playwright
