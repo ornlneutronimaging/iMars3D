@@ -3,6 +3,7 @@
 """Image noise reduction (denoise) module."""
 import logging
 import param
+from imars3d.backend.util.functions import clamp_max_workers
 import multiprocessing
 import numpy as np
 import tomopy
@@ -99,7 +100,7 @@ def denoise_by_median(
         logger.info("denoise completed via scipy's median filter")
         return median_filter(arrays, size=median_filter_kernel)
     elif arrays.ndim == 3:
-        max_workers = None if max_workers == 0 else int(max_workers)
+        max_workers = clamp_max_workers(max_workers)
         logger.info("denoise completed via tomopy's median filter")
         return tomopy.misc.corr.median_filter(
             arrays,
@@ -140,7 +141,7 @@ def denoise_by_bilateral(
     if arrays.ndim == 2:
         return denoise_by_bilateral_2d(arrays)
     elif arrays.ndim == 3:
-        max_workers = mproc.mp.cpu_count() if max_workers == 0 else int(max_workers)
+        max_workers = clamp_max_workers(max_workers)
         with SharedMemoryManager() as smm:
             # create the shared memory
             shm = smm.SharedMemory(arrays.nbytes)
@@ -256,19 +257,19 @@ class denoise(param.ParameterizedFunction):
         params = param.ParamOverrides(self, params)
 
         # type validation is done, now replacing max_worker with an actual integer
-        self.max_workers = multiprocessing.cpu_count() if params.max_workers <= 0 else params.max_workers
+        self.max_workers = clamp_max_workers(self.max_workers)
         logger.debug(f"max_worker={self.max_workers}")
-
+        denoised_array = None
         if params.method == "median":
             logger.info("Executing Filter: Denoise Filter with median filter")
-            return denoise_by_median(
+            denoised_array = denoise_by_median(
                 arrays=params.arrays,
                 median_filter_kernel=params.median_filter_kernel,
                 max_workers=self.max_workers,
             )
         elif params.method == "bilateral":
             logger.info("Executing Filter: Denoise Filter with bilateral filter")
-            return denoise_by_bilateral(
+            denoised_array = denoise_by_bilateral(
                 arrays=params.arrays,
                 sigma_color=params.bilateral_sigma_color,
                 sigma_spatial=params.bilateral_sigma_spatial,
@@ -279,3 +280,4 @@ class denoise(param.ParameterizedFunction):
             # param.Selector should have already checked this, but in case user
             # figure out a way to bypass param, let's double check here.
             raise ValueError(f"Unsupported denoise method: {params.method}")
+        return denoised_array

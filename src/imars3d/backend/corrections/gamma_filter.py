@@ -3,6 +3,7 @@
 """iMars3D: gamma filter module."""
 import logging
 import param
+from imars3d.backend.util.functions import clamp_max_workers
 import multiprocessing
 import numpy as np
 import tomopy
@@ -79,7 +80,7 @@ class gamma_filter(param.ParameterizedFunction):
         params = param.ParamOverrides(self, params)
 
         # type validation is done, now replacing max_worker with an actual integer
-        self.max_workers = multiprocessing.cpu_count() - 2 if params.max_workers <= 0 else params.max_workers
+        self.max_workers = clamp_max_workers(params.max_workers)
         logger.debug("max_worker={self.max_workers}")
 
         # NOTE:
@@ -98,7 +99,6 @@ class gamma_filter(param.ParameterizedFunction):
         # NOTE: use 20% of the total dynamic range as the outlier detection criterion
         diff_tomopy = 0.2 * saturation_intensity if params.diff_tomopy < 0.0 else params.diff_tomopy
         logger.debug(f"diff_tomopy={diff_tomopy}")
-
         # median filtering
         arrays_filtered = tomopy.remove_outlier(
             params.arrays,

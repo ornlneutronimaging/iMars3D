@@ -196,7 +196,7 @@ class CropWidget(BaseWindow, Viewer2D):
         """Update the crop limit in the function panel."""
         for w in self.func_panel:
             if w.name.lower().replace(" ", "_") == "crop_limit":
-                w.value = (top, bottom, left, right)
+                w.value = [top, bottom, left, right]
 
     @param.depends("show_advanced", watch=True)
     def _update_advance_options(self):

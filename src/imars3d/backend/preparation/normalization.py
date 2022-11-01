@@ -3,6 +3,7 @@
 """iMars3D normalization module."""
 import logging
 import param
+from imars3d.backend.util.functions import clamp_max_workers
 import multiprocessing
 import numpy as np
 import tomopy
@@ -57,7 +58,7 @@ class normalization(param.ParameterizedFunction):
         params = param.ParamOverrides(self, params)
         # import pdb; pdb.set_trace()
         # type validation is done, now replacing max_worker with an actual integer
-        self.max_workers = multiprocessing.cpu_count() if params.max_workers <= 0 else params.max_workers
+        self.max_workers = clamp_max_workers(params.max_workers)
         logger.debug(f"max_worker={self.max_workers}")
 
         # parse input (mostly for Tomopy)

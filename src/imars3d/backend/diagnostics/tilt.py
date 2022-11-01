@@ -4,6 +4,7 @@
 import logging
 import param
 import multiprocessing
+from imars3d.backend.util.functions import clamp_max_workers
 import numpy as np
 from typing import Tuple
 from functools import partial
@@ -284,7 +285,7 @@ class tilt_correction(param.ParameterizedFunction):
         params = param.ParamOverrides(self, params)
 
         # type validation is done, now replacing max_worker with an actual integer
-        self.max_workers = multiprocessing.cpu_count() if params.max_workers == 0 else params.max_workers
+        self.max_workers = clamp_max_workers(params.max_workers)
         logger.debug(f"max_worker={self.max_workers}")
 
         # dimension check
@@ -322,17 +323,19 @@ class tilt_correction(param.ParameterizedFunction):
         # use the average of the found tilt angles
         tilt = np.mean(tilts)
 
+        corrected_array = None
         # step 3: apply the tilt correction
         if abs(tilt) < params.cut_off_angle_deg:
             logger.info("Rotation axis tilt is too small, skip applying tilt correction")
-            return params.arrays
+            corrected_array = params.arrays
         else:
             logger.info(f"Applying rotation axis tilt correction: {tilt:.3f} deg")
-            return apply_tilt_correction(
+            corrected_array = apply_tilt_correction(
                 arrays=params.arrays,
                 tilt=tilt,
                 max_workers=self.max_workers,
             )
+        return corrected_array
 
 
 class apply_tilt_correction(param.ParameterizedFunction):
@@ -380,10 +383,11 @@ class apply_tilt_correction(param.ParameterizedFunction):
         self.max_workers = multiprocessing.cpu_count() if params.max_workers == 0 else params.max_workers
         logger.debug(f"max_worker={self.max_workers}")
 
+        corrected_array = None
         # dimensionality check
         if params.arrays.ndim == 2:
             logger.info(f"2D image detected, applying tilt correction with tilt = {params.tilt:.3f} deg")
-            return rotate(params.arrays, -params.tilt, resize=False, preserve_range=True)
+            corrected_array = rotate(params.arrays, -params.tilt, resize=False, preserve_range=True)
         elif params.arrays.ndim == 3:
             logger.info(f"3D array detected, applying tilt correction with tilt = {params.tilt:.3f} deg")
             with SharedMemoryManager() as smm:
@@ -396,7 +400,8 @@ class apply_tilt_correction(param.ParameterizedFunction):
                     max_workers=self.max_workers,
                     desc="Applying tilt corr",
                 )
-            return np.array(rst)
+            corrected_array = np.array(rst)
         else:
             logger.error(f"Input array must be 2D or 3D, got {params.arrays.ndim}D")
             raise ValueError(f"Input array must be 2D or 3D, got {params.arrays.ndim}D")
+        return corrected_array

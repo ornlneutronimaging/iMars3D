@@ -4,6 +4,7 @@
 import logging
 import param
 import multiprocessing
+from imars3d.backend.util.functions import clamp_max_workers
 import scipy
 import numpy as np
 import tomopy.util.mproc as mproc
@@ -45,8 +46,8 @@ class remove_ring_artifact(param.ParameterizedFunction):
     sub_division = param.Integer(
         default=10, doc="Sub-dividing the sinogram into subsections (along rotation angle axis)."
     )
-    correction_range = param.Tuple(
-        default=(0.9, 1.1), doc="Multiplicative correction factor is capped within given range."
+    correction_range = param.List(
+        default=[0.9, 1.1], doc="Multiplicative correction factor is capped within given range."
     )
     max_workers = param.Integer(default=0, bounds=(0, None), doc="Number of cores to use for parallel processing.")
 
@@ -74,7 +75,7 @@ class remove_ring_artifact(param.ParameterizedFunction):
             raise ValueError("This correction can only be used for a stack, i.e. a 3D image.")
         # NOTE:
         # additional work is needed to avoid duplicating arrays in memory
-        max_workers = None if max_workers <= 0 else max_workers
+        max_workers = clamp_max_workers(max_workers)
         # use shared memory to reduce memory footprint
         with SharedMemoryManager() as smm:
             # create the shared memory
