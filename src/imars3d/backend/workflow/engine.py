@@ -23,8 +23,9 @@ class WorkflowEngineError(RuntimeError):
 
 
 class WorkflowEngine:
+    TaskOutputTypes = (None, list, tuple)
     @staticmethod
-    def _validate_outputs(task_outputs: Iterable[Any], function_outputs: Optional[Iterable[Any]] = None) -> None:
+    def _validate_outputs(task_outputs: TaskOutputTypes, function_outputs: Optional[Any] = None) -> (tuple, None):
         r"""
         Verify the function outputs is a valid iterable and of same length as task["outputs"].
 
@@ -39,17 +40,17 @@ class WorkflowEngine:
         """
 
         def validate_type(outputs):
-            if not hasattr(outputs, "__iter__"):
-                raise WorkflowEngineError("Task and Function outputs must be iterable")
-            if isinstance(outputs, str):
-                raise WorkflowEngineError("Task and Function outputs cannot be string")
-
+            if not isinstance(outputs, (list, tuple)):
+                raise WorkflowEngineError("Task outputs must be a list or a tuple")
+        
         validate_type(task_outputs)
         if function_outputs is not None:
-            validate_type(function_outputs)
+            if type(function_outputs) is not tuple:
+                function_outputs = (function_outputs,)
             if len(task_outputs) != len(function_outputs):
                 error = "Task and Function have different number of outputs"
                 raise WorkflowEngineError(error)
+        return function_outputs
 
     def __init__(self) -> None:
         self._registry: Optional[dict] = None  # will store set or computed parameters
@@ -198,8 +199,6 @@ class WorkflowEngineAuto(WorkflowEngine):
             peek = self._instrospect_task_function(task["function"])
             inputs = self._resolve_inputs(task.get("inputs", {}), peek.paramdict)
             outputs = peek.function(**inputs)
-            if type(outputs) is not tuple: 
-                outputs = (outputs,)
             if task.get("outputs", []):
-                self._validate_outputs(task["outputs"], outputs)
+                outputs = self._validate_outputs(task["outputs"], outputs)
                 self._registry.update(dict(zip(task["outputs"], outputs)))
