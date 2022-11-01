@@ -46,8 +46,9 @@ class WorkflowEngine:
 
         validate_type(task_outputs)
         if function_outputs is not None:
-            if type(function_outputs) is not tuple:
+            if not isinstance(function_outputs, (list, tuple)):
                 function_outputs = (function_outputs,)
+            # import pdb; pdb.set_trace()
             if len(task_outputs) != len(function_outputs):
                 error = "Task and Function have different number of outputs"
                 raise WorkflowEngineError(error)
