@@ -132,10 +132,12 @@ def crop_roi(slice_input):
 
 
 class TestWorkflowEngineAuto:
+    @pytest.mark.datarepo
     def test_config(self, config):
         workflow = WorkflowEngineAuto(config)
         assert workflow.config == config
 
+    @pytest.mark.datarepo
     def test_run(self, config):
         workflow = WorkflowEngineAuto(config)
         expected_slice_300 = np.load(str(DATA_DIR) + "/expected_slice_300.npy")
