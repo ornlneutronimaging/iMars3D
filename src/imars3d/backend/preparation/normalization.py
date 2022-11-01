@@ -33,11 +33,11 @@ class normalization(param.ParameterizedFunction):
         normalized 3D array of images, the first dimension is the rotation angle omega.
     """
 
-    arrays = param.Array(doc="3D array of images, the first dimension is the rotation angle omega.")
+    arrays = param.Array(doc="3D array of images, the first dimension is the rotation angle omega.", default=None)
     flats = param.Array(
-        doc="3D array of flat field images (aka flat field, open beam), axis=0 is the image number axis."
+        doc="3D array of flat field images (aka flat field, open beam), axis=0 is the image number axis.", default=None
     )
-    darks = param.Array(doc="3D array of dark field images, axis=0 is the image number axis.")
+    darks = param.Array(doc="3D array of dark field images, axis=0 is the image number axis.", default=None)
     cut_off = param.Number(
         default=-1.0,
         doc="Permitted maximum value for the normalized data, originated from tomopy, negative values means no cutoff.",

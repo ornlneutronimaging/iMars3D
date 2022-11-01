@@ -251,12 +251,8 @@ class tilt_correction(param.ParameterizedFunction):
         The tilt corrected array
     """
 
-    arrays = param.Array(
-        doc="The radiograph stack for tilt correction",
-    )
-    rot_angles = param.Array(
-        doc="The list of rotation angles in radians (follow tomopy convention)",
-    )
+    arrays = param.Array(doc="The radiograph stack for tilt correction", default=None)
+    rot_angles = param.Array(doc="The list of rotation angles in radians (follow tomopy convention)", default=None)
     low_bound = param.Number(
         default=-5.0,
         doc="The lower bound of the tilt angle search space",
@@ -360,12 +356,8 @@ class apply_tilt_correction(param.ParameterizedFunction):
         The tilt corrected array
     """
 
-    arrays = param.Array(
-        doc="The array for tilt correction",
-    )
-    tilt = param.Number(
-        doc="The rotation axis tilt angle in degrees",
-    )
+    arrays = param.Array(doc="The array for tilt correction", default=None)
+    tilt = param.Number(doc="The rotation axis tilt angle in degrees", default=None)
     # NOTE:
     # The front and backend are sharing the same computing unit, therefore we can
     # set a hard cap on the max_workers.

@@ -36,8 +36,10 @@ class find_rotation_center(param.ParameterizedFunction):
         rotation center in pixels
     """
 
-    arrays = param.Array(doc="3D array of images, the first dimension is the rotation angle omega.")
-    angles = param.Array(doc="array of angles in degrees or radians, which must match the order of arrays")
+    arrays = param.Array(doc="3D array of images, the first dimension is the rotation angle omega.", default=None)
+    angles = param.Array(
+        doc="array of angles in degrees or radians, which must match the order of arrays", default=None
+    )
     in_degrees = param.Boolean(default=True, doc="whether angles are in degrees or radians, default is True (degrees)")
     atol_deg = param.Number(
         default=1e-3,
