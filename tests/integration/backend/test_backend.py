@@ -4,6 +4,7 @@
 import json
 
 from imars3d.backend.workflow.engine import WorkflowEngineAuto
+from imars3d.backend.workflow.engine import WorkflowEngineError
 from imars3d.backend.workflow.validate import JSONValidationError
 import pytest
 from pathlib import Path
@@ -44,6 +45,30 @@ class TestWorkflowEngineAuto:
     def test_config(self, config):
         workflow = WorkflowEngineAuto(config)
         workflow.run()
+
+    def test_no_config(self):
+        with pytest.raises(TypeError):
+            workflow = WorkflowEngineAuto()
+            workflow.run()
+
+        with pytest.raises(json.decoder.JSONDecodeError):
+            workflow = WorkflowEngineAuto("")
+            workflow.run()
+
+    def test_invalid_config(self):
+        # tests an invalid configuration (no facility present)
+        INVALID_CONFIG_FILE = JSON_DATA_DIR / "invalid_test.json"
+        with pytest.raises(JSONValidationError):
+            with open(INVALID_CONFIG_FILE, "r") as file:
+                workflow = WorkflowEngineAuto(json.load(file))
+                workflow.run()
+
+    def test_invalid_workflow(self):
+        INVALID_WORKFLOW_FILE = JSON_DATA_DIR / "invalid_workflow.json"
+        with pytest.raises(WorkflowEngineError):
+            with open(INVALID_WORKFLOW_FILE, "r") as file:
+                workflow = WorkflowEngineAuto(json.load(file))
+                workflow.run()
 
     def test_bad_filter_name_config(self):
         BAD_FILTER_JSON = JSON_DATA_DIR / "bad_filter.json"
