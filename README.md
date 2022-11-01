@@ -26,33 +26,4 @@ Note: Explicit use examples to be included in docs at a later date.
 
 # Develop
 
-## Install Developer Dependencies
-
-If you plan on developing iMars3d itself then it is recommended you create a new conda environment using the `environment.yml`.
-
-```sh
-conda env create
-activate imars3d
-playwright install
-```
-The last command configures [playwright](https://playwright.dev/python/docs/intro) for running the unit tests.
-
-
-## Test Data
-
-The test data (currently 5GB) is stored in a second git repository [imars3d-data](https://code.ornl.gov/sns-hfir-scse/infrastructure/test-data/imars3d-data) which uses git-lfs.
-To use it, first install git-lfs, then setup the git-submodule
-```sh
-git submodule init
-git submodule update
-```
-
-
-## Running Tests
-
-Run the tests with:
-
-```sh
-python -m pytest tests
-```
-The system is configured to produce coverage reports using the `--cov` flag.
+Developer guide is on [readthedocs](https://imars3d.readthedocs.io/en/latest/developer/)
