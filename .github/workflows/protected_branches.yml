@@ -17,7 +17,7 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' }}
         with:
           authToken: ${{secrets.GITHUB_TOKEN}}
-          context: "Integration tests"
+          context: "Tests with data repository"
           description: "pending"
           state: "pending"
           sha: "${{ github.sha }}"
@@ -31,14 +31,14 @@ jobs:
           miniforge-variant: Mambaforge
           environment-file: environment.yml
           use-mamba: true
-      - name: Unit integration tests
-        run: python -m pytest tests/integration
+      - name: Tests with data repository
+        run: python -m pytest -m datarepo
       - name: Update job status
         uses: Sibz/github-status-action@v1
         if: ${{ always() && github.event_name == 'workflow_dispatch' }}
         with:
           authToken: ${{secrets.GITHUB_TOKEN}}
-          context: "Integration tests"
+          context: "Tests with data repository"
           description: "${{ job.status }}"
           state: "${{ job.status }}"
           sha: "${{ github.sha }}"
