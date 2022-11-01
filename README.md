@@ -14,34 +14,7 @@ normalization, corrections, and reconstruction (using [tomopy](https://tomopy.re
 
 # Install
 
-## Install the Conda Environment
-
-``` bash
-conda env create -f conda_environment.yml
-activate imars3d
-```
-
-### Install Dev Dependencies
-
-If you plan on developing iMars3d itself then it is recommended you also install the dependencies is `conda_development.yml`
-
-``` bash
-conda env update --file conda_development.yml
-```
-
-## Install iMars3D
-
-### Build a Wheel
-
-``` bash
-python -m build --no-isolation --wheel
-```
-
-### Install from Wheel
-
-``` bash
-python3 -m pip install dist/imars3d-*.whl
-```
+The suggested method for installing imars3d is to create a new environment and install the package from https://anaconda.org/neutronimaging/imars3d.
 
 # Run
 
@@ -51,10 +24,35 @@ Refer to `path/to/unittests` for use/implementation examples.
 
 Note: Explicit use examples to be included in docs at a later date.
 
-# Test
+# Develop
 
-Run unit tests with:
+## Install Developer Dependencies
 
-``` bash
-python -m pytest tests/unit
+If you plan on developing iMars3d itself then it is recommended you create a new conda environment using the `environment.yml`.
+
+```sh
+conda env create
+activate imars3d
+playwright install
 ```
+The last command configures [playwright](https://playwright.dev/python/docs/intro) for running the unit tests.
+
+
+## Test Data
+
+The test data (currently 5GB) is stored in a second git repository [imars3d-data](https://code.ornl.gov/sns-hfir-scse/infrastructure/test-data/imars3d-data) which uses git-lfs.
+To use it, first install git-lfs, then setup the git-submodule
+```sh
+git submodule init
+git submodule update
+```
+
+
+## Running Tests
+
+Run the tests with:
+
+```sh
+python -m pytest tests
+```
+The system is configured to produce coverage reports using the `--cov` flag.
