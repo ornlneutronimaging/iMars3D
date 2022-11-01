@@ -9,7 +9,7 @@ class FindRotationCenter(param.Parameterized):
     """Rotation center finder widget.
 
     widget of rotation center finder filter from iMars3D, must have a parent
-    widget with valid ct stack.
+    widget with valid ct stack
     """
 
     parent = param.Parameter()

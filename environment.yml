@@ -24,6 +24,7 @@ dependencies:
   - pre-commit
   - sphinx
   - sphinx_rtd_theme
+  - pylint=2.15.5
   - pip:
     - versioningit
     - check-wheel-contents
