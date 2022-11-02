@@ -22,7 +22,7 @@ file = "src/imars3d/_version.py"
 
 [tool.pytest.ini_options]
 pythonpath = [
-  ".", "src"
+  ".", "src", "scripts"
 ]
 testpaths = ["tests"]
 python_files = ["test*.py"]
