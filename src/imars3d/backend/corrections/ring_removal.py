@@ -33,6 +33,8 @@ class remove_ring_artifact(param.ParameterizedFunction):
         Multiplicative correction factor is capped within given range.
     max_workers: int = 0
         Number of cores to use for parallel processing.
+    tqdm_class:
+        Class to be used for rendering tqdm progress
 
     Returns
     -------
@@ -50,13 +52,19 @@ class remove_ring_artifact(param.ParameterizedFunction):
         default=[0.9, 1.1], doc="Multiplicative correction factor is capped within given range."
     )
     max_workers = param.Integer(default=0, bounds=(0, None), doc="Number of cores to use for parallel processing.")
+    tqdm_class = param.ClassSelector(class_=object, doc="Progress bar to render with")
 
     def __call__(self, **params):
         logger.info("Executing Filter: Remove Ring Artifact")
         _ = self.instance(**params)
         params = param.ParamOverrides(self, params)
         val = self._remove_ring_artifact(
-            params.arrays, params.kernel_size, params.sub_division, params.correction_range, params.max_workers
+            params.arrays,
+            params.kernel_size,
+            params.sub_division,
+            params.correction_range,
+            params.max_workers,
+            params.tqdm_class,
         )
         logger.info("FINISHED Executing Filter: Remove Ring Artifact")
         return val
@@ -64,10 +72,11 @@ class remove_ring_artifact(param.ParameterizedFunction):
     def _remove_ring_artifact(
         self,
         arrays: np.ndarray,
-        kernel_size: int = 5,
-        sub_division: int = 10,
-        correction_range: tuple = (0.9, 1.1),
-        max_workers: int = 0,
+        kernel_size: int,
+        sub_division: int,
+        correction_range: tuple,
+        max_workers: int,
+        tqdm_class,
     ) -> np.ndarray:
 
         # sanity check
@@ -89,6 +98,12 @@ class remove_ring_artifact(param.ParameterizedFunction):
             # copy the data to the shared memory
             np.copyto(shm_arrays, arrays)
             # invoke mp via tqdm wrapper
+            kwargs = {
+                "max_workers": max_workers,
+                "desc": "Removing ring artifact",
+            }
+            if tqdm_class:
+                kwargs["tqdm_class"] = tqdm_class
             rst = process_map(
                 partial(
                     _remove_ring_artifact_Ketcham,
@@ -97,8 +112,7 @@ class remove_ring_artifact(param.ParameterizedFunction):
                     correction_range=correction_range,
                 ),
                 [shm_arrays[:, sino_idx, :] for sino_idx in range(shm_arrays.shape[1])],
-                max_workers=max_workers,
-                desc="Removing ring artifact",
+                **kwargs
             )
         rst = np.array(rst)
         for i in range(arrays.shape[1]):
