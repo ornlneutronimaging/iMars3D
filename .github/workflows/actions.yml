@@ -19,6 +19,8 @@ jobs:
           auto-update-conda: true
           mamba-version: "*"
           environment-file: environment.yml
+      - name: Verify docstrings
+        run: pydocstyle --convention=numpy src/
       - name: Install ui test requirements
         run: playwright install
       - name: Install iMars3d in editable mode
