@@ -200,3 +200,14 @@ class TestWorkflowEngineAuto:
         with pytest.raises(WorkflowEngineError) as e:
             workflow.run()
         assert 'Input(s) "rot_angles" for task task7 are missing' == str(e.value)
+
+    def test_forgot_task(self, config):
+        r"""User forgets to find the rotation center"""
+        bad = deepcopy(config)
+        # delete the task that finds the rotation center
+        assert "find_rotation_center" in bad["tasks"][8]["function"]
+        del bad["tasks"][8]
+        workflow = WorkflowEngineAuto(bad)
+        with pytest.raises(WorkflowEngineError) as e:
+            workflow.run()
+        assert 'Input(s) "rot_center" for task task8 are missing' == str(e.value)
