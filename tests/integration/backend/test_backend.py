@@ -195,6 +195,7 @@ class TestWorkflowEngineAuto:
         r"""User write 'rot_angle' instead of 'rot_angles' as one of the outputs of task1.
         As a result, task7 will fail because it requires output 'rot_angles'"""
         bad = deepcopy(config)
+        assert "load_data" in bad["tasks"][0]["function"]
         bad["tasks"][0]["outputs"][-1] = "rot_angle"
         workflow = WorkflowEngineAuto(bad)
         with pytest.raises(WorkflowEngineError) as e:
@@ -211,3 +212,13 @@ class TestWorkflowEngineAuto:
         with pytest.raises(WorkflowEngineError) as e:
             workflow.run()
         assert 'Input(s) "rot_center" for task task8 are missing' == str(e.value)
+
+    def test_forgot_input_parameter(self, config):
+        r"""User forgets to pass input parameter 'darks' in the normalization task"""
+        bad = deepcopy(config)
+        assert "normalization" in bad["tasks"][5]["function"]
+        del bad["tasks"][5]["inputs"]["darks"]
+        workflow = WorkflowEngineAuto(bad)
+        with pytest.raises(WorkflowEngineError) as e:
+            workflow.run()
+        assert 'Input(s) "darks" for task task4 are missing' == str(e.value)
