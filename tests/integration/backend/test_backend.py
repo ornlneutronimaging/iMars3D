@@ -190,3 +190,13 @@ class TestWorkflowEngineAuto:
         with pytest.raises(WorkflowEngineError) as e:
             workflow.run()
         assert 'Parameter(s) "array" are not input parameters' in str(e.value)
+
+    def test_typo_output_parameter(self, config):
+        r"""User write 'rot_angle' instead of 'rot_angles' as one of the outputs of task1.
+        As a result, task7 will fail because it requires output 'rot_angles'"""
+        bad = deepcopy(config)
+        bad["tasks"][0]["outputs"][-1] = "rot_angle"
+        workflow = WorkflowEngineAuto(bad)
+        with pytest.raises(WorkflowEngineError) as e:
+            workflow.run()
+        assert 'Input(s) "rot_angles" for task task7 are missing' == str(e.value)
