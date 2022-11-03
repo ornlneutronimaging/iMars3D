@@ -125,15 +125,16 @@ class TestWorkflowEngineAuto:
         config_bad = deepcopy(config)
         config_bad["tasks"].insert(0, task0)
         workflow = WorkflowEngineAuto(config_bad)
-        with pytest.raises(WorkflowEngineError, match="ct for task task0 are missing"):
+        with pytest.raises(WorkflowEngineError) as e:
             workflow._dryrun()
-
+        assert 'Input(s) "ct" for task task0 are missing' == str(e.value)
         # Error: task for which templated rot_center has not been computed yet
         config_bad = deepcopy(config)
         config_bad["tasks"][3].pop("inputs")
         workflow = WorkflowEngineAuto(config_bad)
-        with pytest.raises(WorkflowEngineError, match="rot_center for task task4 are missing"):
+        with pytest.raises(WorkflowEngineError) as e:
             workflow._dryrun()
+        assert 'Input(s) "rot_center" for task task4 are missing' == str(e.value)
 
     def test_run(self, config):
         workflow = WorkflowEngineAuto(config)
