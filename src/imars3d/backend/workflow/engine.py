@@ -23,11 +23,13 @@ class WorkflowEngineError(RuntimeError):
 
 
 class WorkflowEngine:
+    """Base class for running data reduction workflows."""
+
     TaskOutputTypes = (None, list, tuple)
 
     @staticmethod
     def _validate_outputs(task_outputs: TaskOutputTypes, function_outputs: Optional[Any] = None) -> (tuple, None):
-        r"""
+        """
         Verify the function outputs is a valid iterable and of same length as task["outputs"].
 
         Parameters
@@ -88,7 +90,7 @@ class WorkflowEngine:
         return namedtuple("TaskFuncionInstrospection", outputs.keys())(**outputs)
 
     def _resolve_inputs(self, task_inputs: dict, paramdict: dict) -> dict:
-        r"""Populate the required parameters missing from the task's `inputs` entry with the contents of the registry
+        r"""Populate the required parameters missing from the task's `inputs` entry with the contents of the registry.
 
         Parameters
         ----------
@@ -124,6 +126,8 @@ class WorkflowEngine:
 
 
 class WorkflowEngineAuto(WorkflowEngine):
+    """Used for running fully specified workflow."""
+
     config = validate.JSONValid()
 
     def __init__(self, config: validate.JsonInputTypes) -> None:

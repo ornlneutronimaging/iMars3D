@@ -1,5 +1,6 @@
 """
 The main entry point for the back end software.
+
 This can be invoked using
 
 .. code-block:: sh
@@ -13,9 +14,12 @@ import logging
 from pathlib import Path
 
 
-# args are exposed to allow for testing
-# passing in None causes argparse to use sys.argv
 def main(args=None):
+    """Underlying entrypoint for the backend.
+
+    The function args are exposed this way to allow for testing.
+    Passing in None causes argparse to use ``sys.argv``.
+    """
     # set up the command line parser
     import argparse
 

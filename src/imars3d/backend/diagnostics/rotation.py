@@ -58,6 +58,7 @@ class find_rotation_center(param.ParameterizedFunction):
     tqdm_class = param.ClassSelector(class_=object, doc="Progress bar to render with")
 
     def __call__(self, **params):
+        """See class level documentation for help."""
         logger.info("Executing Filter: Find Rotation Center")
         _ = self.instance(**params)
         params = param.ParamOverrides(self, params)

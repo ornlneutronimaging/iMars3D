@@ -119,6 +119,7 @@ class CropWidget(BaseWindow, Viewer2D):
 
     @param.depends("load_data", watch=True)
     def load_data_action(self):
+        """Process event for loading data."""
         logger.info("Start loading data")
         # looking for load function in config_dict
         tasks = self.config_dict["tasks"]
@@ -143,6 +144,7 @@ class CropWidget(BaseWindow, Viewer2D):
         "colormap_scale",
     )
     def viewer(self):
+        """Watch for updates to main image."""
         if self.data is None:
             return pn.panel("No radiograph loaded.")
         else:
@@ -158,7 +160,7 @@ class CropWidget(BaseWindow, Viewer2D):
             self.roi_box_stream = streams.BoxEdit(source=self.roi_box, num_objects=1)
 
             def update_roi(data):
-                """Internal function.
+                """Private internal function.
 
                 This function tricks Bokeh into updating the crop panel limit whenever
                 a valid ROI selection is provided.
@@ -254,6 +256,7 @@ class CropWidget(BaseWindow, Viewer2D):
         ]
 
     def __panel__(self):
+        """Return the panel this is associated with."""
         return self._panel
 
 

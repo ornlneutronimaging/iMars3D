@@ -79,7 +79,7 @@ class WelcomeWindow(BaseWindow):
 
     @param.depends("instrument", "ipts_num", "recon_name", watch=True)
     def _update_dirs(self):
-        """update working directory and output directory"""
+        """Update working directory and output directory."""
         project_root = Path(f"/{self.facility}/{self.instrument}/IPTS-{self.ipts_num}")
         if project_root.exists():
             working_dir = project_root / Path(f"shared/processed_data/{self.recon_name}")
