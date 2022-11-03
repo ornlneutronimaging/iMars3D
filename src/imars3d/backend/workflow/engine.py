@@ -154,6 +154,11 @@ class WorkflowEngineAuto(WorkflowEngine):
         for task in self.config["tasks"]:
             peek = self._instrospect_task_function(task["function"])
             if peek.params_independent:
+                # are all explicitly passed input parameters actual input parameters of this function?
+                unacounted = set(task.get("inputs")) - set(peek.paramdict)
+                if unacounted:
+                    pnames = ", ".join([f'"{p}"' for p in unacounted])
+                    raise WorkflowEngineError(f"Parameter(s) {pnames} are not input parameters of {task['function']}")
                 # assess each function parameter. Is it missing?
                 missing = set([])
                 for pname, parm in peek.paramdict.items():

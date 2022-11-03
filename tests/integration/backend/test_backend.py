@@ -1,13 +1,17 @@
 # backend module integration tests
 
-
+# package imports
 from imars3d.backend.workflow.engine import WorkflowEngineAuto
 from imars3d.backend.workflow.engine import WorkflowEngineError
 from imars3d.backend.workflow.validate import JSONValidationError
 
+# third party imports
+import pytest
+
+# standard library imports
+from copy import deepcopy
 import json
 import numpy as np
-import pytest
 from pathlib import Path
 
 JSON_DATA_DIR = Path(__file__).parent.parent.parent / "data" / "json"
@@ -176,3 +180,13 @@ class TestWorkflowEngineAuto:
             with open(BAD_FILTER_JSON, "r") as config:
                 workflow = WorkflowEngineAuto(json.load(config))
                 workflow.run()
+
+    def test_typo_input_parameter(self, config):
+        r"""User writes 'array' instead of 'arrays' as one of the input parameters"""
+        bad = deepcopy(config)
+        bad["tasks"][1]["inputs"].pop("arrays")
+        bad["tasks"][1]["inputs"]["array"] = "ct"
+        workflow = WorkflowEngineAuto(bad)
+        with pytest.raises(WorkflowEngineError) as e:
+            workflow.run()
+        assert 'Parameter(s) "array" are not input parameters' in str(e.value)
