@@ -14,7 +14,6 @@ import json
 import numpy as np
 from pathlib import Path
 import dxchange
-import os, os.path
 import shutil
 
 DATA_DIR = Path(__file__).parent.parent.parent / "data" / "integration" / "backend"
