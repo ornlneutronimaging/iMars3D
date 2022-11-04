@@ -53,6 +53,7 @@ class recon(param.ParameterizedFunction):
     perform_minus_log = param.Boolean(default=False, doc="Whether or not to run tomopy.minus_log on arrays")
 
     def __call__(self, **params):
+        """See class level documentation for help."""
         logger.info("Executing Filter: Reconstruction")
         # forced type+bounds check
         _ = self.instance(**params)

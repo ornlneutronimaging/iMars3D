@@ -67,12 +67,14 @@ class AssistedWindow(BaseWindow):
 
     @param.depends("log_level_str", watch=True)
     def set_log_level(self):
+        """Fire when the log level changes."""
         self.log_level = logging.getLevelName(self.log_level_str)
         logging.getLogger("imars3d").setLevel(self.log_level)
         logger.log(self.log_level, f"Switching to {self.log_level_str} log level.")
 
     @param.depends("file_input.value", watch=True)
     def update_config_dict(self):
+        """Fire with changes to the configuration dictionary."""
         logger.info("Updating config dict with uploaded json file.")
         new_config_dict = json.loads(self.file_input.value)
         try:
@@ -83,6 +85,7 @@ class AssistedWindow(BaseWindow):
             logger.error("Could not update config file. Reverting to previous config.")
 
     def launch_assisted_reconstruction(self, event):
+        """Run the assisted reconstruction."""
         logger.info("Launching assisted reconstruction.")
         wfEngine = WorkflowEngineAuto(self.config_dict)
         wfEngine.run()

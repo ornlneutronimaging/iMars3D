@@ -30,4 +30,5 @@ class InteractiveWindow(BaseWindow):
         self._panel = pn.panel("**Interactive reconstruction window.**")
 
     def __panel__(self):
+        """Return the panel this is associated with."""
         return self._panel

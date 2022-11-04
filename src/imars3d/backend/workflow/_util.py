@@ -22,7 +22,7 @@ def function_exists(func_str: str) -> bool:
 
 
 def get_function_ref(function_str: str):
-    """Return reference to the specified function"""
+    """Return reference to the specified function."""
     module_str, function_name = _function_parts(function_str)
     module = import_module(module_str)
     return getattr(module, function_name)

@@ -121,7 +121,6 @@ class crop(param.ParameterizedFunction):
         rel_intensity_threshold_sample,
     ) -> np.ndarray:
         """Private function to crop the image stack."""
-
         if arrays.ndim not in (2, 3):
             raise ValueError("Only 2D and 3D arrays are supported.")
 

@@ -19,7 +19,7 @@ import param
 
 
 class BaseWindow(pn.viewable.Viewer):
-    """Base class for all viewer"""
+    """Base class for all viewer."""
 
     # configuration
     config_dict = param.Dict(
@@ -64,4 +64,5 @@ class BaseWindow(pn.viewable.Viewer):
         return config_viewer
 
     def __panel__(self):
+        """Return the panel this is associated with."""
         return self._panel
