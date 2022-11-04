@@ -33,7 +33,7 @@ class remove_ring_artifact(param.ParameterizedFunction):
         Multiplicative correction factor is capped within given range.
     max_workers: int = 0
         Number of cores to use for parallel processing.
-    tqdm_class:
+    tqdm_class: imars3d.ui.widgets.TqdmType
         Class to be used for rendering tqdm progress
 
     Returns

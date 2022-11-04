@@ -1,9 +1,14 @@
 from multiprocessing import Lock
 from panel.widgets import Tqdm as _Tqdm
+from typing import Union
+
+LockType = Union[Lock, "mutlithreading.Lock"]  # noqa: F821
+TqdmType = Union["panel.widgets.Tqdm", "imars3d.ui.widgets.Tqdm"]  # noqa: F821
 
 
 class Tqdm(_Tqdm):
-    """This is a thin wrapper around `panel.widgets.Tqdm <https://panel.holoviz.org/reference/indicators/Tqdm.html>`_ which adds missing functionality needed for using with `tqdm.contrib.concurrent.process_map <https://tqdm.github.io/docs/contrib.concurrent/#process_map>`_.
+    """Tqdm is a thin wrapper around `panel.widgets.Tqdm <https://panel.holoviz.org/reference/indicators/Tqdm.html>`_ which adds missing functionality needed for using with `tqdm.contrib.concurrent.process_map <https://tqdm.github.io/docs/contrib.concurrent/#process_map>`_.
+
     Assuming that panel.widgets.Tqdm gets updated with the new functionality, this can be removed. v0.14.0 did not contain this functionality.
 
     The functionality added by this wrapper is managing a lock.
@@ -48,12 +53,14 @@ class Tqdm(_Tqdm):
     """
 
     def __init__(self, *args, **kwargs):
-        """Create a multiprocessing.Lock if one is not supplied"""
+        """Create a multiprocessing.Lock if one is not supplied."""
         self._lock = kwargs.pop("lock", Lock())
         super().__init__(*args, **kwargs)
 
-    def get_lock(self):
+    def get_lock(self) -> LockType:
+        """Return the lock owned by this object."""
         return self._lock
 
-    def set_lock(self, lock):
+    def set_lock(self, lock: LockType) -> None:
+        """Set the lock owned by this object."""
         self._lock = lock

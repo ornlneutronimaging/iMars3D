@@ -59,7 +59,7 @@ class load_data(param.ParameterizedFunction):
         Unix shells-style wild card (``*.tiff``) for selecting dark current
     max_workers: Optional[int]
         maximum number of processes allowed during loading, default to use as many as possible.
-    tqdm_class:
+    tqdm_class: imars3d.ui.widgets.TqdmType
         Class to be used for rendering tqdm progress
 
     Returns
@@ -209,6 +209,8 @@ def _load_images(filelist: List[str], desc: str, max_workers: int, tqdm_class) -
         Description for progress bar.
     max_workers:
         Maximum number of processes allowed during loading.
+    tqdm_class: imars3d.ui.widgets.TqdmType
+        Class to be used for rendering tqdm progress
 
     Returns
     -------
@@ -267,6 +269,8 @@ def _load_by_file_list(
     max_workers:
         Maximum number of processes allowed during loading, 0 means
         use as many as possible.
+    tqdm_class: imars3d.ui.widgets.TqdmType
+        Class to be used for rendering tqdm progress
 
     Returns
     -------

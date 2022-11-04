@@ -33,7 +33,7 @@ class find_rotation_center(param.ParameterizedFunction):
         tolerance for the search of 180 deg paris, default is 0.1 degrees
     max_workers: int = 0
         number of cores to use for parallel median filtering, default is 0, which means using all available cores.
-    tqdm_class:
+    tqdm_class: imars3d.ui.widgets.TqdmType
         Class to be used for rendering tqdm progress
 
     Returns
