@@ -155,9 +155,8 @@ class TestWorkflowEngineAuto:
         """Fixture to execute asserts before and after a test is run"""
         # Setup: fill with any logic you want
         shutil.rmtree(path=self.outputdir, ignore_errors=True)
-        yield # this is where the testing happens
+        yield  # this is where the testing happens
         shutil.rmtree(path=self.outputdir, ignore_errors=True)
-
 
     @pytest.mark.datarepo
     def test_config(self, config):
@@ -204,7 +203,7 @@ class TestWorkflowEngineAuto:
             with open(BAD_FILTER_JSON, "r") as config:
                 workflow = WorkflowEngineAuto(json.load(config))
                 workflow.run()
-    
+
     def test_incomplete_workflow(self, JSON_DIR):
         INCOMPLETE_WORKFLOW_JSON = JSON_DIR / "incomplete_workflow.json"
         with pytest.raises(WorkflowEngineError):

@@ -128,6 +128,7 @@ class WorkflowEngineAuto(WorkflowEngine):
     config = validate.JSONValid()
     load_data_function = "imars3d.backend.io.data.load_data"
     save_data_function = "imars3d.backend.io.data.save_data"
+
     def __init__(self, config: validate.JsonInputTypes) -> None:
         r"""Initialize the workflow engine.
 
@@ -142,13 +143,15 @@ class WorkflowEngineAuto(WorkflowEngine):
     def _verify_loadsave_bookend(self) -> None:
         # Workflow must be bookended with a load and save task.
         tasks = self.config["tasks"]
-        if(len(tasks) >= 2):
-            if(tasks[0]["function"] != self.load_data_function):
+        if len(tasks) >= 2:
+            if tasks[0]["function"] != self.load_data_function:
                 raise WorkflowEngineError("Incomplete Workflow:  Workflow must begin with a load data task.")
-            if(tasks[len(tasks)-1]["function"] !=self.save_data_function):
+            if tasks[len(tasks) - 1]["function"] != self.save_data_function:
                 raise WorkflowEngineError("Incomplete Workflow:  Workflow must end with a save data task")
-        elif(len(tasks) == 1):
-            raise WorkflowEngineError("Incomplete Workflow:  Workflow does not contain at minimum a load task and a save task.")
+        elif len(tasks) == 1:
+            raise WorkflowEngineError(
+                "Incomplete Workflow:  Workflow does not contain at minimum a load task and a save task."
+            )
 
     def _verify_input_integrity(self, val, param, registry):
         # is "val" an actual value or a registry key?
@@ -169,7 +172,9 @@ class WorkflowEngineAuto(WorkflowEngine):
         # assess each function parameter. Is it missing?
         missing = set([])
         for pname, param in peek.paramdict.items():
-            if pname == "name" or pname == "tqdm_class":  # not an actual input parameter, just an attribute of the function
+            if (
+                pname == "name" or pname == "tqdm_class"
+            ):  # not an actual input parameter, just an attribute of the function
                 continue
             if param.default is not None:  # the parameter has a default value
                 continue  # irrelevant if parameter value is missing

@@ -488,11 +488,11 @@ class save_data(param.ParameterizedFunction):
         Used to name file of output, defaults to output_{datetime}
     Returns
     -------
-        None
-"""
+        None"""
+
     #
     data = param.Array(doc="Data to save", precedence=1)
-    outputdir = param.Foldername(default="/tmp/",doc="radiograph directory")
+    outputdir = param.Foldername(default="/tmp/", doc="radiograph directory")
 
     filename = param.String(default="*", doc="fnmatch for selecting dc files from dc_dir")
 
@@ -503,7 +503,7 @@ class save_data(param.ParameterizedFunction):
         # sanitize arguments
         params = param.ParamOverrides(self, params)
 
-        if(params.filename == "*"):
+        if params.filename == "*":
             params.filename = "output_" + str(datetime.now())
 
         self._save_data(params.data, params.outputdir + params.filename)

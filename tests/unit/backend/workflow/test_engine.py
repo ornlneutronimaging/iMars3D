@@ -126,7 +126,7 @@ class TestWorkflowEngineAuto:
         # Error: task for which implicit ct has not been computed yet
         task0 = {"name": "task0", "function": f"{__name__}.save_data"}
         config_bad = deepcopy(config)
-        config_bad["tasks"][0]["outputs"][0]="ob"
+        config_bad["tasks"][0]["outputs"][0] = "ob"
         config_bad["tasks"].insert(1, task0)
         workflow = WorkflowEngineAuto(config_bad)
         workflow.load_data_function = f"{__name__}.load_data"
