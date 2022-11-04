@@ -23,7 +23,7 @@ class load_data(ParameterizedFunction):
         ]
 
 
-class save(ParameterizedFunction):
+class save_data(ParameterizedFunction):
     r"""mock saving a set or radiographs to some directory"""
     ct = Parameter(default=None)
     workingdir = Parameter()
@@ -81,10 +81,6 @@ def config():
             "outputs": ["ct"]
         },
         {
-            "name": "task2",
-            "function": "_MODULE_PATH_.save"
-        },
-        {
             "name": "task3",
             "function": "_MODULE_PATH_.reconstruction_with_default",
             "outputs": ["ct"]
@@ -109,6 +105,10 @@ def config():
                 "ct": "ct2"
             },
             "outputs": ["ct"]
+        },
+        {
+            "name": "task2",
+            "function": "_MODULE_PATH_.save_data"
         }
     ]
 }"""
@@ -118,25 +118,36 @@ def config():
 class TestWorkflowEngineAuto:
     def test_dryrun(self, config):
         workflow = WorkflowEngineAuto(config)
+        workflow.load_data_function = f"{__name__}.load_data"
+        workflow.save_data_function = f"{__name__}.save_data"
         workflow._dryrun()
 
+    def test_dryrun_missing_input(self, config):
         # Error: task for which implicit ct has not been computed yet
-        task0 = {"name": "task0", "function": f"{__name__}.save"}
+        task0 = {"name": "task0", "function": f"{__name__}.save_data"}
         config_bad = deepcopy(config)
-        config_bad["tasks"].insert(0, task0)
+        config_bad["tasks"][0]["outputs"][0]="ob"
+        config_bad["tasks"].insert(1, task0)
         workflow = WorkflowEngineAuto(config_bad)
+        workflow.load_data_function = f"{__name__}.load_data"
+        workflow.save_data_function = f"{__name__}.save_data"
         with pytest.raises(WorkflowEngineError, match="ct for task task0 are missing"):
             workflow._dryrun()
 
+    def test_dryrun_missing_rot(self, config):
         # Error: task for which templated rot_center has not been computed yet
         config_bad = deepcopy(config)
-        config_bad["tasks"][3].pop("inputs")
+        config_bad["tasks"][2].pop("inputs")
         workflow = WorkflowEngineAuto(config_bad)
+        workflow.load_data_function = f"{__name__}.load_data"
+        workflow.save_data_function = f"{__name__}.save_data"
         with pytest.raises(WorkflowEngineError, match="rot_center for task task4 are missing"):
             workflow._dryrun()
 
     def test_run(self, config):
         workflow = WorkflowEngineAuto(config)
+        workflow.load_data_function = f"{__name__}.load_data"
+        workflow.save_data_function = f"{__name__}.save_data"
         workflow.run()
 
 

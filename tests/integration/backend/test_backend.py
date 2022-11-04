@@ -9,6 +9,9 @@ import json
 import numpy as np
 import pytest
 from pathlib import Path
+import dxchange
+import os, os.path
+import shutil
 
 JSON_DATA_DIR = Path(__file__).parent.parent.parent / "data" / "json"
 DATA_DIR = Path(__file__).parent.parent.parent / "data" / "integration" / "backend"
@@ -24,14 +27,14 @@ def config():
     "ipts": "IPTS-1234",
     "name": "name for reconstructed ct scans",
     "workingdir": "/path/to/working/dir",
-    "outputdir": "/path/to/output/dir",
+    "outputdir": "/tmp/imars3d/",
     "tasks": [{
             "name": "task1",
             "function": "imars3d.backend.io.data.load_data",
             "inputs": {
-                "ct_dir": "tests/data/imars3d-data/HFIR/CG1D/IPTS-25777/raw/ct_scans/iron_man",
-                "ob_dir": "tests/data/imars3d-data/HFIR/CG1D/IPTS-25777/raw/ob/Oct29_2019/",
-                "dc_dir": "tests/data/imars3d-data/HFIR/CG1D/IPTS-25777/raw/df/Oct29_2019/",
+                "ct_dir": "/HFIR/CG1D/IPTS-25777/raw/ct_scans/iron_man",
+                "ob_dir": "/HFIR/CG1D/IPTS-25777/raw/ob/Oct29_2019/",
+                "dc_dir": "/HFIR/CG1D/IPTS-25777/raw/df/Oct29_2019/",
                 "ct_fnmatch": "*.tiff",
                 "ob_fnmatch": "*.tiff",
                 "dc_fnmatch": "*.tiff"
@@ -121,6 +124,16 @@ def config():
                 "perform_minus_log": true
             },
             "outputs": ["result"]
+        },
+        {
+            "name": "task9",
+            "function": "imars3d.backend.io.data.save_data",
+            "inputs": {
+                "data": "result",
+                "filename": "test",
+                "outputdir" : "outputdir"
+            },
+            "outputs": []
         }
     ]
 }"""
@@ -132,6 +145,17 @@ def crop_roi(slice_input):
 
 
 class TestWorkflowEngineAuto:
+    outputdir = "/tmp/imars3d/"
+
+    @pytest.fixture(autouse=True)
+    def buildup_teardown(self, tmpdir):
+        """Fixture to execute asserts before and after a test is run"""
+        # Setup: fill with any logic you want
+        shutil.rmtree(path=self.outputdir, ignore_errors=True)
+        yield # this is where the testing happens
+        shutil.rmtree(path=self.outputdir, ignore_errors=True)
+
+
     @pytest.mark.datarepo
     def test_config(self, config):
         workflow = WorkflowEngineAuto(config)
@@ -143,7 +167,8 @@ class TestWorkflowEngineAuto:
         expected_slice_300 = np.load(str(DATA_DIR) + "/expected_slice_300.npy")
         workflow.run()
         # extract slice and crop to region of interest
-        slice_300 = crop_roi(workflow._registry["result"][300])
+        result = dxchange.read_tiff(self.outputdir + "test*")
+        slice_300 = crop_roi(result[300])
         np.allclose(slice_300, expected_slice_300)
 
     def test_no_config(self):
@@ -174,5 +199,12 @@ class TestWorkflowEngineAuto:
         BAD_FILTER_JSON = JSON_DATA_DIR / "bad_filter.json"
         with pytest.raises(JSONValidationError):
             with open(BAD_FILTER_JSON, "r") as config:
+                workflow = WorkflowEngineAuto(json.load(config))
+                workflow.run()
+    
+    def test_incomplete_workflow(self):
+        INCOMPLETE_WORKFLOW_JSON = JSON_DATA_DIR / "incomplete_workflow.json"
+        with pytest.raises(WorkflowEngineError):
+            with open(INCOMPLETE_WORKFLOW_JSON, "r") as config:
                 workflow = WorkflowEngineAuto(json.load(config))
                 workflow.run()
