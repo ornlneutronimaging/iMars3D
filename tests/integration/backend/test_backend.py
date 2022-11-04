@@ -14,7 +14,6 @@ import json
 import numpy as np
 from pathlib import Path
 
-JSON_DATA_DIR = Path(__file__).parent.parent.parent / "data" / "json"
 DATA_DIR = Path(__file__).parent.parent.parent / "data" / "integration" / "backend"
 ROI_X = (400, 600)
 ROI_Y = (400, 600)
@@ -159,23 +158,23 @@ class TestWorkflowEngineAuto:
             workflow = WorkflowEngineAuto("")
             workflow.run()
 
-    def test_invalid_config(self):
+    def test_invalid_config(self, JSON_DIR):
         # tests an invalid configuration (no facility present)
-        INVALID_CONFIG_FILE = JSON_DATA_DIR / "invalid_test.json"
+        INVALID_CONFIG_FILE = JSON_DIR / "invalid_test.json"
         with pytest.raises(JSONValidationError):
             with open(INVALID_CONFIG_FILE, "r") as file:
                 workflow = WorkflowEngineAuto(json.load(file))
                 workflow.run()
 
-    def test_invalid_workflow(self):
-        INVALID_WORKFLOW_FILE = JSON_DATA_DIR / "invalid_workflow.json"
+    def test_invalid_workflow(self, JSON_DIR):
+        INVALID_WORKFLOW_FILE = JSON_DIR / "invalid_workflow.json"
         with pytest.raises(WorkflowEngineError):
             with open(INVALID_WORKFLOW_FILE, "r") as file:
                 workflow = WorkflowEngineAuto(json.load(file))
                 workflow.run()
 
-    def test_bad_filter_name_config(self):
-        BAD_FILTER_JSON = JSON_DATA_DIR / "bad_filter.json"
+    def test_bad_filter_name_config(self, JSON_DIR):
+        BAD_FILTER_JSON = JSON_DIR / "bad_filter.json"
         with pytest.raises(JSONValidationError):
             with open(BAD_FILTER_JSON, "r") as config:
                 workflow = WorkflowEngineAuto(json.load(config))
