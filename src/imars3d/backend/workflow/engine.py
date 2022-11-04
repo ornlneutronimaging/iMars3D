@@ -154,6 +154,11 @@ class WorkflowEngineAuto(WorkflowEngine):
         for task in self.config["tasks"]:
             peek = self._instrospect_task_function(task["function"])
             if peek.params_independent:
+                # are all explicitly passed input parameters actual input parameters of this function?
+                unacounted = set(task.get("inputs", set())) - set(peek.paramdict)
+                if unacounted:
+                    pnames = ", ".join([f'"{p}"' for p in unacounted])
+                    raise WorkflowEngineError(f"Parameter(s) {pnames} are not input parameters of {task['function']}")
                 # assess each function parameter. Is it missing?
                 missing = set([])
                 for pname, parm in peek.paramdict.items():
@@ -176,7 +181,8 @@ class WorkflowEngineAuto(WorkflowEngine):
                     if pname not in registry:
                         missing.add(pname)
                 if missing:
-                    raise WorkflowEngineError(f"input(s) {', '.join(missing)} for task {task['name']} are missing")
+                    pnames = ", ".join([f'"{p}"' for p in missing])
+                    raise WorkflowEngineError(f"Input(s) {pnames} for task {task['name']} are missing")
             # update the registry with contents of task["outputs"]
             if task.get("outputs", []):
                 self._validate_outputs(task["outputs"])

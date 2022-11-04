@@ -1,16 +1,19 @@
 # backend module integration tests
 
-
+# package imports
 from imars3d.backend.workflow.engine import WorkflowEngineAuto
 from imars3d.backend.workflow.engine import WorkflowEngineError
 from imars3d.backend.workflow.validate import JSONValidationError
 
+# third party imports
+import pytest
+
+# standard library imports
+from copy import deepcopy
 import json
 import numpy as np
-import pytest
 from pathlib import Path
 
-JSON_DATA_DIR = Path(__file__).parent.parent.parent / "data" / "json"
 DATA_DIR = Path(__file__).parent.parent.parent / "data" / "integration" / "backend"
 ROI_X = (400, 600)
 ROI_Y = (400, 600)
@@ -155,24 +158,66 @@ class TestWorkflowEngineAuto:
             workflow = WorkflowEngineAuto("")
             workflow.run()
 
-    def test_invalid_config(self):
+    def test_invalid_config(self, JSON_DIR):
         # tests an invalid configuration (no facility present)
-        INVALID_CONFIG_FILE = JSON_DATA_DIR / "invalid_test.json"
+        INVALID_CONFIG_FILE = JSON_DIR / "invalid_test.json"
         with pytest.raises(JSONValidationError):
             with open(INVALID_CONFIG_FILE, "r") as file:
                 workflow = WorkflowEngineAuto(json.load(file))
                 workflow.run()
 
-    def test_invalid_workflow(self):
-        INVALID_WORKFLOW_FILE = JSON_DATA_DIR / "invalid_workflow.json"
+    def test_invalid_workflow(self, JSON_DIR):
+        INVALID_WORKFLOW_FILE = JSON_DIR / "invalid_workflow.json"
         with pytest.raises(WorkflowEngineError):
             with open(INVALID_WORKFLOW_FILE, "r") as file:
                 workflow = WorkflowEngineAuto(json.load(file))
                 workflow.run()
 
-    def test_bad_filter_name_config(self):
-        BAD_FILTER_JSON = JSON_DATA_DIR / "bad_filter.json"
+    def test_bad_filter_name_config(self, JSON_DIR):
+        BAD_FILTER_JSON = JSON_DIR / "bad_filter.json"
         with pytest.raises(JSONValidationError):
             with open(BAD_FILTER_JSON, "r") as config:
                 workflow = WorkflowEngineAuto(json.load(config))
                 workflow.run()
+
+    def test_typo_input_parameter(self, config):
+        r"""User writes 'array' instead of 'arrays' as one of the input parameters"""
+        bad = deepcopy(config)
+        bad["tasks"][1]["inputs"].pop("arrays")
+        bad["tasks"][1]["inputs"]["array"] = "ct"
+        workflow = WorkflowEngineAuto(bad)
+        with pytest.raises(WorkflowEngineError) as e:
+            workflow.run()
+        assert 'Parameter(s) "array" are not input parameters' in str(e.value)
+
+    def test_typo_output_parameter(self, config):
+        r"""User write 'rot_angle' instead of 'rot_angles' as one of the outputs of task1.
+        As a result, task7 will fail because it requires output 'rot_angles'"""
+        bad = deepcopy(config)
+        assert "load_data" in bad["tasks"][0]["function"]
+        bad["tasks"][0]["outputs"][-1] = "rot_angle"
+        workflow = WorkflowEngineAuto(bad)
+        with pytest.raises(WorkflowEngineError) as e:
+            workflow.run()
+        assert 'Input(s) "rot_angles" for task task7 are missing' == str(e.value)
+
+    def test_forgot_task(self, config):
+        r"""User forgets to find the rotation center"""
+        bad = deepcopy(config)
+        # delete the task that finds the rotation center
+        assert "find_rotation_center" in bad["tasks"][8]["function"]
+        del bad["tasks"][8]
+        workflow = WorkflowEngineAuto(bad)
+        with pytest.raises(WorkflowEngineError) as e:
+            workflow.run()
+        assert 'Input(s) "rot_center" for task task8 are missing' == str(e.value)
+
+    def test_forgot_input_parameter(self, config):
+        r"""User forgets to pass input parameter 'darks' in the normalization task"""
+        bad = deepcopy(config)
+        assert "normalization" in bad["tasks"][5]["function"]
+        del bad["tasks"][5]["inputs"]["darks"]
+        workflow = WorkflowEngineAuto(bad)
+        with pytest.raises(WorkflowEngineError) as e:
+            workflow.run()
+        assert 'Input(s) "darks" for task task4 are missing' == str(e.value)
