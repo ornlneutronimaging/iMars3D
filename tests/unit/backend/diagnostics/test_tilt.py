@@ -11,6 +11,7 @@ from imars3d.backend.diagnostics.tilt import calculate_shift
 from imars3d.backend.diagnostics.tilt import find_180_deg_pairs_idx
 from imars3d.backend.diagnostics.tilt import apply_tilt_correction
 from imars3d.backend.diagnostics.tilt import tilt_correction
+from imars3d.ui.widgets import Tqdm
 
 
 def get_tilted_rot_axis(
@@ -246,6 +247,18 @@ def test_apply_tilt_correction():
     err_tilted = np.linalg.norm(img_tilted - img_ref) / img_ref.size
     err_corrected = np.linalg.norm(img_corrected - img_ref) / img_ref.size
     assert err_tilted > err_corrected
+    # case 1a: 2d image with progress bar
+    # use stock image to speed up testing
+    img_ref = skimage.data.brain()[2, :, :]
+    tilt = 1.0  # deg
+    img_tilted = rotate(img_ref, tilt, resize=False)
+    img_corrected = apply_tilt_correction(arrays=img_tilted, tilt=tilt, tqdm_class=Tqdm())
+    # verify
+    # NOTE: the rotate will alter the value due to interpolation, so it is not
+    #       possible to compare the exact values.
+    err_tilted = np.linalg.norm(img_tilted - img_ref) / img_ref.size
+    err_corrected = np.linalg.norm(img_corrected - img_ref) / img_ref.size
+    assert err_tilted > err_corrected
     # case 2: 3d image stack
     imgs_ref = skimage.data.brain()[:3, :, :]
     tilt = 1.0  # deg
@@ -274,6 +287,9 @@ def test_tilt_correction():
     # case 1: null
     projs_corrected = tilt_correction(arrays=projs_ref, rot_angles=omegas)
     # verify
+    assert np.allclose(projs_corrected, projs_ref)
+    # case 1a: null with the progress bar
+    projs_corrected = tilt_correction(arrays=projs_ref, rot_angles=omegas, tqdm_class=Tqdm())
     assert np.allclose(projs_corrected, projs_ref)
     # case 2: small angle tilt
     tilt_inplane = np.radians(0.5)

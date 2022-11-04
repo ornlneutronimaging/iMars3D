@@ -15,7 +15,6 @@ from skimage.registration import phase_cross_correlation
 from multiprocessing.managers import SharedMemoryManager
 from tqdm.contrib.concurrent import process_map
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -245,6 +244,8 @@ class tilt_correction(param.ParameterizedFunction):
     max_workers:
         Number of cores to use for parallel median filtering, default is 0,
         which means using all available cores.
+    tqdm_class: imars3d.ui.widgets.TqdmType
+        Class to be used for rendering tqdm progress
 
     Returns
     -------
@@ -275,6 +276,7 @@ class tilt_correction(param.ParameterizedFunction):
         bounds=(0, None),
         doc="Number of cores to use for parallel median filtering, default is 0, which means using all available cores.",
     )
+    tqdm_class = param.ClassSelector(class_=object, doc="Progress bar to render with")
 
     def __call__(self, **params):
         """Parse input and perform auto tilt correction."""
@@ -307,6 +309,13 @@ class tilt_correction(param.ParameterizedFunction):
 
             np.copyto(shm_arrays, params.arrays)
 
+            kwargs = {
+                "max_workers": self.max_workers,
+                "desc": "Calculating tilt correction",
+            }
+            if params.tqdm_class:
+                kwargs["tqdm_class"] = params.tqdm_class
+
             rst = process_map(
                 partial(
                     calculate_tilt,
@@ -315,8 +324,7 @@ class tilt_correction(param.ParameterizedFunction):
                 ),
                 [shm_arrays[il] for il in idx_lowrange],
                 [shm_arrays[ih] for ih in idx_highrange],
-                max_workers=self.max_workers,
-                desc="Calculating tilt correction",
+                **kwargs,
             )
         # extract the tilt angles from the optimization results
         tilts = np.array([result.x for result in rst])
@@ -352,6 +360,8 @@ class apply_tilt_correction(param.ParameterizedFunction):
         The rotation axis tilt angle in degrees
     max_workers: int
         Number of cores to use for parallel median filtering, default is 0, which means using all available cores.
+    tqdm_class: imars3d.ui.widgets.TqdmType
+        Class to be used for rendering tqdm progress
 
     Returns
     -------
@@ -370,6 +380,7 @@ class apply_tilt_correction(param.ParameterizedFunction):
         bounds=(0, None),
         doc="Number of cores to use for parallel median filtering, default is 0, which means using all available cores.",
     )
+    tqdm_class = param.ClassSelector(class_=object, doc="Progress bar to render with")
 
     def __call__(self, **params):
         """Parse input and perform tilt correction with given tilt angle."""
@@ -394,11 +405,16 @@ class apply_tilt_correction(param.ParameterizedFunction):
                 shm = smm.SharedMemory(params.arrays.nbytes)
                 shm_arrays = np.ndarray(params.arrays.shape, dtype=params.arrays.dtype, buffer=shm.buf)
                 np.copyto(shm_arrays, params.arrays)
+                kwargs = {
+                    "max_workers": self.max_workers,
+                    "desc": "Applying tilt corr",
+                }
+                if params.tqdm_class:
+                    kwargs["tqdm_class"] = params.tqdm_class
                 rst = process_map(
                     partial(rotate, angle=-params.tilt, resize=False, preserve_range=True),
                     [shm_arrays[idx] for idx in range(params.arrays.shape[0])],
-                    max_workers=self.max_workers,
-                    desc="Applying tilt corr",
+                    **kwargs,
                 )
             corrected_array = np.array(rst)
         else:

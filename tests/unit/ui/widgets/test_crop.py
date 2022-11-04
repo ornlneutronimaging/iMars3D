@@ -23,7 +23,7 @@ def test_crop_page(page: Page, port: int):
     serve(app, port=port, show=False, thread=True)
 
     # Go to http://localhost:1958/
-    page.goto("http://localhost:1958/")
+    page.goto(f"http://localhost:{port}/")
 
     # Check input[type="checkbox"] >> nth=1
     page.locator('input[type="checkbox"]').nth(1).check()

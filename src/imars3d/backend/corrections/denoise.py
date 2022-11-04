@@ -112,10 +112,7 @@ def denoise_by_median(
 
 
 def denoise_by_bilateral(
-    arrays: np.ndarray,
-    sigma_color: float = 0.02,
-    sigma_spatial: float = 5.0,
-    max_workers: int = 0,
+    arrays: np.ndarray, sigma_color: float = 0.02, sigma_spatial: float = 5.0, max_workers: int = 0, tqdm_class=None
 ) -> np.ndarray:
     """
     Denoise the image stack with the bilateral filter.
@@ -130,6 +127,8 @@ def denoise_by_bilateral(
         Standard deviation for range distance.
     max_workers:
         The number of cores to use for parallel processing, default is 0, which means using all available cores.
+    tqdm_class: imars3d.ui.widgets.TqdmType
+        Class to be used for rendering tqdm progress
 
     Returns
     -------
@@ -154,11 +153,17 @@ def denoise_by_bilateral(
             # copy the data to the shared memory
             np.copyto(shm_arrays, arrays)
             # mp
+            kwargs = {
+                "max_workers": max_workers,
+                "desc": "denoise_by_bilateral",
+            }
+            if tqdm_class:
+                kwargs["tqdm_class"] = tqdm_class
+
             rst = process_map(
                 partial(denoise_by_bilateral_2d, sigma_color=sigma_color, sigma_spatial=sigma_spatial),
                 [img for img in shm_arrays],
-                max_workers=max_workers,
-                desc="denoise_by_bilateral",
+                **kwargs,
             )
         logger.info("denoise completed via bilateral filter")
         return np.array(rst)
@@ -215,6 +220,8 @@ class denoise(param.ParameterizedFunction):
         The sigma of the spatial space, only valid for 'bilateral' method.
     max_workers: int = 0
         The number of cores to use for parallel processing, default is 0, which means using all available cores.
+    tqdm_class: imars3d.ui.widgets.TqdmType
+        Class to be used for rendering tqdm progress
 
     Returns
     -------
@@ -247,6 +254,7 @@ class denoise(param.ParameterizedFunction):
         bounds=(0, None),
         doc="The number of cores to use for parallel processing, default is 0, which means using all available cores.",
     )
+    tqdm_class = param.ClassSelector(class_=object, doc="Progress bar to render with")
 
     def __call__(self, **params):
         """Call the denoise function."""
@@ -262,6 +270,8 @@ class denoise(param.ParameterizedFunction):
         denoised_array = None
         if params.method == "median":
             logger.info("Executing Filter: Denoise Filter with median filter")
+            if bool(params.tqdm_class):
+                logger.info("Ignoring supplied progress bar indicator")
             denoised_array = denoise_by_median(
                 arrays=params.arrays,
                 median_filter_kernel=params.median_filter_kernel,
@@ -274,6 +284,7 @@ class denoise(param.ParameterizedFunction):
                 sigma_color=params.bilateral_sigma_color,
                 sigma_spatial=params.bilateral_sigma_spatial,
                 max_workers=self.max_workers,
+                tqdm_class=params.tqdm_class,
             )
         else:
             # NOTE:
