@@ -31,6 +31,8 @@ class intensity_fluctuation_correction(param.ParameterizedFunction):
         detection via canny edge detection from skimage.
     max_workers: int = 0
         The number of cores to use for parallel processing, default is 0, which means using all available cores.
+    tqdm_class: imars3d.ui.widgets.TqdmType
+        Class to be used for rendering tqdm progress
 
     Returns
     -------
@@ -51,6 +53,7 @@ class intensity_fluctuation_correction(param.ParameterizedFunction):
         bounds=(0, None),
         doc="The number of cores to use for parallel processing, default is 0, which means using all available cores.",
     )
+    tqdm_class = param.ClassSelector(class_=object, doc="Progress bar to render with")
 
     def __call__(self, **params):
         """Call the function."""
@@ -64,18 +67,12 @@ class intensity_fluctuation_correction(param.ParameterizedFunction):
         self.max_workers = clamp_max_workers(params.max_workers)
         logger.debug(f"max_workers={self.max_workers}")
         corrected_array = self._intensity_fluctuation_correction(
-            params.ct, params.air_pixels, params.sigma, self.max_workers
+            params.ct, params.air_pixels, params.sigma, self.max_workers, params.tqdm_class
         )
         logger.info("FINISHED Executing Filter: Intensity Fluctuation Correction")
         return corrected_array
 
-    def _intensity_fluctuation_correction(
-        self,
-        ct,
-        air_pixels,
-        sigma,
-        max_workers,
-    ):
+    def _intensity_fluctuation_correction(self, ct, air_pixels, sigma, max_workers, tqdm_class):
         """Correct for intensity fluctuation in the radiograph."""
         # validation
         if ct.ndim not in (2, 3):
@@ -95,11 +92,16 @@ class intensity_fluctuation_correction(param.ParameterizedFunction):
                 # copy data
                 np.copyto(shm_arrays, ct)
                 # map the multiprocessing calls
+                kwargs = {
+                    "max_workers": max_workers,
+                    "desc": "intensity_fluctuation_correction",
+                }
+                if tqdm_class:
+                    kwargs["tqdm_class"] = tqdm_class
                 rst = process_map(
                     partial(intensity_fluctuation_correction_skimage, sigma=sigma),
                     [img for img in shm_arrays],
-                    max_workers=max_workers,
-                    desc="intensity_fluctuation_correction",
+                    **kwargs,
                 )
             #
             return np.array(rst)

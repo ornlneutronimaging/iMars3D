@@ -14,6 +14,7 @@ import importlib
 import json
 import numpy as np
 from typing import Any, List, Optional, Set, Union
+from imars3d.ui.widgets import Tqdm
 
 
 class WorkflowEngineError(RuntimeError):
@@ -160,10 +161,15 @@ class WorkflowEngineAuto(WorkflowEngine):
         return True
 
     def _verify_inputs(self, peek, task, registry):
+        # are all explicitly passed input parameters actual input parameters of this function?
+        unacounted = set(task.get("inputs", set())) - set(peek.paramdict)
+        if unacounted:
+            pnames = ", ".join([f'"{p}"' for p in unacounted])
+            raise WorkflowEngineError(f"Parameter(s) {pnames} are not input parameters of {task['function']}")
         # assess each function parameter. Is it missing?
         missing = set([])
         for pname, param in peek.paramdict.items():
-            if pname == "name":  # not an actual input parameter, just an attribute of the function
+            if pname == "name" or pname == "tqdm_class":  # not an actual input parameter, just an attribute of the function
                 continue
             if param.default is not None:  # the parameter has a default value
                 continue  # irrelevant if parameter value is missing
@@ -211,6 +217,8 @@ class WorkflowEngineAuto(WorkflowEngine):
         self._dryrun()
         # initialize the registry of global parameters with the metadata
         self._registry = {k: v for k, v in self.config.items() if k not in ("name", "tasks")}
+        # This widget eats logs for some reason??
+        self._registry["tqdm_class"] = Tqdm()
         for task in self.config["tasks"]:
             peek = self._instrospect_task_function(task["function"])
             inputs = self._resolve_inputs(task.get("inputs", {}), peek.paramdict)

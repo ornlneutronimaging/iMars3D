@@ -86,7 +86,7 @@ def test_forgiving_reader():
 
 def test_load_images(data_fixture):
     generic_tiff, good_tiff, metadata_tiff, generic_fits = list(map(str, data_fixture))
-    func = partial(_load_images, desc="test", max_workers=2)
+    func = partial(_load_images, desc="test", max_workers=2, tqdm_class=None)
     # error_0 case: unsupported file format
     incorrect_filelist = ["file1.bad", "file2.bad"]
     with pytest.raises(ValueError):

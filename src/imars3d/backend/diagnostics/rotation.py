@@ -33,6 +33,8 @@ class find_rotation_center(param.ParameterizedFunction):
         tolerance for the search of 180 deg paris, default is 0.1 degrees
     max_workers: int = 0
         number of cores to use for parallel median filtering, default is 0, which means using all available cores.
+    tqdm_class: imars3d.ui.widgets.TqdmType
+        Class to be used for rendering tqdm progress
 
     Returns
     -------
@@ -53,6 +55,7 @@ class find_rotation_center(param.ParameterizedFunction):
         bounds=(0, None),
         doc="Maximum number of processes to use for parallel median filtering, default is -1, which means using all available cores.",
     )
+    tqdm_class = param.ClassSelector(class_=object, doc="Progress bar to render with")
 
     def __call__(self, **params):
         logger.info("Executing Filter: Find Rotation Center")
@@ -63,7 +66,7 @@ class find_rotation_center(param.ParameterizedFunction):
         self.max_workers = clamp_max_workers(params.max_workers)
 
         val = self._find_rotation_center(
-            params.arrays, params.angles, params.in_degrees, params.atol_deg, self.max_workers
+            params.arrays, params.angles, params.in_degrees, params.atol_deg, self.max_workers, params.tqdm_class
         )
         logger.info("FINISHED Executing Filter: Find Rotation Center")
         return val
@@ -75,6 +78,7 @@ class find_rotation_center(param.ParameterizedFunction):
         in_degrees: bool = True,
         atol_deg: float = 1e-3,
         max_workers: int = -1,
+        tqdm_class=None,
     ) -> float:
         # sanity check input
         if arrays.ndim != 3:
@@ -85,7 +89,7 @@ class find_rotation_center(param.ParameterizedFunction):
         atol = atol_deg if in_degrees else np.radians(atol_deg)
         idx_low, idx_hgh = find_180_deg_pairs_idx(angles, atol=atol, in_degrees=in_degrees)
         # process
-        max_workers = None if max_workers <= 0 else max_workers
+        max_workers = clamp_max_workers(max_workers)
         # use shared memory model and tqdm wrapper for multiprocessing to reduce
         # runtime memory footprint
         with SharedMemoryManager() as smm:
@@ -100,12 +104,14 @@ class find_rotation_center(param.ParameterizedFunction):
             # copy data
             np.copyto(shm_arrays, arrays)
             # map the multiprocessing calls
+            kwargs = {
+                "max_workers": max_workers,
+                "desc": "Finding rotation center",
+            }
+            if tqdm_class:
+                kwargs["tqdm_class"] = tqdm_class
             rst = process_map(
-                find_center_pc,
-                [shm_arrays[il] for il in idx_low],
-                [shm_arrays[ih] for ih in idx_hgh],
-                max_workers=max_workers,
-                desc="Finding rotation center",
+                find_center_pc, [shm_arrays[il] for il in idx_low], [shm_arrays[ih] for ih in idx_hgh], **kwargs
             )
         # use the median value
         return (np.median(rst),)

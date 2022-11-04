@@ -60,6 +60,8 @@ class load_data(param.ParameterizedFunction):
         Unix shells-style wild card (``*.tiff``) for selecting dark current
     max_workers: Optional[int]
         maximum number of processes allowed during loading, default to use as many as possible.
+    tqdm_class: imars3d.ui.widgets.TqdmType
+        Class to be used for rendering tqdm progress
 
     Returns
     -------
@@ -103,6 +105,7 @@ class load_data(param.ParameterizedFunction):
         bounds=(0, None),
         doc="Maximum number of processes allowed during loading",
     )
+    tqdm_class = param.ClassSelector(class_=object, doc="Progress bar to render with")
 
     def __call__(self, **params):
         """Parse inputs and perform multiple dispatch."""
@@ -132,6 +135,7 @@ class load_data(param.ParameterizedFunction):
                 ob_fnmatch=params.get("ob_fnmatch", "*"),
                 dc_fnmatch=params.get("dc_fnmatch", "*"),
                 max_workers=self.max_workers,
+                tqdm_class=params.tqdm_class,
             )
             ct_files = params.get("ct_files")
         elif sigs.intersection(ref) == {"dir"}:
@@ -152,6 +156,7 @@ class load_data(param.ParameterizedFunction):
                 ob_fnmatch=params.get("ob_fnmatch", "*"),
                 dc_fnmatch=params.get("dc_fnmatch", "*"),
                 max_workers=self.max_workers,
+                tqdm_class=params.tqdm_class,
             )
         else:
             logger.warning("No valid signature found, need to specify either files or dir")
@@ -193,11 +198,7 @@ def _forgiving_reader(
 
 
 # use _func to avoid sphinx pulling it into docs
-def _load_images(
-    filelist: List[str],
-    desc: str,
-    max_workers: int,
-) -> np.ndarray:
+def _load_images(filelist: List[str], desc: str, max_workers: int, tqdm_class) -> np.ndarray:
     """
     Load image data via dxchange.
 
@@ -209,6 +210,8 @@ def _load_images(
         Description for progress bar.
     max_workers:
         Maximum number of processes allowed during loading.
+    tqdm_class: imars3d.ui.widgets.TqdmType
+        Class to be used for rendering tqdm progress
 
     Returns
     -------
@@ -224,12 +227,14 @@ def _load_images(
         logger.error(f"Unsupported file type: {file_ext}")
         raise ValueError("Unsupported file type.")
     # read the data into numpy array via map_process
-    rst = process_map(
-        partial(_forgiving_reader, reader=reader),
-        filelist,
-        max_workers=max_workers,
-        desc=desc,
-    )
+    kwargs = {
+        "max_workers": max_workers,
+        "desc": desc,
+    }
+    if tqdm_class:
+        kwargs["tqdm_class"] = tqdm_class
+
+    rst = process_map(partial(_forgiving_reader, reader=reader), filelist, **kwargs)
     # return the results
     return np.array([me for me in rst if me is not None])
 
@@ -243,6 +248,7 @@ def _load_by_file_list(
     ob_fnmatch: Optional[str] = "*",
     dc_fnmatch: Optional[str] = "*",
     max_workers: int = 0,
+    tqdm_class=None,
 ) -> Tuple[np.ndarray]:
     """
     Use provided list of files to load images into memory.
@@ -264,6 +270,8 @@ def _load_by_file_list(
     max_workers:
         Maximum number of processes allowed during loading, 0 means
         use as many as possible.
+    tqdm_class: imars3d.ui.widgets.TqdmType
+        Class to be used for rendering tqdm progress
 
     Returns
     -------
@@ -279,19 +287,21 @@ def _load_by_file_list(
     if dc_files == []:
         logger.warning("dc_files is [].")
 
-    max_workers = None if max_workers <= 0 else max_workers
+    max_workers = clamp_max_workers(max_workers)
     # explicit list is the most straight forward solution
     # -- radiograph
     ct = _load_images(
         filelist=[ctf for ctf in ct_files if fnmatchcase(ctf, ct_fnmatch)],
         desc="ct",
         max_workers=max_workers,
+        tqdm_class=tqdm_class,
     )
     # -- open beam
     ob = _load_images(
         filelist=[obf for obf in ob_files if fnmatchcase(obf, ob_fnmatch)],
         desc="ob",
         max_workers=max_workers,
+        tqdm_class=tqdm_class,
     )
     # -- dark current
     if dc_files == []:
@@ -301,6 +311,7 @@ def _load_by_file_list(
             filelist=[dcf for dcf in dc_files if fnmatchcase(dcf, dc_fnmatch)],
             desc="dc",
             max_workers=max_workers,
+            tqdm_class=tqdm_class,
         )
     #
     return ct, ob, dc
