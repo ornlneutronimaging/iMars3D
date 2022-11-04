@@ -58,9 +58,22 @@ class Tqdm(_Tqdm):
         super().__init__(*args, **kwargs)
 
     def get_lock(self) -> LockType:
-        """Return the lock owned by this object."""
+        """
+        Accessor method.
+
+        Returns
+        -------
+            The lock owned by this object.
+        """
         return self._lock
 
     def set_lock(self, lock: LockType) -> None:
-        """Set the lock owned by this object."""
+        """
+        Mutator method.
+
+        Parameters
+        ----------
+        lock:
+            Set the lock owned by this object.
+        """
         self._lock = lock
