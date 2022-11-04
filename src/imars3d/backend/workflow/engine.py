@@ -164,6 +164,8 @@ class WorkflowEngineAuto(WorkflowEngine):
                 for pname, parm in peek.paramdict.items():
                     if pname == "name":  # not an actual input parameter, just an attribute of the function
                         continue
+                    if pname == "tqdm_class":
+                        continue  # parameter for connecting progress bars to the gui
                     if parm.default is not None:  # the parameter has a default value
                         continue  # irrelevant if parameter value is missing
                     if pname in task.get("inputs", {}):  # parameter explicitly set

@@ -221,3 +221,7 @@ class TestWorkflowEngineAuto:
         with pytest.raises(WorkflowEngineError) as e:
             workflow.run()
         assert 'Input(s) "darks" for task task4 are missing' == str(e.value)
+
+
+if __name__ == "__main__":
+    pytest.main([__file__])
