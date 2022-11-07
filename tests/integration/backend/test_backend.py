@@ -13,6 +13,8 @@ from copy import deepcopy
 import json
 import numpy as np
 from pathlib import Path
+import dxchange
+import shutil
 
 DATA_DIR = Path(__file__).parent.parent.parent / "data" / "integration" / "backend"
 ROI_X = (400, 600)
@@ -27,7 +29,7 @@ def config():
     "ipts": "IPTS-1234",
     "name": "name for reconstructed ct scans",
     "workingdir": "/path/to/working/dir",
-    "outputdir": "/path/to/output/dir",
+    "outputdir": "/tmp/imars3d/",
     "tasks": [{
             "name": "task1",
             "function": "imars3d.backend.io.data.load_data",
@@ -124,6 +126,16 @@ def config():
                 "perform_minus_log": true
             },
             "outputs": ["result"]
+        },
+        {
+            "name": "task9",
+            "function": "imars3d.backend.io.data.save_data",
+            "inputs": {
+                "data": "result",
+                "filename": "test",
+                "outputdir" : "outputdir"
+            },
+            "outputs": []
         }
     ]
 }"""
@@ -135,6 +147,16 @@ def crop_roi(slice_input):
 
 
 class TestWorkflowEngineAuto:
+    outputdir = "/tmp/imars3d/"
+
+    @pytest.fixture(autouse=True)
+    def buildup_teardown(self, tmpdir):
+        """Fixture to execute asserts before and after a test is run"""
+        # Setup: fill with any logic you want
+        shutil.rmtree(path=self.outputdir, ignore_errors=True)
+        yield  # this is where the testing happens
+        shutil.rmtree(path=self.outputdir, ignore_errors=True)
+
     @pytest.mark.datarepo
     def test_config(self, config):
         workflow = WorkflowEngineAuto(config)
@@ -146,7 +168,8 @@ class TestWorkflowEngineAuto:
         expected_slice_300 = np.load(str(DATA_DIR) + "/expected_slice_300.npy")
         workflow.run()
         # extract slice and crop to region of interest
-        slice_300 = crop_roi(workflow._registry["result"][300])
+        result = dxchange.read_tiff(self.outputdir + "test*")
+        slice_300 = crop_roi(result[300])
         np.allclose(slice_300, expected_slice_300)
 
     def test_no_config(self):
@@ -180,6 +203,13 @@ class TestWorkflowEngineAuto:
                 workflow = WorkflowEngineAuto(json.load(config))
                 workflow.run()
 
+    def test_incomplete_workflow(self, JSON_DIR):
+        INCOMPLETE_WORKFLOW_JSON = JSON_DIR / "incomplete_workflow.json"
+        with pytest.raises(WorkflowEngineError):
+            with open(INCOMPLETE_WORKFLOW_JSON, "r") as config:
+                workflow = WorkflowEngineAuto(json.load(config))
+                workflow.run()
+
     def test_typo_input_parameter(self, config):
         r"""User writes 'array' instead of 'arrays' as one of the input parameters"""
         bad = deepcopy(config)
@@ -188,7 +218,7 @@ class TestWorkflowEngineAuto:
         workflow = WorkflowEngineAuto(bad)
         with pytest.raises(WorkflowEngineError) as e:
             workflow.run()
-        assert 'Parameter(s) "array" are not input parameters' in str(e.value)
+            assert 'Parameter(s) "array" are not input parameters' in str(e.value)
 
     def test_typo_output_parameter(self, config):
         r"""User write 'rot_angle' instead of 'rot_angles' as one of the outputs of task1.
@@ -199,7 +229,7 @@ class TestWorkflowEngineAuto:
         workflow = WorkflowEngineAuto(bad)
         with pytest.raises(WorkflowEngineError) as e:
             workflow.run()
-        assert 'Input(s) "rot_angles" for task task7 are missing' == str(e.value)
+            assert 'Input(s) "rot_angles" for task task7 are missing' == str(e.value)
 
     def test_forgot_task(self, config):
         r"""User forgets to find the rotation center"""
@@ -210,7 +240,7 @@ class TestWorkflowEngineAuto:
         workflow = WorkflowEngineAuto(bad)
         with pytest.raises(WorkflowEngineError) as e:
             workflow.run()
-        assert 'Input(s) "rot_center" for task task8 are missing' == str(e.value)
+            assert 'Input(s) "rot_center" for task task8 are missing' == str(e.value)
 
     def test_forgot_input_parameter(self, config):
         r"""User forgets to pass input parameter 'darks' in the normalization task"""
@@ -220,7 +250,7 @@ class TestWorkflowEngineAuto:
         workflow = WorkflowEngineAuto(bad)
         with pytest.raises(WorkflowEngineError) as e:
             workflow.run()
-        assert 'Input(s) "darks" for task task4 are missing' == str(e.value)
+            assert 'Input(s) "darks" for task task4 are missing' == str(e.value)
 
 
 if __name__ == "__main__":

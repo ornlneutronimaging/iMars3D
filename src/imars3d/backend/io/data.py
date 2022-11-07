@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Data handling for iMars3D."""
 import re
+from datetime import datetime
 import logging
 import param
 import multiprocessing
@@ -473,3 +474,43 @@ def _extract_rotation_angles(
             [float(tifffile.TiffFile(f).pages[0].tags[metadata_idx].value.split(":")[-1]) for f in filelist]
         )
     return rotation_angles
+
+
+class save_data(param.ParameterizedFunction):
+    """
+    Save data with given input.
+
+    Parameters
+    ----------
+    data: Array
+        array of data to save
+    outputdir: str
+        where to save the output on disk
+    filename: str
+        Used to name file of output, defaults to output_{datetime}
+
+    Returns
+    -------
+        None
+    """
+
+    #
+    data = param.Array(doc="Data to save", precedence=1)
+    outputdir = param.Foldername(default="/tmp/", doc="radiograph directory")
+
+    filename = param.String(default="*", doc="fnmatch for selecting dc files from dc_dir")
+
+    def __call__(self, **params):
+        """Parse inputs and perform multiple dispatch."""
+        # type bounds check via Parameter
+        _ = self.instance(**params)
+        # sanitize arguments
+        params = param.ParamOverrides(self, params)
+
+        if params.filename == "*":
+            params.filename = "output_" + str(datetime.now())
+
+        self._save_data(params.data, params.outputdir + params.filename)
+
+    def _save_data(self, data, filename):
+        dxchange.write_tiff_stack(data, fname=filename)

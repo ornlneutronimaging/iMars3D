@@ -105,13 +105,13 @@ class WorkflowEngine:
             all necessary inputs for the function to be evaluated
         """
         inputs = dict()
-        for pname, parm in paramdict.items():
+        for pname, param in paramdict.items():
             if pname == "name":  # not an actual input parameter, just an attribute of the function
                 continue
             if pname in task_inputs:  # value passed explicitly, but it could refer to a value stored in the registry
                 val = task_inputs[pname]
                 if isinstance(val, str):  # Examples: `"array": "ct"`, `"exec_mode": "f"`
-                    if isinstance(parm, (libparam.Foldername, libparam.String)):
+                    if isinstance(param, (libparam.Foldername, libparam.String)):
                         if val in self._registry:  # val is a reference to a value stored in the registry
                             inputs[pname] = self._registry[val]  # Example: "savedir": "outputdir"
                         else:  # val is an explicit value
@@ -129,6 +129,8 @@ class WorkflowEngineAuto(WorkflowEngine):
     """Used for running fully specified workflow."""
 
     config = validate.JSONValid()
+    load_data_function = "imars3d.backend.io.data.load_data"
+    save_data_function = "imars3d.backend.io.data.save_data"
 
     def __init__(self, config: validate.JsonInputTypes) -> None:
         r"""Initialize the workflow engine.
@@ -140,6 +142,56 @@ class WorkflowEngineAuto(WorkflowEngine):
         """
         self.config: dict = config  # validated JSON configuration file
         super().__init__()
+
+    def _verify_loadsave_bookend(self) -> None:
+        # Workflow must be bookended with a load and save task.
+        tasks = self.config["tasks"]
+        if len(tasks) >= 2:
+            if tasks[0]["function"] != self.load_data_function:
+                raise WorkflowEngineError("Incomplete Workflow:  Workflow must begin with a load data task.")
+            if tasks[len(tasks) - 1]["function"] != self.save_data_function:
+                raise WorkflowEngineError("Incomplete Workflow:  Workflow must end with a save data task")
+        elif len(tasks) == 1:
+            raise WorkflowEngineError(
+                "Incomplete Workflow:  Workflow does not contain at minimum a load task and a save task."
+            )
+
+    def _verify_input_integrity(self, val, param, registry):
+        # is "val" an actual value or a registry key?
+        if isinstance(val, str):  # Examples: `"array": "ct"`, `"exec_mode": "f"`
+            if isinstance(param, libparam.String):
+                return True  # In "exec_mode": "f", is "f" a registry key or an actual exec_mode value?
+            if val not in registry:  # "val" is a templated value, so it should be a registry key
+                return False
+        # parameter is explicitly set. Example: "rot_center": 0.2
+        return True
+
+    def _verify_inputs(self, peek, task, registry):
+        # are all explicitly passed input parameters actual input parameters of this function?
+        unacounted = set(task.get("inputs", set())) - set(peek.paramdict)
+        if unacounted:
+            pnames = ", ".join([f'"{p}"' for p in unacounted])
+            raise WorkflowEngineError(f"Parameter(s) {pnames} are not input parameters of {task['function']}")
+        # assess each function parameter. Is it missing?
+        missing = set([])
+        for pname, param in peek.paramdict.items():
+            if pname == "name":
+                continue  # not an actual input parameter, just an attribute of the function
+            if pname == "tqdm_class":
+                continue  # parameter for connecting progress bars to the gui
+            if param.default is not None:  # the parameter has a default value
+                continue  # irrelevant if parameter value is missing
+            if pname in task.get("inputs", {}):  # parameter explicitly set
+                val = task["inputs"][pname]
+                if self._verify_input_integrity(val, param, registry):
+                    continue
+                else:
+                    missing.add(val)
+            # From here on, the parameter has no default value and has not been set in task["inputs"]
+            if pname not in registry:
+                missing.add(pname)
+        if missing:
+            raise WorkflowEngineError(f"input(s) {', '.join(missing)} for task {task['name']} are missing")
 
     def _dryrun(self) -> None:
         r"""Verify validity of the workflow configuration.
@@ -155,40 +207,14 @@ class WorkflowEngineAuto(WorkflowEngine):
         # registry stores parameters that have already been set or computed. Initialize with metadata
         registry = set([x for x in self.config if x not in ("name", "tasks")])
 
-        for task in self.config["tasks"]:
+        # Workflow must be bookended with a load and save task.
+        self._verify_loadsave_bookend()
+
+        tasks = self.config["tasks"]
+        for task in tasks:
             peek = self._instrospect_task_function(task["function"])
             if peek.params_independent:
-                # are all explicitly passed input parameters actual input parameters of this function?
-                unacounted = set(task.get("inputs", set())) - set(peek.paramdict)
-                if unacounted:
-                    pnames = ", ".join([f'"{p}"' for p in unacounted])
-                    raise WorkflowEngineError(f"Parameter(s) {pnames} are not input parameters of {task['function']}")
-                # assess each function parameter. Is it missing?
-                missing = set([])
-                for pname, parm in peek.paramdict.items():
-                    if pname == "name":  # not an actual input parameter, just an attribute of the function
-                        continue
-                    if pname == "tqdm_class":
-                        continue  # parameter for connecting progress bars to the gui
-                    if parm.default is not None:  # the parameter has a default value
-                        continue  # irrelevant if parameter value is missing
-                    if pname in task.get("inputs", {}):  # parameter explicitly set
-                        val = task["inputs"][pname]  # is "val" an actual value or a registry key?
-                        if isinstance(val, str):  # Examples: `"array": "ct"`, `"exec_mode": "f"`
-                            if isinstance(parm, libparam.String):
-                                continue  # In "exec_mode": "f", is "f" a registry key or an actual exec_mode value?
-                            if val not in registry:  # "val" is a templated value, so it should be a registry key
-                                missing.add(val)
-
-                            continue
-                        else:  # parameter is explicitly set. Example: "rot_center": 0.2
-                            continue
-                    # From here on, the parameter has no default value and has not been set in task["inputs"]
-                    if pname not in registry:
-                        missing.add(pname)
-                if missing:
-                    pnames = ", ".join([f'"{p}"' for p in missing])
-                    raise WorkflowEngineError(f"Input(s) {pnames} for task {task['name']} are missing")
+                self._verify_inputs(peek, task, registry)
             # update the registry with contents of task["outputs"]
             if task.get("outputs", []):
                 self._validate_outputs(task["outputs"])
