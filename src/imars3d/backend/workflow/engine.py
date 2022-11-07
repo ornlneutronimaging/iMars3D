@@ -14,7 +14,6 @@ import importlib
 import json
 import numpy as np
 from typing import Any, List, Optional, Set, Union
-from imars3d.ui.widgets import Tqdm
 
 
 class WorkflowEngineError(RuntimeError):
