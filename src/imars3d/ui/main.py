@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 
 class MainWindow(BaseWindow):
-    """Main application to handle all logics"""
+    """Main application to handle all logics."""
 
     # component window (sub-app)
     welcome_window = param.ClassSelector(class_=WelcomeWindow)
@@ -61,6 +61,7 @@ class MainWindow(BaseWindow):
 
     @param.depends("welcome_window.is_valid")
     def go_to_app_button(self):
+        """Fire when is_valid events happen."""
         return pn.widgets.Button.from_param(
             self.param.start_imars3d,
             name="Go to iMars3D",
@@ -71,7 +72,7 @@ class MainWindow(BaseWindow):
 
     @param.depends("start_imars3d", watch=True)
     def start_imars3d_action(self):
-        """Callback for start_imars3d."""
+        """Fire when start_imars3d is changed."""
         self._panel = self.app_page()
 
     def welcome_page(self):

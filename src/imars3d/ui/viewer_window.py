@@ -214,6 +214,7 @@ class ViewerWindow(BaseWindow):
         self.console.level = self.log_lv
 
     def __panel__(self):
+        """Return the panel this is associated with."""
         return self._panel
 
 

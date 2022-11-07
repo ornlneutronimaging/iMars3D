@@ -24,11 +24,13 @@ class WorkflowEngineError(RuntimeError):
 
 
 class WorkflowEngine:
+    """Base class for running data reduction workflows."""
+
     TaskOutputTypes = (None, list, tuple)
 
     @staticmethod
     def _validate_outputs(task_outputs: TaskOutputTypes, function_outputs: Optional[Any] = None) -> (tuple, None):
-        r"""
+        """
         Verify the function outputs is a valid iterable and of same length as task["outputs"].
 
         Parameters
@@ -89,7 +91,7 @@ class WorkflowEngine:
         return namedtuple("TaskFuncionInstrospection", outputs.keys())(**outputs)
 
     def _resolve_inputs(self, task_inputs: dict, paramdict: dict) -> dict:
-        r"""Populate the required parameters missing from the task's `inputs` entry with the contents of the registry
+        r"""Populate the required parameters missing from the task's `inputs` entry with the contents of the registry.
 
         Parameters
         ----------
@@ -125,6 +127,8 @@ class WorkflowEngine:
 
 
 class WorkflowEngineAuto(WorkflowEngine):
+    """Used for running fully specified workflow."""
+
     config = validate.JSONValid()
     load_data_function = "imars3d.backend.io.data.load_data"
     save_data_function = "imars3d.backend.io.data.save_data"
@@ -172,10 +176,10 @@ class WorkflowEngineAuto(WorkflowEngine):
         # assess each function parameter. Is it missing?
         missing = set([])
         for pname, param in peek.paramdict.items():
-            if (
-                pname == "name" or pname == "tqdm_class"
-            ):  # not an actual input parameter, just an attribute of the function
-                continue
+            if pname == "name":  
+                continue  # not an actual input parameter, just an attribute of the function
+            if pname == "tqdm_class":
+                continue  # parameter for connecting progress bars to the gui
             if param.default is not None:  # the parameter has a default value
                 continue  # irrelevant if parameter value is missing
             if pname in task.get("inputs", {}):  # parameter explicitly set
@@ -222,8 +226,6 @@ class WorkflowEngineAuto(WorkflowEngine):
         self._dryrun()
         # initialize the registry of global parameters with the metadata
         self._registry = {k: v for k, v in self.config.items() if k not in ("name", "tasks")}
-        # This widget eats logs for some reason??
-        self._registry["tqdm_class"] = Tqdm()
         for task in self.config["tasks"]:
             peek = self._instrospect_task_function(task["function"])
             inputs = self._resolve_inputs(task.get("inputs", {}), peek.paramdict)

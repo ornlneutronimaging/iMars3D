@@ -55,6 +55,7 @@ class remove_ring_artifact(param.ParameterizedFunction):
     tqdm_class = param.ClassSelector(class_=object, doc="Progress bar to render with")
 
     def __call__(self, **params):
+        """See class level documentation for help."""
         logger.info("Executing Filter: Remove Ring Artifact")
         _ = self.instance(**params)
         params = param.ParamOverrides(self, params)
@@ -160,6 +161,7 @@ class remove_ring_artifact_Ketcham(param.ParameterizedFunction):
     )
 
     def __call__(self, **params):
+        """See class level documentation for help."""
         logger.info("Executing Filter: Remove Ring Artifact (Ketcham)")
         _ = self.instance(**params)
         params = param.ParamOverrides(self, params)

@@ -5,10 +5,21 @@ import pytest
 from pathlib import Path
 from imars3d.backend.workflow.validate import JSONValid, JSONValidationError, SCHEMA
 
-JSON_DATA_DIR = Path(__file__).parent.parent.parent.parent / "data" / "json"
-GOOD_NON_INTERACTIVE = JSON_DATA_DIR / "good_non_interactive.json"
-GOOD_INTERACTIVE = JSON_DATA_DIR / "good_interactive.json"
-ILL_FORMED_FILE = JSON_DATA_DIR / "ill_formed.json"
+
+# fixtures here re-use the JSON_DIR fixture defined in conftest.py
+@pytest.fixture(scope="module")
+def GOOD_NON_INTERACTIVE(JSON_DIR):
+    return JSON_DIR / "good_non_interactive.json"
+
+
+@pytest.fixture(scope="module")
+def GOOD_INTERACTIVE(JSON_DIR):
+    return JSON_DIR / "good_interactive.json"
+
+
+@pytest.fixture(scope="module")
+def ILL_FORMED_FILE(JSON_DIR):
+    return JSON_DIR / "ill_formed.json"
 
 
 class MockContainer:
@@ -37,16 +48,17 @@ def test_file_not_exist():
         MockContainer(Path("non-existant-file"))
 
 
-def test_file_ill_formed():
+def test_file_ill_formed(ILL_FORMED_FILE):
     print("Testing file", ILL_FORMED_FILE)
     with pytest.raises(JSONDecodeError):
         MockContainer(ILL_FORMED_FILE)
 
 
-@pytest.mark.parametrize("filename", [GOOD_NON_INTERACTIVE, GOOD_INTERACTIVE])
-def test_file_good(filename):
-    print("Testing file", filename)
-    MockContainer(filename)
+@pytest.mark.parametrize("filename", ["GOOD_NON_INTERACTIVE", "GOOD_INTERACTIVE"])
+def test_file_good(filename, request):
+    fileobj = request.getfixturevalue(filename)
+    print("Testing file", fileobj)
+    MockContainer(fileobj)
 
 
 # tests from string
@@ -57,20 +69,20 @@ def test_string_empty():
         MockContainer("")
 
 
-def test_string_ill_formed():
+def test_string_ill_formed(ILL_FORMED_FILE):
     doc = load_file(ILL_FORMED_FILE)
     with pytest.raises(JSONDecodeError):
         MockContainer(doc)
 
 
-def test_string_good():
+def test_string_good(GOOD_NON_INTERACTIVE):
     doc = load_file(GOOD_NON_INTERACTIVE)
     obj = MockContainer(doc)
     # verify that the instrument is as expected
     assert obj._json["instrument"] == "CG1D"
 
 
-def test_string_missing_tasks():
+def test_string_missing_tasks(GOOD_NON_INTERACTIVE):
     doc = load_file(GOOD_NON_INTERACTIVE)
     json_obj = json.loads(doc)
     del json_obj["tasks"]
@@ -81,7 +93,7 @@ def test_string_missing_tasks():
 @pytest.mark.parametrize(
     "facility,instrument", [("hfir", "CG1D"), ("HFIR", "cg1d"), ("HFIR", "SNAP"), ("HFIR", "junk"), ("SNS", "junk")]
 )
-def test_bad_instrument(facility, instrument):
+def test_bad_instrument(facility, instrument, GOOD_NON_INTERACTIVE):
     doc = load_file(GOOD_NON_INTERACTIVE)
     json_obj = json.loads(doc)
     json_obj["facility"] = facility
@@ -90,7 +102,7 @@ def test_bad_instrument(facility, instrument):
         MockContainer(json.dumps(json_obj))
 
 
-def test_string_empty_function():
+def test_string_empty_function(GOOD_NON_INTERACTIVE):
     doc = load_file(GOOD_NON_INTERACTIVE)
     json_obj = json.loads(doc)
     json_obj["tasks"][0]["function"] = ""
@@ -102,7 +114,7 @@ def test_string_empty_function():
     "bad_func_name",
     ["nonexistent.function", "toplevelfunction", "imars3d.backend.corrections.gamma_filter.GammaFilter"],
 )
-def test_string_bad_function(bad_func_name):
+def test_string_bad_function(bad_func_name, GOOD_NON_INTERACTIVE):
     doc = load_file(GOOD_NON_INTERACTIVE)
     json_obj = json.loads(doc)
     json_obj["tasks"][0]["function"] = bad_func_name
