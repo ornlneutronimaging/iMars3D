@@ -485,10 +485,10 @@ class save_data(param.ParameterizedFunction):
     data: Array
         array of data to save
     outputdir: str
-        where to save the output on disk 
+        where to save the output on disk
     filename: str
         Used to name file of output, defaults to output_{datetime}
-    
+
     Returns
     -------
         None

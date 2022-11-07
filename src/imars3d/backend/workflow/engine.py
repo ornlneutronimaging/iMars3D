@@ -176,7 +176,7 @@ class WorkflowEngineAuto(WorkflowEngine):
         # assess each function parameter. Is it missing?
         missing = set([])
         for pname, param in peek.paramdict.items():
-            if pname == "name":  
+            if pname == "name":
                 continue  # not an actual input parameter, just an attribute of the function
             if pname == "tqdm_class":
                 continue  # parameter for connecting progress bars to the gui
