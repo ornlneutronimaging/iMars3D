@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-"""
-This module provides functions that are used in the auto reduction scripts.
-"""
+"""Provides functions that are used in the auto reduction scripts."""
 import logging
 
 logger = logging.getLogger(__name__)
@@ -9,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 def auto_reduction_ready(data_file: str) -> bool:
     """
-    Checks if the data file is ready for auto reduction.
+    Check if the data file is ready for auto reduction.
 
     Parameters
     ----------
@@ -27,7 +25,7 @@ def auto_reduction_ready(data_file: str) -> bool:
 
 def load_template_config() -> dict:
     """
-    Loads the template configuration file.
+    Load the template configuration file.
 
     Returns
     -------
@@ -40,7 +38,7 @@ def load_template_config() -> dict:
 
 def extract_info_from_path(data_file: str) -> dict:
     """
-    Extracts information from the data file path.
+    Extract information from the data file path.
 
     Parameters
     ----------
