@@ -9,7 +9,9 @@ TqdmType = Union["panel.widgets.Tqdm", "imars3d.ui.widgets.Tqdm"]  # noqa: F821
 class Tqdm(_Tqdm):
     """Tqdm is a thin wrapper around `panel.widgets.Tqdm <https://panel.holoviz.org/reference/indicators/Tqdm.html>`_ which adds missing functionality needed for using with `tqdm.contrib.concurrent.process_map <https://tqdm.github.io/docs/contrib.concurrent/#process_map>`_.
 
-    Assuming that panel.widgets.Tqdm gets updated with the new functionality, this can be removed. v0.14.0 did not contain this functionality.
+    Assuming that panel.widgets.Tqdm gets updated with the new functionality, this can be removed.
+    v0.14.0 did not contain this functionality.
+    `This pull request <https://github.com/holoviz/panel/pull/4093>`_ moves the functionality upstream.
 
     The functionality added by this wrapper is managing a lock.
 
