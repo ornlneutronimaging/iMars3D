@@ -18,6 +18,11 @@ def GOOD_INTERACTIVE(JSON_DIR):
 
 
 @pytest.fixture(scope="module")
+def GOOD_INTERACTIVE_FULL(JSON_DIR):
+    return JSON_DIR / "good_non_interactive_full.json"
+
+
+@pytest.fixture(scope="module")
 def ILL_FORMED_FILE(JSON_DIR):
     return JSON_DIR / "ill_formed.json"
 
@@ -54,7 +59,7 @@ def test_file_ill_formed(ILL_FORMED_FILE):
         MockContainer(ILL_FORMED_FILE)
 
 
-@pytest.mark.parametrize("filename", ["GOOD_NON_INTERACTIVE", "GOOD_INTERACTIVE"])
+@pytest.mark.parametrize("filename", ["GOOD_NON_INTERACTIVE", "GOOD_INTERACTIVE_FULL", "GOOD_INTERACTIVE"])
 def test_file_good(filename, request):
     fileobj = request.getfixturevalue(filename)
     print("Testing file", fileobj)
