@@ -2,6 +2,12 @@
 from pathlib import Path
 import sys
 import logging
+from datetime import datetime
+from imars3d.backend.io.config import save_config
+from imars3d.backend import auto_reduction_ready
+from imars3d.backend import load_template_config
+from imars3d.backend import extract_info_from_path
+from imars3d.backend.workflow.engine import WorkflowEngineAuto
 
 
 # declare the conda environment for this to run in
@@ -48,9 +54,31 @@ def main(inputfile: str, outputdir: str) -> int:
     if input_checking > 0:
         return input_checking
 
-    # TODO everything else
+    # step 0: check if data is ready for reduction
+    if not auto_reduction_ready(inputfile):
+        logger.warning("Data incomplete, waiting for next try.")
+        return 1
 
-    return 0
+    # step 1: load the template configuration file to memory
+    config_dict = load_template_config()
+
+    # step 2: extract info from inputfile
+    update_dict = extract_info_from_path(inputfile)
+
+    # step 3: update the dict and save dict to disk
+    config_dict.update(update_dict)
+    # save config file to working directory
+    # NOTE:
+    #  i.e. ironman_20221108_154015.json
+    exp_name = config_dict["name"].replace(" ", "_")
+    now = datetime.now()
+    time_str = now.strftime("%Y%m%d_%H%M%S")
+    config_fn = outputdir / f"{exp_name}_{time_str}.json"
+    save_config(config_dict, config_fn)
+
+    # step 4: call the auto reduction with updated dict
+    workflow = WorkflowEngineAuto(config_dict)
+    return workflow.run()
 
 
 if __name__ == "__main__":
