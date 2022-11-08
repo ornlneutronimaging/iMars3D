@@ -11,5 +11,6 @@ Development Guide
    ui_developmentGuide
    workflow
    ui_test
+   integration_test
    release
    highlevel_design

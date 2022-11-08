@@ -1,2 +1,3 @@
-This folder contains integration test for iMars3D.
-The corresponding testing data is located in `tests/data`.
+This folder contains integration tests for iMars3D.
+Please consult the developer's documentation on how to use the data repository to write
+integration tests
