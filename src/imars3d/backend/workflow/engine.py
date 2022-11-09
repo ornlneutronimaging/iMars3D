@@ -24,6 +24,7 @@ class WorkflowEngineError(RuntimeError):
 
 
 class WorkflowEngineExitCodes(Enum):
+    r"""Exit codes to be used with workflow engine errors"""
     SUCCESS = 0
     ERROR_GENERAL = 1
 
