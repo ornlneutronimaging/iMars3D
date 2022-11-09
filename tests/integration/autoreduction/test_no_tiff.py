@@ -1,5 +1,6 @@
 # package imports
 from reduce_CG1D import main as main_CG1D
+from imars3d.backend.workflow.engine import WorkflowEngineExitCodes
 
 # third-party imports
 import pytest
@@ -10,7 +11,7 @@ def test_no_tiff(IRON_MAN_DIR, tmp_path):
     # Check for CG1D
     no_tiff = IRON_MAN_DIR / "20191042_ironman_small_0070_360_760_0624.tiff"
     exit_code = main_CG1D(str(no_tiff), str(tmp_path))
-    assert exit_code == 1
+    assert exit_code == WorkflowEngineExitCodes.ERROR_GENERAL.value
 
 
 if __name__ == "__main__":
