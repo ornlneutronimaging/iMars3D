@@ -5,6 +5,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def auto_reduction_ready(data_file: str) -> bool:
     """
     Check if the data file is ready for auto reduction.
@@ -33,10 +34,11 @@ def load_template_config(config_path) -> dict:
         The template configuration file.
     """
     logger.info("Loading template configuration file: %s", config_path)
-    
+
     with open(config_path, "r") as template_config:
         config = json.load(template_config)
         return config
+
 
 def extract_info_from_path(data_file: str) -> dict:
     """
