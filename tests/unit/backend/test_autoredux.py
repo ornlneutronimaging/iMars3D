@@ -12,9 +12,9 @@ def test_auto_reduction_ready():
 
 
 def test_load_template_config():
-    # NOTE: update the test when implement the function
-    with pytest.raises(NotImplementedError):
-        load_template_config()
+    # NOTE: update the test when template json is created
+    with pytest.raises(FileNotFoundError):
+        load_template_config("")
 
 
 def test_extract_info_from_path():
