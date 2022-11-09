@@ -10,6 +10,7 @@ import param as libparam
 # standard imports
 from collections import namedtuple
 from collections.abc import Iterable
+from enum import Enum
 import importlib
 import json
 import numpy as np
@@ -20,6 +21,11 @@ class WorkflowEngineError(RuntimeError):
     """Base class for workflow engine errors."""
 
     pass
+
+
+class WorkflowEngineExitCodes(Enum):
+    SUCCESS = 0
+    ERROR_GENERAL = 1
 
 
 class WorkflowEngine:

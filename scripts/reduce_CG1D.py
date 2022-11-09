@@ -7,7 +7,7 @@ from imars3d.backend.io.config import save_config
 from imars3d.backend import auto_reduction_ready
 from imars3d.backend import load_template_config
 from imars3d.backend import extract_info_from_path
-from imars3d.backend.workflow.engine import WorkflowEngineAuto
+from imars3d.backend.workflow.engine import WorkflowEngineAuto, WorkflowEngineError, WorkflowEngineExitCodes
 
 
 # declare the conda environment for this to run in
@@ -78,7 +78,11 @@ def main(inputfile: str, outputdir: str) -> int:
 
     # step 4: call the auto reduction with updated dict
     workflow = WorkflowEngineAuto(config_dict)
-    return workflow.run()
+    try:
+        workflow.run()
+        return WorkflowEngineExitCodes.SUCCESS.value
+    except WorkflowEngineError:
+        return WorkflowEngineExitCodes.ERROR_GENERAL.value
 
 
 if __name__ == "__main__":
