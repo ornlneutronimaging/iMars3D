@@ -25,11 +25,5 @@ def test_outputfir_not_writable():
 def test_input_dir_doesnt_exist():
     assert main_CG1D("this/dir/doesnt/exist", "/tmp/") != 0
 
-def test_extract_from_path():
-    data = extract_info_from_path(TIFF_DIR)
-    assert data["facility"] == "HFIR"
-    assert data["instrument"] == "CG1D"
-    assert data["ipts"] == "IPTS-25777"
-
 if __name__ == "__main__":
     pytest.main([__file__])
