@@ -44,11 +44,18 @@ def extract_info_from_path(data_file: str) -> dict:
     ----------
     data_file
         The data file to extract information from.
+        ex. /HFIR/CG1D/IPTS-25777/raw/ct_scans/iron_man/20191029_ironman_small_0070_000_000_0002.tiff
 
     Returns
     -------
     dict
         The extracted information.
     """
+    extracted_data = data_file.split("/")
+    data_dict = {}
+    # index from right to be agnostic of root
+    data_dict["facility"] = extracted_data[-6]          # "HFIR"
+    data_dict["instrument"] = extracted_data[-5]        # "CG1D"
+    data_dict["ipts"] =  extracted_data[-4]             # "IPTS-25777"
     logger.info("Extract information from data file path.")
-    raise NotImplementedError
+    return data_dict
