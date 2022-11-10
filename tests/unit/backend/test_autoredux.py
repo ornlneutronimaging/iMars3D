@@ -26,5 +26,13 @@ def test_extract_from_path():
     assert data["ipts"] == "IPTS-25777"
 
 
+def test_extract_from_path_alt_dir():
+    path = "/HFIR/CG1D/IPTS-25777/raw/ct_scans/iron_man"
+    data = extract_info_from_path(path)
+    assert data["facility"] == "HFIR"
+    assert data["instrument"] == "CG1D"
+    assert data["ipts"] == "IPTS-25777"
+
+
 if __name__ == "__main__":
     pytest.main([__file__])
