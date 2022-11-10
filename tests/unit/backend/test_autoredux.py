@@ -6,6 +6,7 @@ from imars3d.backend import extract_info_from_path
 
 TIFF_DIR = "tests/data/imars3d-data/HFIR/CG1D/IPTS-25777/raw/ct_scans/iron_man"
 
+
 def test_auto_reduction_ready():
     # NOTE: update the test when implement the function
     with pytest.raises(NotImplementedError):
@@ -16,6 +17,7 @@ def test_load_template_config():
     # NOTE: update the test when template json is created
     with pytest.raises(FileNotFoundError):
         _ = load_template_config("")
+
 
 def test_extract_from_path(self):
     data = extract_info_from_path(TIFF_DIR)

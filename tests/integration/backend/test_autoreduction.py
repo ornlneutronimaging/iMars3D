@@ -7,6 +7,7 @@ import os
 
 TIFF_DIR = "tests/data/imars3d-data/HFIR/CG1D/IPTS-25777/raw/ct_scans/iron_man"
 
+
 class TestCLIAutoreduction:
     outputdir = "/tmp/imars3d/"
 
@@ -19,7 +20,7 @@ class TestCLIAutoreduction:
             os.makedirs(outputdir)
         yield  # this is where the testing happens
         shutil.rmtree(path=self.outputdir, ignore_errors=True)
-    
+
+
 if __name__ == "__main__":
     pytest.main([__file__])
-

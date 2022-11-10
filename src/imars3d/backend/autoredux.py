@@ -72,8 +72,8 @@ def extract_info_from_path(data_file: str) -> dict:
     extracted_data = data_file.split("/")
     data_dict = {}
     # index from right to be agnostic of root
-    data_dict["facility"] = extracted_data[-6]          # "HFIR"
-    data_dict["instrument"] = extracted_data[-5]        # "CG1D"
-    data_dict["ipts"] =  extracted_data[-4]             # "IPTS-25777"
+    data_dict["facility"] = extracted_data[-6]  # "HFIR"
+    data_dict["instrument"] = extracted_data[-5]  # "CG1D"
+    data_dict["ipts"] = extracted_data[-4]  # "IPTS-25777"
     logger.info("Extract information from data file path.")
     return data_dict

@@ -7,6 +7,7 @@ from imars3d.backend import extract_info_from_path
 
 TIFF_DIR = "tests/data/imars3d-data/HFIR/CG1D/IPTS-25777/raw/ct_scans/iron_man"
 
+
 def test_bad(JSON_DIR):
     bad_json = JSON_DIR / "ill_formed.json"
     with pytest.raises(JSONDecodeError):
@@ -18,12 +19,14 @@ def test_good(JSON_DIR):
 
     main_backend([str(good_json)])
 
+
 def test_outputfir_not_writable():
     assert main_CG1D(TIFF_DIR, "this/dir/doesnt/exist") != 0
 
 
 def test_input_dir_doesnt_exist():
     assert main_CG1D("this/dir/doesnt/exist", "/tmp/") != 0
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
