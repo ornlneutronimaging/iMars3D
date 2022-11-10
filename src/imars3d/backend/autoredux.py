@@ -39,8 +39,9 @@ def load_template_config(config_path: Union[str, Path]) -> dict:
     -------
     dict
         The template configuration file.
+
     Raises
-    -------
+    ------
     FileNotFoundError
         If the given path cannot be resolved
     JSONDecodeError
