@@ -9,9 +9,9 @@
             "name": "task1",
             "function": "imars3d.backend.io.data.load_data",
             "inputs": {
-                "ct_dir": "tests/data/imars3d-data/HFIR/CG1D/IPTS-25777/raw/ct_scans/iron_man",
-                "ob_dir": "tests/data/imars3d-data/HFIR/CG1D/IPTS-25777/raw/ob/Oct29_2019/",
-                "dc_dir": "tests/data/imars3d-data/HFIR/CG1D/IPTS-25777/raw/df/Oct29_2019/",
+                "ct_dir": "/HFIR/CG1D/IPTS-25777/raw/ct_scans/iron_man",
+                "ob_dir": "/HFIR/CG1D/IPTS-25777/raw/ob/Oct29_2019/",
+                "dc_dir": "/HFIR/CG1D/IPTS-25777/raw/df/Oct29_2019/",
                 "ct_fnmatch": "*.tiff",
                 "ob_fnmatch": "*.tiff",
                 "dc_fnmatch": "*.tiff"
