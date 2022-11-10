@@ -19,7 +19,7 @@ def test_load_template_config():
         _ = load_template_config("")
 
 
-def test_extract_from_path(self):
+def test_extract_from_path():
     data = extract_info_from_path(TIFF_DIR)
     assert data["facility"] == "HFIR"
     assert data["instrument"] == "CG1D"
