@@ -1,7 +1,7 @@
-imars3d.backend.io package
-==========================
+imars3d.backend.dataio package
+==============================
 
-.. automodule:: imars3d.backend.io
+.. automodule:: imars3d.backend.dataio
    :members:
    :undoc-members:
    :show-inheritance:
@@ -9,26 +9,26 @@ imars3d.backend.io package
 Submodules
 ----------
 
-imars3d.backend.io.config module
---------------------------------
+imars3d.backend.dataio.config module
+------------------------------------
 
-.. automodule:: imars3d.backend.io.config
+.. automodule:: imars3d.backend.dataio.config
    :members:
    :undoc-members:
    :show-inheritance:
 
-imars3d.backend.io.data module
-------------------------------
+imars3d.backend.dataio.data module
+----------------------------------
 
-.. automodule:: imars3d.backend.io.data
+.. automodule:: imars3d.backend.dataio.data
    :members:
    :undoc-members:
    :show-inheritance:
 
-imars3d.backend.io.phantom module
----------------------------------
+imars3d.backend.dataio.phantom module
+-------------------------------------
 
-.. automodule:: imars3d.backend.io.phantom
+.. automodule:: imars3d.backend.dataio.phantom
    :members:
    :undoc-members:
    :show-inheritance:

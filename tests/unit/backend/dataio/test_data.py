@@ -45,9 +45,9 @@ def data_fixture(tmpdir_factory):
     return generic_tiff, good_tiff, metadata_tiff, generic_fits
 
 
-@mock.patch("imars3d.backend.io.data._extract_rotation_angles", return_value=4)
-@mock.patch("imars3d.backend.io.data._get_filelist_by_dir", return_value=("1", "2", "3"))
-@mock.patch("imars3d.backend.io.data._load_by_file_list", return_value=(1, 2, 3))
+@mock.patch("imars3d.backend.dataio.data._extract_rotation_angles", return_value=4)
+@mock.patch("imars3d.backend.dataio.data._get_filelist_by_dir", return_value=("1", "2", "3"))
+@mock.patch("imars3d.backend.dataio.data._load_by_file_list", return_value=(1, 2, 3))
 def test_load_data(_load_by_file_list, _get_filelist_by_dir, _extract_rotation_angles):
     # error_0: incorrect input argument types
     with pytest.raises(ValueError):
@@ -101,7 +101,7 @@ def test_load_images(data_fixture):
     assert rst.shape == (2, 3, 3)
 
 
-@mock.patch("imars3d.backend.io.data._load_images", return_value="a")
+@mock.patch("imars3d.backend.dataio.data._load_images", return_value="a")
 def test_load_by_file_list(_load_images):
     # error_0: ct empty
     with pytest.raises(ValueError):

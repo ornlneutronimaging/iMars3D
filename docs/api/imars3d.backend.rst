@@ -17,7 +17,7 @@ Subpackages
 
    imars3d.backend.corrections
    imars3d.backend.diagnostics
-   imars3d.backend.io
+   imars3d.backend.dataio
    imars3d.backend.morph
    imars3d.backend.preparation
    imars3d.backend.workflow

@@ -8,7 +8,7 @@
     "tasks": [
         {
             "name": "load",
-            "function": "imars3d.backend.io.data.load_data",
+            "function": "imars3d.backend.dataio.data.load_data",
             "inputs": {
                 "filenames": []
             },
@@ -25,7 +25,7 @@
         },
         {
             "name": "bad_save",
-            "function": "imars3d.backend.io.data.bad_save_data",
+            "function": "imars3d.backend.dataio.data.bad_save_data",
             "inputs": {
                 "ct_series": "ct",
                 "path": "workingdir"
@@ -50,7 +50,7 @@
         },
         {
             "name": "save",
-            "function": "imars3d.backend.io.data.save_data",
+            "function": "imars3d.backend.dataio.data.save_data",
             "inputs": {
                 "ct_series": "ct",
                 "path": "ouputdir"
