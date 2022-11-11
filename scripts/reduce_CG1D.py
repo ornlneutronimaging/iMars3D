@@ -1,18 +1,23 @@
 #!/usr/bin/env python
-from pathlib import Path
-import sys
-import logging
-from datetime import datetime
-from imars3d.backend.io.config import save_config
+
+# package imports
+from imars3d.backend.dataio.config import save_config
 from imars3d.backend import auto_reduction_ready
 from imars3d.backend import load_template_config
 from imars3d.backend import extract_info_from_path
 from imars3d.backend.workflow.engine import WorkflowEngineAuto, WorkflowEngineError, WorkflowEngineExitCodes
 
+# standard imports
+from datetime import datetime
+import logging
+from pathlib import Path
+from typing import Union
+import sys
+
 
 # declare the conda environment for this to run in
 CONDA_ENV = "imars3d-dev"
-
+ERROR_GENERAL = 1  # if more errors, they could be turned into enum.Enum
 logger = logging.getLogger("reduce_CG1D")
 
 
@@ -28,7 +33,12 @@ def _validate_inputs(inputfile: Path, outputdir: Path) -> int:
     return input_checking
 
 
-def main(inputfile: str, outputdir: str) -> int:
+def _find_template_config() -> Path:
+    raise FileNotFoundError
+    return Path("/")
+
+
+def main(inputfile: Union[str, Path], outputdir: Union[str, Path]) -> int:
     """
     Parameters:
     -----------
@@ -45,6 +55,10 @@ def main(inputfile: str, outputdir: str) -> int:
 
     # convert the parameters to make the rest easier
     inputfile = Path(inputfile)
+    try:
+        assert inputfile.exists()
+    except AssertionError:
+        raise FileNotFoundError(f"Input file {str(inputfile)} not found")
     outputdir = Path(outputdir)
     logging.info("INPUT:", inputfile)  # TODO remove
     logging.info("OUTPUT:", outputdir)  # TODO remove
@@ -60,7 +74,12 @@ def main(inputfile: str, outputdir: str) -> int:
         return 1
 
     # step 1: load the template configuration file to memory
-    config_dict = load_template_config()
+    try:
+        config_path = _find_template_config()
+    except FileNotFoundError as e:
+        logger.error(str(e.value))
+        return ERROR_GENERAL
+    config_dict = load_template_config(config_path)
 
     # step 2: extract info from inputfile
     update_dict = extract_info_from_path(inputfile)

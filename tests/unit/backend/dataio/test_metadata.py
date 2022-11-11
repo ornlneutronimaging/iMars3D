@@ -5,8 +5,8 @@ Unit tests for backend metadata auxiliary class.
 import pytest
 import numpy as np
 import tifffile
-from imars3d.backend.io.metadata import MetaData
-from imars3d.backend.io.metadata import _extract_metadata_from_tiff
+from imars3d.backend.dataio.metadata import MetaData
+from imars3d.backend.dataio.metadata import _extract_metadata_from_tiff
 
 
 @pytest.fixture(scope="module")

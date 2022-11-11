@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """Provides functions that are used in the auto reduction scripts."""
+
+# standard imports
 import json
 import logging
-from typing import Union
+import re
 from pathlib import Path
+from typing import Union
 
 logger = logging.getLogger(__name__)
 
@@ -12,22 +15,38 @@ instrument_position = -5
 experiment_position = -4
 
 
-def auto_reduction_ready(data_file: str) -> bool:
+def auto_reduction_ready(data_file: Union[str, Path]) -> bool:
     """
     Check if the data file is ready for auto reduction.
+
+    Expected directory tree for data_file is /SNS/CG1D/IPTS-XXXXX/raw/_IMAGING_TYPE_/
 
     Parameters
     ----------
     data_file
-        The data file to check.
+        The data file to check. Assumes the file exists
 
     Returns
     -------
     bool
         True if the data file is ready for auto reduction, False otherwise.
     """
-    logger.info("Check if data is ready for auto reduction.")
-    raise NotImplementedError
+    logger.info("Checking if scan has completed...")
+    non_radiograph = {"dark-field": ["df"], "open-beam": ["ob"]}
+    # /SNS/CG1D/IPTS-XXXXX/raw/_IMAGING_TYPE_/
+    match = re.search(r"/raw/([-\w]+)/", str(data_file))
+    if match:
+        image_type = match.groups()[0]
+        if image_type in non_radiograph["dark-field"] + non_radiograph["open-beam"]:
+            logger.info("Scan is incomplete.")
+            return False
+    else:
+        return False
+
+    # TODO: check the scan-compete signal from either the TIFF file or the Nexus file or some other file or PV
+    signal_scan_completed = True
+    logger.info(f"Scan is {'' if signal_scan_completed else 'not '}complete.")
+    return signal_scan_completed
 
 
 def load_template_config(config_path: Union[str, Path]) -> dict:

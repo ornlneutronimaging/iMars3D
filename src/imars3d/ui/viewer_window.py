@@ -23,7 +23,7 @@ from pathlib import Path
 from imars3d.ui.base_window import BaseWindow
 from imars3d.ui.widgets.viewer2d import Viewer2D
 from imars3d.ui.widgets.hyperstack_view import HyperstackView
-from imars3d.backend.io.data import _load_images
+from imars3d.backend.dataio.data import _load_images
 
 logger = logging.getLogger(__name__)
 

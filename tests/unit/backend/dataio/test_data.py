@@ -10,12 +10,12 @@ import numpy as np
 from functools import partial
 from unittest import mock
 from pathlib import Path
-from imars3d.backend.io.data import load_data
-from imars3d.backend.io.data import _forgiving_reader
-from imars3d.backend.io.data import _load_images
-from imars3d.backend.io.data import _load_by_file_list
-from imars3d.backend.io.data import _get_filelist_by_dir
-from imars3d.backend.io.data import _extract_rotation_angles
+from imars3d.backend.dataio.data import load_data
+from imars3d.backend.dataio.data import _forgiving_reader
+from imars3d.backend.dataio.data import _load_images
+from imars3d.backend.dataio.data import _load_by_file_list
+from imars3d.backend.dataio.data import _get_filelist_by_dir
+from imars3d.backend.dataio.data import _extract_rotation_angles
 
 
 @pytest.fixture(scope="module")

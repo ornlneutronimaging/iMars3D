@@ -16,7 +16,7 @@ To test this widget in isolation within Jupyter, do the following:
     crop_widget.config_dict["tasks"] = [
         {
             "name": "load",
-            "function": "imars3d.backend.io.data.load_data",
+            "function": "imars3d.backend.dataio.data.load_data",
             "inputs": {
                 "ct_dir": "/HFIR/CG1D/IPTS-25777/raw/ct_scans/iron_man",
                 "ob_dir": "/HFIR/CG1D/IPTS-25777/raw/ob/Oct29_2019/",
@@ -125,7 +125,7 @@ class CropWidget(BaseWindow, Viewer2D):
         tasks = self.config_dict["tasks"]
         load_task = None
         for task in tasks:
-            if task["function"] == "imars3d.backend.io.data.load_data":
+            if task["function"] == "imars3d.backend.dataio.data.load_data":
                 load_task = task
                 break
         # process load task

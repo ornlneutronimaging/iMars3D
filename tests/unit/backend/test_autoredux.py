@@ -7,10 +7,17 @@ from imars3d.backend import extract_info_from_path
 TIFF_DIR = "tests/data/imars3d-data/HFIR/CG1D/IPTS-25777/raw/ct_scans/iron_man"
 
 
-def test_auto_reduction_ready():
-    # NOTE: update the test when implement the function
-    with pytest.raises(NotImplementedError):
-        auto_reduction_ready(data_file="test")
+@pytest.mark.parametrize(
+    "path_to_file, value",
+    [
+        ("/HFIR/CG1D/IPTS-25777/raw/ct_scans/iron_man/some.tiff", True),
+        ("/HFIR/CG1D/IPTS-25777/raw/df/iron_man/some.tiff", False),
+        ("/HFIR/CG1D/IPTS-25777/raw/ob/iron_man/some.tiff", False),
+        ("/HFIR/CG1D/IPTS-25777/ct_scans/iron_man/some.tiff", False),
+    ],
+)
+def test_auto_reduction_ready(path_to_file, value):
+    assert auto_reduction_ready(path_to_file) is value
 
 
 def test_load_template_config():

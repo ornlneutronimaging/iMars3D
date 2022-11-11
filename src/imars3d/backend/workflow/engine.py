@@ -137,8 +137,8 @@ class WorkflowEngineAuto(WorkflowEngine):
     """Used for running fully specified workflow."""
 
     config = validate.JSONValid()
-    load_data_function = "imars3d.backend.io.data.load_data"
-    save_data_function = "imars3d.backend.io.data.save_data"
+    load_data_function = "imars3d.backend.dataio.data.load_data"
+    save_data_function = "imars3d.backend.dataio.data.save_data"
 
     def __init__(self, config: validate.JsonInputTypes) -> None:
         r"""Initialize the workflow engine.
