@@ -6,7 +6,7 @@
     "ouputdir": "/path/to/dir",
     "tasks": [
         {
-            "name": "load",
+            "name": "load"
             "function": "imars3d.backend.dataio.data.load_data",
             "inputs": {
                 "filenames": []

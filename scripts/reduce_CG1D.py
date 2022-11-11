@@ -58,7 +58,8 @@ def main(inputfile: Union[str, Path], outputdir: Union[str, Path]) -> int:
     try:
         assert inputfile.exists()
     except AssertionError:
-        raise FileNotFoundError(f"Input file {str(inputfile)} not found")
+        logger.error(f"Input file {str(inputfile)} not found")
+        return ERROR_GENERAL
     outputdir = Path(outputdir)
     logging.info("INPUT:", inputfile)  # TODO remove
     logging.info("OUTPUT:", outputdir)  # TODO remove
