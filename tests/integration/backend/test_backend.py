@@ -45,21 +45,15 @@ def crop_roi(slice_input):
 class TestWorkflowEngineAuto:
     outputdir = "/tmp/imars3d/"
 
-    @pytest.fixture(autouse=True)
-    def buildup_teardown(self, tmpdir):
-        """Fixture to execute asserts before and after a test is run"""
-        # Setup: fill with any logic you want
-        shutil.rmtree(path=self.outputdir, ignore_errors=True)
-        yield  # this is where the testing happens
-        shutil.rmtree(path=self.outputdir, ignore_errors=True)
-
     @pytest.mark.datarepo
-    def test_config(self, config):
+    def test_config(self, config, cleanfile):
+        cleanfile(self.outputdir)
         workflow = WorkflowEngineAuto(config)
         assert workflow.config == config
 
     @pytest.mark.datarepo
-    def test_run(self, config, THIS_DATA_DIR):
+    def test_run(self, config, THIS_DATA_DIR, cleanfile):
+        cleanfile(self.outputdir)
         workflow = WorkflowEngineAuto(config)
         expected_slice_300 = np.load(str(THIS_DATA_DIR / "expected_slice_300.npy"))
         workflow.run()
