@@ -14,7 +14,18 @@ To setup a local development environment, the developers should follow the steps
 * Install ``anaconda`` (``miniconda`` is recommended)
 * Clone the repository and make a feature branch based off ``next``.
 * Create a new virtual environment with ``conda env create`` which uses ``environment.yml``
+
+.. code-block:: sh
+
+   conda env create --file environment.yml
+
 * Activate the virtual environment with ``conda activate imars3d``
+* Activate the pre-commit hooks
+
+.. code-block:: sh
+
+   pre-commit install
+
 * Configure `playwright <https://playwright.dev/python/docs/intro>`_ for running gui tests ``playwright install``
 
 The ``environment.yml`` contains all of the dependencies for both the developer and the build servers.
