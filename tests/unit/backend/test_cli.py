@@ -20,7 +20,8 @@ def test_good(JSON_DIR):
     main_backend([str(good_json)])
 
 
-def test_outputfir_not_writable():
+@pytest.mark.datarepo
+def test_outputdir_not_writable():
     assert main_CG1D(TIFF_DIR, "this/dir/doesnt/exist") != 0
 
 

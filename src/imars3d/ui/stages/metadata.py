@@ -3,7 +3,7 @@
 import param
 import panel as pn
 from pathlib import Path
-from imars3d.backend.io.config import save_config
+from imars3d.backend.dataio.config import save_config
 
 
 class MetaData(param.Parameterized):

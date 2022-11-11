@@ -10,12 +10,12 @@ import numpy as np
 from functools import partial
 from unittest import mock
 from pathlib import Path
-from imars3d.backend.io.data import load_data
-from imars3d.backend.io.data import _forgiving_reader
-from imars3d.backend.io.data import _load_images
-from imars3d.backend.io.data import _load_by_file_list
-from imars3d.backend.io.data import _get_filelist_by_dir
-from imars3d.backend.io.data import _extract_rotation_angles
+from imars3d.backend.dataio.data import load_data
+from imars3d.backend.dataio.data import _forgiving_reader
+from imars3d.backend.dataio.data import _load_images
+from imars3d.backend.dataio.data import _load_by_file_list
+from imars3d.backend.dataio.data import _get_filelist_by_dir
+from imars3d.backend.dataio.data import _extract_rotation_angles
 
 
 @pytest.fixture(scope="module")
@@ -45,9 +45,9 @@ def data_fixture(tmpdir_factory):
     return generic_tiff, good_tiff, metadata_tiff, generic_fits
 
 
-@mock.patch("imars3d.backend.io.data._extract_rotation_angles", return_value=4)
-@mock.patch("imars3d.backend.io.data._get_filelist_by_dir", return_value=("1", "2", "3"))
-@mock.patch("imars3d.backend.io.data._load_by_file_list", return_value=(1, 2, 3))
+@mock.patch("imars3d.backend.dataio.data._extract_rotation_angles", return_value=4)
+@mock.patch("imars3d.backend.dataio.data._get_filelist_by_dir", return_value=("1", "2", "3"))
+@mock.patch("imars3d.backend.dataio.data._load_by_file_list", return_value=(1, 2, 3))
 def test_load_data(_load_by_file_list, _get_filelist_by_dir, _extract_rotation_angles):
     # error_0: incorrect input argument types
     with pytest.raises(ValueError):
@@ -101,7 +101,7 @@ def test_load_images(data_fixture):
     assert rst.shape == (2, 3, 3)
 
 
-@mock.patch("imars3d.backend.io.data._load_images", return_value="a")
+@mock.patch("imars3d.backend.dataio.data._load_images", return_value="a")
 def test_load_by_file_list(_load_images):
     # error_0: ct empty
     with pytest.raises(ValueError):

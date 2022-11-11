@@ -3,7 +3,7 @@ from dataclasses import field
 import pytest
 import os
 import json
-from imars3d.backend.io.config import save_config
+from imars3d.backend.dataio.config import save_config
 
 
 def test_save_config():

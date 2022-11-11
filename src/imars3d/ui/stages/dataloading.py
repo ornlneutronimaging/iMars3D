@@ -3,7 +3,7 @@
 from pathlib import Path
 import param
 import panel as pn
-from imars3d.backend.io.config import save_config
+from imars3d.backend.dataio.config import save_config
 
 
 class DataLoader(param.Parameterized):
@@ -51,7 +51,7 @@ class DataLoader(param.Parameterized):
         # default values for max_workers (by not setting one here).
         load_step = {
             "name": "load",
-            "function": "imars3d.backend.io.data.load_data",
+            "function": "imars3d.backend.dataio.data.load_data",
             "inputs": {
                 "ct_files": self.radiograph_folder.value,
                 "ob_files": self.openbeam.value,

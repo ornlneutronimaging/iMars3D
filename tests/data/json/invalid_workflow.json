@@ -26,7 +26,7 @@
         },
         {
             "name": "load",
-            "function": "imars3d.backend.io.data.load_data",
+            "function": "imars3d.backend.dataio.data.load_data",
             "inputs": {
                 "filenames": []
             },
