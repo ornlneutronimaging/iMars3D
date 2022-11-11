@@ -4,6 +4,8 @@ from imars3d.backend import auto_reduction_ready
 from imars3d.backend import load_template_config
 from imars3d.backend import extract_info_from_path
 
+TIFF_DIR = "tests/data/imars3d-data/HFIR/CG1D/IPTS-25777/raw/ct_scans/iron_man"
+
 
 def test_auto_reduction_ready():
     # NOTE: update the test when implement the function
@@ -17,10 +19,19 @@ def test_load_template_config():
         _ = load_template_config("")
 
 
-def test_extract_info_from_path():
-    # NOTE: update the test when implement the function
-    with pytest.raises(NotImplementedError):
-        extract_info_from_path(data_file="test")
+def test_extract_from_path():
+    data = extract_info_from_path(TIFF_DIR)
+    assert data["facility"] == "HFIR"
+    assert data["instrument"] == "CG1D"
+    assert data["ipts"] == "IPTS-25777"
+
+
+def test_extract_from_path_alt_dir():
+    path = "/HFIR/CG1D/IPTS-25777/raw/ct_scans/iron_man"
+    data = extract_info_from_path(path)
+    assert data["facility"] == "HFIR"
+    assert data["instrument"] == "CG1D"
+    assert data["ipts"] == "IPTS-25777"
 
 
 if __name__ == "__main__":

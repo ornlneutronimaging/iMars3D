@@ -3,6 +3,9 @@ from reduce_CG1D import main as main_CG1D
 from pathlib import Path
 import pytest
 from json.decoder import JSONDecodeError
+from imars3d.backend import extract_info_from_path
+
+TIFF_DIR = "tests/data/imars3d-data/HFIR/CG1D/IPTS-25777/raw/ct_scans/iron_man"
 
 
 def test_bad(JSON_DIR):
@@ -17,8 +20,12 @@ def test_good(JSON_DIR):
     main_backend([str(good_json)])
 
 
-def test_CG1D_autoreduction():
-    assert main_CG1D("bad", "also bad") != 0
+def test_outputfir_not_writable():
+    assert main_CG1D(TIFF_DIR, "this/dir/doesnt/exist") != 0
+
+
+def test_input_dir_doesnt_exist():
+    assert main_CG1D("this/dir/doesnt/exist", "/tmp/") != 0
 
 
 if __name__ == "__main__":
