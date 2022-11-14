@@ -5,17 +5,21 @@ Unit tests for backend data loading.
 
 import pytest
 import astropy.io.fits as fits
+from datetime import datetime
 import tifffile
 import numpy as np
 from functools import partial
-from unittest import mock
 from pathlib import Path
+from tempfile import TemporaryDirectory
+from unittest import mock
 from imars3d.backend.dataio.data import load_data
+from imars3d.backend.dataio.data import save_data
 from imars3d.backend.dataio.data import _forgiving_reader
 from imars3d.backend.dataio.data import _load_images
 from imars3d.backend.dataio.data import _load_by_file_list
 from imars3d.backend.dataio.data import _get_filelist_by_dir
 from imars3d.backend.dataio.data import _extract_rotation_angles
+from imars3d.backend.dataio.data import _to_time_str
 
 
 @pytest.fixture(scope="module")
@@ -237,6 +241,51 @@ def test_get_filelist_by_dir(tiff_with_metadata):
         ob_fnmatch=None,
     )
     assert rst == ([], [], [])
+
+
+@pytest.mark.parametrize(
+    "timestamp",
+    [
+        datetime(2022, 1, 1, 1, 1),
+        datetime(2022, 12, 12, 12, 12),
+    ],
+)
+def test_time_str(timestamp):
+    value = _to_time_str(datetime.now())
+    assert isinstance(value, str)
+    assert len(value) == 12
+    assert int(value), "Cannot be converted to an integer"
+
+
+def test_save_data_fail():
+    with pytest.raises(ValueError):
+        save_data()
+
+
+@pytest.mark.parametrize("filename", ["junk", "*"])  # gets default name
+def test_save_data(filename):
+    # this context will remove directory on exit
+    with TemporaryDirectory() as tmpdirname:
+        assert tmpdirname
+        data = np.zeros((3, 3, 3)) + 1.0
+        tmpdir = Path(tmpdirname)
+
+        # run the code
+        save_data(data=data, outputdir=tmpdir, filename=filename)
+
+        filehandles = [tmpdir / item for item in tmpdir.iterdir()]
+        assert len(filehandles) == 3
+        for handle in filehandles:
+            print(handle)
+            assert handle.is_file()
+            assert handle.suffix == ".tiff"
+            # the names are zero-padded
+            assert "_0000" in handle.name
+            # verify the file starts with the name
+            if filename == "*":
+                assert handle.name.startswith("output_20")  # special name and first 2 of the year
+            else:
+                assert handle.name.startswith(filename)
 
 
 if __name__ == "__main__":

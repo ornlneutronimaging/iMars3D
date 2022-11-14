@@ -475,6 +475,20 @@ def _extract_rotation_angles(
     return rotation_angles
 
 
+def _to_time_str(value: datetime) -> str:
+    """
+    Parameters
+    ----------
+    value:
+        datetime object to format correctly
+
+    Returns
+    -------
+        The datetime as YYYYMMDDhhmm
+    """
+    return value.strftime("%Y%m%d%H%M")
+
+
 class save_data(param.ParameterizedFunction):
     """
     Save data with given input.
@@ -506,10 +520,13 @@ class save_data(param.ParameterizedFunction):
         # sanitize arguments
         params = param.ParamOverrides(self, params)
 
+        if params.data is None:
+            raise ValueError("Did not supply data")
+
         if params.filename == "*":
-            params.filename = "output_" + str(datetime.now())
+            params.filename = "output_" + _to_time_str(datetime.now())
 
-        self._save_data(params.data, params.outputdir + params.filename)
+        self._save_data(params.data, Path(params.outputdir) / params.filename)
 
-    def _save_data(self, data, filename):
-        dxchange.write_tiff_stack(data, fname=filename)
+    def _save_data(self, data, filename: Path) -> None:
+        dxchange.write_tiff_stack(data, fname=str(filename))
