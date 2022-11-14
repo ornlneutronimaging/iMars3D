@@ -3,11 +3,9 @@
 """iMars3D's ring artifact correction module."""
 import logging
 import param
-import multiprocessing
 from imars3d.backend.util.functions import clamp_max_workers
 import scipy
 import numpy as np
-import tomopy.util.mproc as mproc
 from multiprocessing.managers import SharedMemoryManager
 from tqdm.contrib.concurrent import process_map
 from functools import partial

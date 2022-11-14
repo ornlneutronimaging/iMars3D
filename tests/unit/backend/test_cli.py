@@ -1,9 +1,7 @@
 from imars3d.backend.__main__ import main as main_backend
 from reduce_CG1D import main as main_CG1D
-from pathlib import Path
 import pytest
 from json.decoder import JSONDecodeError
-from imars3d.backend import extract_info_from_path
 
 TIFF_DIR = "tests/data/imars3d-data/HFIR/CG1D/IPTS-25777/raw/ct_scans/iron_man"
 

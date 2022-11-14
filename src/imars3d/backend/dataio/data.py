@@ -4,7 +4,6 @@ import re
 from datetime import datetime
 import logging
 import param
-import multiprocessing
 from imars3d.backend.util.functions import clamp_max_workers
 import numpy as np
 import tifffile

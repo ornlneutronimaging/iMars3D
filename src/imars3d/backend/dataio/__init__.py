@@ -1,2 +1,2 @@
 """data handling module for iMars3D."""
-from . import data
+from . import data  # noqa: F401

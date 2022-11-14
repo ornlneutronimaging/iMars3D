@@ -1,4 +1,3 @@
-import pytest
 from imars3d.backend.util.functions import clamp_max_workers
 
 
