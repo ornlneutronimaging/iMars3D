@@ -34,8 +34,16 @@ def _validate_inputs(inputfile: Path, outputdir: Path) -> int:
 
 
 def _find_template_config() -> Path:
-    raise FileNotFoundError
-    return Path("/")
+    r"""The template configuration file:
+    1. is located in the same directory as this script.
+    2. its name is 'reduce_CG1D_config_template.json'
+    """
+    template_name = "reduce_CG1D_config_template.json"
+    autored_dir = Path(__file__).parent
+    path_to_file = autored_dir / template_name
+    if not path_to_file.exists():
+        raise FileNotFoundError(f"Template {template_name} not found in directory {autored_dir}")
+    return path_to_file
 
 
 def main(inputfile: Union[str, Path], outputdir: Union[str, Path]) -> int:
@@ -78,7 +86,7 @@ def main(inputfile: Union[str, Path], outputdir: Union[str, Path]) -> int:
     try:
         config_path = _find_template_config()
     except FileNotFoundError as e:
-        logger.error(str(e.value))
+        logger.error(str(e))
         return ERROR_GENERAL
     config_dict = load_template_config(config_path)
 
