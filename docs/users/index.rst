@@ -2,7 +2,7 @@
 User Guide
 ===========
 
-There are 3 basic entrypoints for imars3d
+There are 3 basic entry-points for imars3d
 
 Command line interface
 ----------------------
@@ -43,7 +43,7 @@ In the first cell, execute the following command to load the necessary extension
    )
    hv.extension("bokeh")  # use default plotting backend bokeh
 
-Wait for the kernel to return to idel (the extention loading time varies depending on the system).
+Wait for the kernel to return to idle (the extension loading time varies depending on the system).
 Then execute the following command to create the main window
 
 .. code-block:: python
@@ -52,9 +52,9 @@ Then execute the following command to create the main window
 
 There are four ways to render the main window:
 
-- Direct redner with ``main_window``.
+- Direct render with ``main_window``.
 - Wrap app in a ``panel`` layout, i.e. ``pn.panel(main_window)``.
 - Set the app to be servable, i.e. ``main_window.servable()``.
 - Start a bokeh server and render the app in a separate tab, i.e. ``main_window.show()``.
 
-For the last method, make sure you are allowed to use additinoal ports on the system to avoid access error.
+For the last method, make sure you are allowed to use additional ports on the system to avoid access error.
