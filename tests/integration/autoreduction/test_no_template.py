@@ -1,8 +1,6 @@
 # package imports
-import logging
-
-from reduce_CG1D import ERROR_GENERAL, logger
 from reduce_CG1D import main as main_CG1D
+from reduce_CG1D import ERROR_GENERAL
 
 # third-party imports
 import pytest
