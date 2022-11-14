@@ -7,36 +7,6 @@ from shutil import rmtree
 
 
 @pytest.fixture(scope="session")
-def string_handler():
-    r"""Direct the logs to a string stream
-    Parameters
-    ----------
-    logger : logging.Logger
-        the logger to which the string streams attaches itself
-    level : int
-        logging level, default is logging.DEBUG
-    """
-
-    class StringStreamHandler(StringIO):
-        def __init__(self, logger: logging.Logger, level: int = logging.DEBUG):
-            super().__init__()
-            self.handler = logging.StreamHandler(stream=self)
-            self.handler.setLevel(level)
-
-            logger.addHandler(self.handler)
-
-        def __str__(self) -> str:
-            return self.getvalue()
-
-        def clear(self):
-            r"""Delete the logged contents"""
-            self.truncate(0)
-            self.seek(0)
-
-    return StringStreamHandler
-
-
-@pytest.fixture(scope="session")
 def JSON_DIR():
     return Path(__file__).parent / "data" / "json"
 
