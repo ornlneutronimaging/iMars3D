@@ -18,7 +18,6 @@ import logging
 import panel as pn
 import param
 import json
-import sys
 from imars3d.ui.base_window import BaseWindow
 from imars3d.backend.workflow.engine import WorkflowEngineAuto
 

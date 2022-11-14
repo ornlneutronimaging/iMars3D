@@ -12,9 +12,7 @@ import pytest
 from copy import deepcopy
 import json
 import numpy as np
-from pathlib import Path
 import dxchange
-import shutil
 
 
 @pytest.fixture(scope="module")

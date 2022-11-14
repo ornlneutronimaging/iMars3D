@@ -5,7 +5,7 @@ from collections.abc import Iterable
 import json
 import jsonschema
 from pathlib import Path
-from typing import Dict, Tuple, Union
+from typing import Dict, Union
 from ._util import function_exists
 
 FilePath = Union[Path, str]

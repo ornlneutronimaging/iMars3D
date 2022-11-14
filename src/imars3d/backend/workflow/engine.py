@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Workflow engine for imars3d."""
 # package imports
-from ._util import get_function_ref
 from imars3d.backend.workflow import validate
 
 # third-party imports
@@ -9,12 +8,9 @@ import param as libparam
 
 # standard imports
 from collections import namedtuple
-from collections.abc import Iterable
 from enum import Enum
 import importlib
-import json
-import numpy as np
-from typing import Any, List, Optional, Set, Union
+from typing import Any, Optional
 
 
 class WorkflowEngineError(RuntimeError):

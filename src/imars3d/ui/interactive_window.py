@@ -16,7 +16,6 @@ interactive_window  # or pn.panel(interactive_window) or interactive_window.show
 """
 import logging
 import panel as pn
-import param
 from imars3d.ui.base_window import BaseWindow
 
 logger = logging.getLogger(__name__)

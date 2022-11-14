@@ -1,4 +1,3 @@
-from copy import deepcopy
 import json
 from json import JSONDecodeError
 import pytest
