@@ -25,4 +25,36 @@ The script will decide if the CT measurement is complete, and run autoreconstruc
 Jupyter notebook
 ----------------
 
-TBD
+Start a Jupyter notebook with the kernel that has ``imars3d`` properly installed.
+In the first cell, execute the following command to load the necessary extension.
+
+.. code-block:: python
+
+   import panel as pn
+   import holoview as hv
+   from imars3d.ui.main import MainWindow
+
+   pn.extension(
+      "vtk",  # for the 3D viewer
+      "terminal",  # or the console
+      "jsoneditor",  # for config viewer
+      nthreads=0,  # default to use infinite
+      notifications=True,  # allow panel notification banner to pop-up
+   )
+   hv.extension("bokeh")  # use default plotting backend bokeh
+
+Wait for the kernel to return to idel (the extention loading time varies depending on the system).
+Then execute the following command to create the main window
+
+.. code-block:: python
+
+   main_window = MainWindow()
+
+There are four ways to render the main window:
+
+- Direct redner with ``main_window``.
+- Wrap app in a ``panel`` layout, i.e. ``pn.panel(main_window)``.
+- Set the app to be servable, i.e. ``main_window.servable()``.
+- Start a bokeh server and render the app in a separate tab, i.e. ``main_window.show()``.
+
+For the last method, make sure you are allowed to use additinoal ports on the system to avoid access error.
