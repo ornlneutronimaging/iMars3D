@@ -1,7 +1,5 @@
 # package imports
-import logging
-
-from reduce_CG1D import ERROR_GENERAL, logger
+from reduce_CG1D import ERROR_GENERAL
 from reduce_CG1D import main as main_CG1D
 
 # third-party imports

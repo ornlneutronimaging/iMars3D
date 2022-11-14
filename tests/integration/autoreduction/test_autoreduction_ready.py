@@ -1,7 +1,6 @@
 # package imports
 from reduce_CG1D import main as main_CG1D
 from reduce_CG1D import ERROR_GENERAL
-from imars3d.backend.autoredux import logger
 
 # third-party imports
 import pytest
