@@ -91,6 +91,7 @@ def main(inputfile: Union[str, Path], outputdir: Union[str, Path]) -> int:
 
     # step 2: extract info from inputfile
     update_dict = extract_info_from_path(str(inputfile))
+    assert update_dict["instrument"] == "CG1D", "Instrument is not CG1D"
 
     # step 3: update the dict and save dict to disk
     substitute_template(config_dict, update_dict)
