@@ -5,6 +5,7 @@ from imars3d.backend.dataio.config import save_config
 from imars3d.backend import auto_reduction_ready
 from imars3d.backend import load_template_config
 from imars3d.backend import extract_info_from_path
+from imars3d.backend import substitute_template
 from imars3d.backend.autoredux import logger as logger_autoredux
 from imars3d.backend.workflow.engine import WorkflowEngineAuto, WorkflowEngineError, WorkflowEngineExitCodes
 
@@ -92,6 +93,7 @@ def main(inputfile: Union[str, Path], outputdir: Union[str, Path]) -> int:
     update_dict = extract_info_from_path(str(inputfile))
 
     # step 3: update the dict and save dict to disk
+    substitute_template(config_dict, update_dict)
     config_dict.update(update_dict)
     # save config file to working directory
     # NOTE:
