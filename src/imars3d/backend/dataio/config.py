@@ -2,11 +2,12 @@
 """Configuration file handler for the imars3d."""
 import json
 from pathlib import Path
+from typing import Union
 
 
 def save_config(
     config_dict: dict,
-    filepath: str,
+    filepath: Union[str, Path],
 ):
     """
     Save a config dict to a file.

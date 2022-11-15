@@ -8,6 +8,7 @@ import re
 from pathlib import Path
 from typing import Union
 
+# parent logger for all loggers instantiated in the auto-reduction scripts
 logger = logging.getLogger(__name__)
 
 facility_position = -6
@@ -33,14 +34,15 @@ def auto_reduction_ready(data_file: Union[str, Path]) -> bool:
     """
     logger.info("Checking if scan has completed...")
     non_radiograph = {"dark-field": ["df"], "open-beam": ["ob"]}
-    # /SNS/CG1D/IPTS-XXXXX/raw/_IMAGING_TYPE_/
+    # canonical data_file path: /SNS/CG1D/IPTS-XXXXX/raw/_IMAGING_TYPE_/
     match = re.search(r"/raw/([-\w]+)/", str(data_file))
     if match:
         image_type = match.groups()[0]
         if image_type in non_radiograph["dark-field"] + non_radiograph["open-beam"]:
-            logger.info("Scan is incomplete.")
+            logger.info("The input image is not a radiograph. It's assumed the scan is incomplete.")
             return False
     else:
+        logger.error("non-canonical data file path")
         return False
 
     # TODO: check the scan-compete signal from either the TIFF file or the Nexus file or some other file or PV

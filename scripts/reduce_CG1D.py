@@ -5,6 +5,7 @@ from imars3d.backend.dataio.config import save_config
 from imars3d.backend import auto_reduction_ready
 from imars3d.backend import load_template_config
 from imars3d.backend import extract_info_from_path
+from imars3d.backend.autoredux import logger as logger_autoredux
 from imars3d.backend.workflow.engine import WorkflowEngineAuto, WorkflowEngineError, WorkflowEngineExitCodes
 
 # standard imports
@@ -14,11 +15,13 @@ from pathlib import Path
 from typing import Union
 import sys
 
-
 # declare the conda environment for this to run in
 CONDA_ENV = "imars3d-dev"
 ERROR_GENERAL = 1  # if more errors, they could be turned into enum.Enum
-logger = logging.getLogger("reduce_CG1D")
+WORKFLOW_SUCCESS: int = WorkflowEngineExitCodes.SUCCESS.value
+WORKFLOW_ERROR: int = WorkflowEngineExitCodes.SUCCESS.value
+
+logger = logger_autoredux.getChild("reduce_CG1D")
 
 
 def _validate_inputs(inputfile: Path, outputdir: Path) -> int:
@@ -63,11 +66,6 @@ def main(inputfile: Union[str, Path], outputdir: Union[str, Path]) -> int:
 
     # convert the parameters to make the rest easier
     inputfile = Path(inputfile)
-    try:
-        assert inputfile.exists()
-    except AssertionError:
-        logger.error(f"Input file {str(inputfile)} not found")
-        return ERROR_GENERAL
     outputdir = Path(outputdir)
     logging.info("INPUT:", inputfile)  # TODO remove
     logging.info("OUTPUT:", outputdir)  # TODO remove
@@ -91,7 +89,7 @@ def main(inputfile: Union[str, Path], outputdir: Union[str, Path]) -> int:
     config_dict = load_template_config(config_path)
 
     # step 2: extract info from inputfile
-    update_dict = extract_info_from_path(inputfile)
+    update_dict = extract_info_from_path(str(inputfile))
 
     # step 3: update the dict and save dict to disk
     config_dict.update(update_dict)
@@ -108,9 +106,9 @@ def main(inputfile: Union[str, Path], outputdir: Union[str, Path]) -> int:
     workflow = WorkflowEngineAuto(config_dict)
     try:
         workflow.run()
-        return WorkflowEngineExitCodes.SUCCESS.value
+        return WORKFLOW_SUCCESS
     except WorkflowEngineError:
-        return WorkflowEngineExitCodes.ERROR_GENERAL.value
+        return WORKFLOW_ERROR
 
 
 if __name__ == "__main__":
