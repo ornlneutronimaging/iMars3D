@@ -262,6 +262,21 @@ def test_save_data_fail():
         save_data()
 
 
+def check_savefiles(direc: Path, prefix: str, numfiles: int = 3):
+    assert direc.exists()
+    assert direc.is_dir()
+    filepaths = [direc / item for item in direc.iterdir()]
+    assert len(filepaths) == numfiles
+    for filepath in filepaths:
+        print(filepath)
+        assert filepath.is_file()
+        assert filepath.suffix == ".tiff"
+        # the names are zero-padded
+        assert "_0000" in filepath.name
+        # verify the file starts with the name
+        assert filepath.name.startswith(prefix)
+
+
 @pytest.mark.parametrize("filename", ["junk", "*"])  # gets default name
 def test_save_data(filename):
     # this context will remove directory on exit
@@ -273,19 +288,25 @@ def test_save_data(filename):
         # run the code
         save_data(data=data, outputdir=tmpdir, filename=filename)
 
-        filehandles = [tmpdir / item for item in tmpdir.iterdir()]
-        assert len(filehandles) == 3
-        for handle in filehandles:
-            print(handle)
-            assert handle.is_file()
-            assert handle.suffix == ".tiff"
-            # the names are zero-padded
-            assert "_0000" in handle.name
-            # verify the file starts with the name
-            if filename == "*":
-                assert handle.name.startswith("output_20")  # special name and first 2 of the year
-            else:
-                assert handle.name.startswith(filename)
+        # check the result
+        if filename == "*":
+            prefix = "output_20"  # special name and first 2 of the year
+        else:
+            prefix = filename + "_"
+        check_savefiles(tmpdir, prefix)
+
+
+def test_save_data_subdir():
+    # this context will remove directory on exit
+    with TemporaryDirectory() as tmpdirname:
+        data = np.zeros((3, 3, 3)) + 1.0
+        tmpdir = Path(tmpdirname) / "subdirectory"  # make it create a subdirectory
+
+        # run the code
+        save_data(data=data, outputdir=tmpdir, filename="subdirtest")
+
+        # check the result
+        check_savefiles(tmpdir, "subdirtest_")
 
 
 if __name__ == "__main__":

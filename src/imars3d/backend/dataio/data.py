@@ -498,7 +498,8 @@ class save_data(param.ParameterizedFunction):
     data: Array
         array of data to save
     outputdir: str
-        where to save the output on disk
+        where to save the output on disk.
+        ``param.Foldername`` will warn if the directory does not already exist.
     filename: str
         Used to name file of output, defaults to output_{datetime}
 
@@ -516,7 +517,9 @@ class save_data(param.ParameterizedFunction):
     def __call__(self, **params):
         """Parse inputs and perform multiple dispatch."""
         # type bounds check via Parameter
-        _ = self.instance(**params)
+        with param.logging_level("CRITICAL"):
+            # do not complain about directories that don't exist
+            _ = self.instance(**params)
         # sanitize arguments
         params = param.ParamOverrides(self, params)
 
@@ -529,4 +532,7 @@ class save_data(param.ParameterizedFunction):
         self._save_data(params.data, Path(params.outputdir) / params.filename)
 
     def _save_data(self, data, filename: Path) -> None:
+        # make sure the directory exists
+        if not filename.parent.exists():
+            filename.parent.mkdir(parents=True)
         dxchange.write_tiff_stack(data, fname=str(filename))
