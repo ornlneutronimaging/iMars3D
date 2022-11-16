@@ -34,4 +34,4 @@ def save_config(
     # now write to disk
     with open(filepath, "w") as outfile:
         json.dump(config_dict, outfile, indent=2, sort_keys=False)
-    logger.info(f"Configuration saved to {outfile}")
+    logger.info(f"Configuration saved to {str(filepath)}")
