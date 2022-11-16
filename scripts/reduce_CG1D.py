@@ -92,10 +92,12 @@ def main(inputfile: Union[str, Path], outputdir: Union[str, Path]) -> int:
     # step 2: extract info from inputfile
     update_dict = extract_info_from_path(str(inputfile))
     assert update_dict["instrument"] == "CG1D", "Instrument is not CG1D"
+    update_dict["outputdir"] = str(outputdir)
+    update_dict["workingdir"] = str(outputdir)
 
     # step 3: update the dict and save dict to disk
-    substitute_template(config_dict, update_dict)
-    config_dict.update(update_dict)
+    config_dict = substitute_template(config_dict, update_dict)
+
     # save config file to working directory
     # NOTE:
     #  i.e. ironman_20221108_154015.json
