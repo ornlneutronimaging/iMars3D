@@ -3,11 +3,14 @@ from reduce_CG1D import main as main_CG1D
 from reduce_CG1D import WORKFLOW_SUCCESS
 
 # third-party imports
+import dxchange
+import numpy as np
 import pytest
 
 # standard imports
 import json
 from pathlib import Path
+import re
 from unittest import mock
 from unittest.mock import MagicMock
 
@@ -38,6 +41,7 @@ def test_valid_config(
     mock_load_template_config: MagicMock,
     mock_extract_info_from_path: MagicMock,
     load_template,
+    DATA_DIR: Path,
     JSON_DIR: Path,
     IRON_MAN_DIR: Path,
     tmp_path: Path,
@@ -52,8 +56,31 @@ def test_valid_config(
         "outputdir": str(tmp_path),
     }
     last_tiff = IRON_MAN_DIR / "20191030_ironman_small_0070_360_760_0624.tiff"
+
+    # Check for autoreduction success
     assert main_CG1D(last_tiff, tmp_path) == WORKFLOW_SUCCESS
-    assert "" in caplog.text
+
+    # Check log messages
+    for filter_name in [
+        "Crop",
+        "Gamma Filter",
+        "Normalization",
+        "Remove Ring Artifact",
+        "Find Rotation Center",
+        "Reconstruction",
+    ]:
+        assert "FINISHED Executing Filter: " + filter_name in caplog.text
+
+    # Check for saved configuration
+    config_path = re.search(r"Configuration saved to ([-/\.\w]+)\n", caplog.text).groups()[0]
+    assert Path(config_path).exists()
+
+    # Check resulting radiographs by extracting a slice and cropping to region of interest
+    result = dxchange.read_tiff(str(tmp_path / "test*"))
+    roi_x, roi_y = (400, 600), (400, 600)
+    slice_cropped = result[300][roi_x[0] : roi_x[1], roi_y[0] : roi_y[1]]
+    expected = np.load(str(DATA_DIR.parent / "integration" / "backend" / "expected_slice_300.npy"))
+    assert np.allclose(slice_cropped, expected, atol=1.0e-7)
 
 
 if __name__ == "__main__":
