@@ -4,6 +4,7 @@
 from imars3d.backend import auto_reduction_ready
 from imars3d.backend import load_template_config
 from imars3d.backend import extract_info_from_path
+from imars3d.backend import substitute_template
 
 # third party imports
 import pytest
@@ -59,6 +60,35 @@ def test_extract_bad_path():
         extract_info_from_path(path)
     assert str(e.value) == "No radiographs directory found"
 
+def test_substitute_template():
+    # load config template
+    config_path = Path(__file__).parents[3] / "scripts/reduce_CG1D_config_template.json"
+    config_dict = load_template_config(config_path)
+    update_dict = extract_info_from_path("/HFIR/CG1D/IPTS-25777/raw/ct_scans/iron_man/some.tiff")
+    update_dict["outputdir"] = "outputdir"
+    update_dict["workingdir"] = "workingdir"
+    assert config_dict["facility"] == "$facility"
+    assert config_dict["instrument"] == "$instrument"
+    assert config_dict["ipts"] == "$ipts"
+    assert config_dict["name"] == "reduce_$instrument"
+    assert config_dict["workingdir"] == "$workingdir"
+    assert config_dict["outputdir"] == "$outputdir"
+    config_dict = substitute_template(config_dict, update_dict)
+    assert config_dict["facility"] == "HFIR"
+    assert config_dict["instrument"] == "CG1D"
+    assert config_dict["ipts"] == "IPTS-25777"
+    assert config_dict["name"] == "reduce_CG1D"
+    assert config_dict["workingdir"] != "$workingdir"
+    assert config_dict["outputdir"] != "$outputdir"
+
+def test_substitute_template_bad_values():
+    # load config template
+    config_path = Path(__file__).parents[3] / "scripts/reduce_CG1D_config_template.json"
+    config_dict = load_template_config(config_path)
+    update_dict = extract_info_from_path("/HFIR/CG1D/IPTS-25777/raw/ct_scans/iron_man/some.tiff")
+    # Leaving outputdir and workingdir empty to cause a KeyError
+    with pytest.raises(KeyError):
+        _ = substitute_template(config_dict, update_dict)
 
 if __name__ == "__main__":
     pytest.main([__file__])
