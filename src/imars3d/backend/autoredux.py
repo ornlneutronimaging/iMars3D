@@ -135,7 +135,7 @@ def extract_info_from_path(data_file: Union[str, Path]) -> dict:
 
 
 def substitute_template(config: dict, values: dict) -> dict:
-    r"""Update the template configuration with actual values
+    r"""Update the template configuration with actual values.
 
     Parameters
     ----------
