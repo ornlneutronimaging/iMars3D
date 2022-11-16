@@ -2,7 +2,7 @@
     "facility": "$facility",
     "instrument": "$instrument",
     "BAD_ipts": "$ipts",
-    
+
             "name": "BAD_load_data",
             "function": "imars3d.backend.dataio.data.load_data",
             "inputs": {
@@ -111,4 +111,3 @@
         }
     ]
 }
-
