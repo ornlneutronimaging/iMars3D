@@ -489,6 +489,13 @@ def _to_time_str(value: datetime) -> str:
     return value.strftime("%Y%m%d%H%M")
 
 
+def _save_data(data, filename: Path) -> None:
+    # make sure the directory exists
+    if not filename.parent.exists():
+        filename.parent.mkdir(parents=True)
+    dxchange.write_tiff_stack(data, fname=str(filename))
+
+
 class save_data(param.ParameterizedFunction):
     """
     Save data with given input.
@@ -497,7 +504,7 @@ class save_data(param.ParameterizedFunction):
     ----------
     data: Array
         array of data to save
-    outputdir: str
+    outputdir: Path
         where to save the output on disk.
         ``param.Foldername`` will warn if the directory does not already exist.
     filename: str
@@ -529,10 +536,65 @@ class save_data(param.ParameterizedFunction):
         if params.filename == "*":
             params.filename = "output_" + _to_time_str(datetime.now())
 
-        self._save_data(params.data, Path(params.outputdir) / params.filename)
+        _save_data(params.data, filename=params.outputdir / params.filename)
 
-    def _save_data(self, data, filename: Path) -> None:
-        # make sure the directory exists
-        if not filename.parent.exists():
-            filename.parent.mkdir(parents=True)
-        dxchange.write_tiff_stack(data, fname=str(filename))
+
+class save_checkpoint(param.ParameterizedFunction):
+    """
+    Save current state to checkpoint in a datetime stamped directory name.
+
+    Parameters
+    ----------
+    data: Array
+        array of data to save
+    outputdir: Path
+        The parent directory of where to save the output on disk.
+        ``param.Foldername`` will warn if the directory does not already exist.
+    filename: str
+        Used to name file of output, defaults to output_{datetime}
+
+    Returns
+    -------
+        The directory the files were actually saved inNone
+    """
+
+    data = param.Array(doc="Data to save", precedence=1)
+    outputdir = param.Foldername(default="/tmp/", doc="radiograph directory")
+
+    filename = param.String(default="*", doc="fnmatch for selecting dc files from dc_dir")
+    omegas = param.Array(doc="Collection of omega angles")
+
+    def __call__(self, **params):
+        # type bounds check via Parameter
+        with param.logging_level("CRITICAL"):
+            # do not complain about directories that don't exist
+            _ = self.instance(**params)
+        # sanitize arguments
+        params = param.ParamOverrides(self, params)
+
+        save_dir = params.outputdir / _to_time_str(datetime.now())
+
+        # save the data as tiffs
+        _save_data(data=params.data, filename=save_dir / params.filename)
+        # save the angles as a numpy object
+        np.save(file=save_dir / "omegas.npy", arr=params.omegas)
+
+        return save_dir
+        """
+        # make dir
+        chk_root = _to_time_str(datetime.now())
+        savedirname = f"{self.temp_root}/{self.recn_name}/{chk_root}"
+        os.makedirs(savedirname)
+        # save the current CT
+        dxchange.writer.write_tiff_stack(
+            data=self.ct,
+            fname=f"{savedirname}/{filename}.tiff",
+            axis=0,
+            digit=5,
+        )
+        # save omega list as well
+        np.save(
+            file=f"{savedirname}/omegas.py",
+            arr=self.omegas,
+        )
+        """

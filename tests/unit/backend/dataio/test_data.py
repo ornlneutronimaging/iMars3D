@@ -13,7 +13,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest import mock
 from imars3d.backend.dataio.data import load_data
-from imars3d.backend.dataio.data import save_data
+from imars3d.backend.dataio.data import save_data, save_checkpoint
 from imars3d.backend.dataio.data import _forgiving_reader
 from imars3d.backend.dataio.data import _load_images
 from imars3d.backend.dataio.data import _load_by_file_list
@@ -262,14 +262,16 @@ def test_save_data_fail():
         save_data()
 
 
-def check_savefiles(direc: Path, prefix: str, numfiles: int = 3):
+def check_savefiles(direc: Path, prefix: str, num_files: int = 3, has_omega=False):
     assert direc.exists()
     assert direc.is_dir()
     filepaths = [direc / item for item in direc.iterdir()]
-    assert len(filepaths) == numfiles
+    assert len(filepaths) == num_files
     for filepath in filepaths:
         print(filepath)
         assert filepath.is_file()
+        if has_omega and filepath.name == "omegas.npy":
+            continue
         assert filepath.suffix == ".tiff"
         # the names are zero-padded
         assert "_0000" in filepath.name
@@ -286,6 +288,7 @@ def test_save_data(filename):
         tmpdir = Path(tmpdirname)
 
         # run the code
+
         save_data(data=data, outputdir=tmpdir, filename=filename)
 
         # check the result
@@ -307,6 +310,19 @@ def test_save_data_subdir():
 
         # check the result
         check_savefiles(tmpdir, "subdirtest_")
+
+
+def test_save_checkpoint():
+    # this context will remove directory on exit
+    with TemporaryDirectory() as tmpdirname:
+        assert tmpdirname
+        data = np.zeros((3, 3, 3)) + 1.0
+        tmpdir = Path(tmpdirname)
+
+        outputdir = save_checkpoint(data=data, outputdir=tmpdir, filename="chk")
+
+        # check the tiffs result
+        check_savefiles(outputdir, "chk", num_files=4, has_omega=True)
 
 
 if __name__ == "__main__":
