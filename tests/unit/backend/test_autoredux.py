@@ -60,6 +60,7 @@ def test_extract_bad_path():
         extract_info_from_path(path)
     assert str(e.value) == "No radiographs directory found"
 
+
 def test_substitute_template():
     # load config template
     config_path = Path(__file__).parents[3] / "scripts/reduce_CG1D_config_template.json"
@@ -81,6 +82,7 @@ def test_substitute_template():
     assert config_dict["workingdir"] != "$workingdir"
     assert config_dict["outputdir"] != "$outputdir"
 
+
 def test_substitute_template_bad_values():
     # load config template
     config_path = Path(__file__).parents[3] / "scripts/reduce_CG1D_config_template.json"
@@ -89,6 +91,7 @@ def test_substitute_template_bad_values():
     # Leaving outputdir and workingdir empty to cause a KeyError
     with pytest.raises(KeyError):
         _ = substitute_template(config_dict, update_dict)
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
