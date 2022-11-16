@@ -1,0 +1,117 @@
+{
+    "facility": "$facility",
+    "instrument": "$instrument",
+    "BAD_ipts": "$ipts",
+    "name": "reduce_$instrument",
+    "workingdir": "$workingdir",
+    "outputdir": "$outputdir",
+    "tasks": [{
+            "name": "BAD_load_data",
+            "function": "imars3d.backend.dataio.data.load_data",
+            "inputs": {
+                "ct_dir": "$ctdir",
+                "ob_dir": "$obdir",
+                "dc_dir": "$dcdir",
+                "ct_fnmatch": "*.tiff",
+                "ob_fnmatch": "*.tiff",
+                "dc_fnmatch": "*.tiff"
+            },
+            "outputs": ["ct", "ob", "dc", "rot_angles"]
+        },
+        {
+            "name": "BAD_crop-ct",
+            "function": "imars3d.backend.morph.crop.crop",
+            "inputs": {
+                "arrays": "ct",
+                "crop_limit": [552, 1494, 771, 1296]
+            },
+            "outputs": ["ct"]
+        },
+        {
+            "name": "crop-ob",
+            "function": "imars3d.backend.morph.crop.crop",
+            "inputs": {
+                "arrays": "ob",
+                "crop_limit": [552, 1494, 771, 1296]
+            },
+            "outputs": ["ob"]
+        },
+        {
+            "name": "crop-dc",
+            "function": "imars3d.backend.morph.crop.crop",
+            "inputs": {
+                "arrays": "dc",
+                "crop_limit": [552, 1494, 771, 1296]
+            },
+            "outputs": ["dc"]
+        },
+        {
+            "name": "gamma_filter",
+            "function": "imars3d.backend.corrections.gamma_filter.gamma_filter",
+            "inputs": {
+                "arrays" : "ct"
+            },
+            "outputs": ["ct"]
+        },
+        {
+            "name": "normalization",
+            "function": "imars3d.backend.preparation.normalization.normalization",
+            "inputs": {
+                "arrays": "ct",
+                "flats": "ob",
+                "darks": "dc"
+            },
+            "outputs": ["ct"]
+        },
+        {
+            "name": "denoise",
+            "function": "imars3d.backend.corrections.denoise.denoise",
+            "inputs": {
+                "arrays": "ct"
+            },
+            "outputs": ["ct"]
+        },
+        {
+            "name": "remove_ring_artifact",
+            "function": "imars3d.backend.corrections.ring_removal.remove_ring_artifact",
+            "inputs": {
+                "arrays": "ct"
+            },
+            "outputs": ["ct"]
+        },
+        {
+            "name": "find_rotation_center",
+            "function": "imars3d.backend.diagnostics.rotation.find_rotation_center",
+            "inputs": {
+                "arrays": "ct",
+                "angles": "rot_angles",
+                "in_degrees": true,
+                "atol_deg": 0.5
+            },
+            "outputs": ["rot_center"]
+        },
+        {
+            "name": "recon",
+            "function": "imars3d.backend.reconstruction.recon",
+            "inputs": {
+                "arrays": "ct",
+                "theta": "rot_angles",
+                "center": "rot_center",
+                "is_radians": false,
+                "perform_minus_log": true
+            },
+            "outputs": ["result"]
+        },
+        {
+            "name": "save_data",
+            "function": "imars3d.backend.dataio.data.save_data",
+            "inputs": {
+                "data": "result",
+                "filename": "test",
+                "outputdir" : "outputdir"
+            },
+            "outputs": []
+        }
+    ]
+}
+
