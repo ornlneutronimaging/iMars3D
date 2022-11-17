@@ -85,7 +85,8 @@ def extract_info_from_path(data_file: Union[str, Path]) -> dict:
         /FACILITY/INSTRUMENT/IPTS/raw/[PREPATH]/ct_scans/[SUBPATH]/IMAGENAME.tiff
     PREPATH and SUBPATH are optional and can encompass one or more directories.
 
-    Examples:
+    Examples
+    --------
     /HFIR/CG1D/IPTS-25777/raw/ct_scans/20191029_ironman_small_0070_000_000_0002.tiff
     /HFIR/CG1D/IPTS-25777/raw/2019_Oct/ct_scans/20191029_ironman_small_0070_000_000_0002.tiff
     /HFIR/CG1D/IPTS-25777/raw/2019_Oct/29/ct_scans/20191029_ironman_small_0070_000_000_0002.tiff
