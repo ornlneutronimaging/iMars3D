@@ -477,6 +477,8 @@ def _extract_rotation_angles(
 
 def _to_time_str(value: datetime) -> str:
     """
+    Convert the supplied datetime to a formatted string.
+
     Parameters
     ----------
     value:
@@ -527,8 +529,6 @@ class save_data(param.ParameterizedFunction):
     name = param.String(default="save_data", doc="name for the radiograph")
 
     def __call__(self, **params):
-        from icecream import ic
-
         """Parse inputs and perform multiple dispatch."""
         # type bounds check via Parameter
         with param.logging_level("CRITICAL"):
@@ -537,7 +537,6 @@ class save_data(param.ParameterizedFunction):
         # sanitize arguments
         params = param.ParamOverrides(self, params)
 
-        ic(params)
         if params.data is None:
             raise ValueError("Did not supply data")
 
@@ -581,6 +580,7 @@ class save_checkpoint(param.ParameterizedFunction):
     omegas = param.Array(doc="Collection of omega angles")
 
     def __call__(self, **params):
+        """Parse inputs and perform multiple dispatch."""
         # type bounds check via Parameter
         with param.logging_level("CRITICAL"):
             # do not complain about directories that don't exist
