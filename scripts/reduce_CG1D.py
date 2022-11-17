@@ -5,6 +5,7 @@ from imars3d.backend.dataio.config import save_config
 from imars3d.backend import auto_reduction_ready
 from imars3d.backend import load_template_config
 from imars3d.backend import extract_info_from_path
+from imars3d.backend import substitute_template
 from imars3d.backend.autoredux import logger as logger_autoredux
 from imars3d.backend.workflow.engine import WorkflowEngineAuto, WorkflowEngineError, WorkflowEngineExitCodes
 
@@ -83,16 +84,24 @@ def main(inputfile: Union[str, Path], outputdir: Union[str, Path]) -> int:
     # step 1: load the template configuration file to memory
     try:
         config_path = _find_template_config()
+        config_dict = load_template_config(config_path)
     except FileNotFoundError as e:
         logger.error(str(e))
         return ERROR_GENERAL
-    config_dict = load_template_config(config_path)
 
     # step 2: extract info from inputfile
     update_dict = extract_info_from_path(str(inputfile))
+    assert update_dict["instrument"] == "CG1D", "Instrument is not CG1D"
+    update_dict["outputdir"] = str(outputdir)
+    update_dict["workingdir"] = str(outputdir)
 
     # step 3: update the dict and save dict to disk
-    config_dict.update(update_dict)
+    try:
+        config_dict = substitute_template(config_dict, update_dict)
+    except Exception as e:
+        logger.error(str(e))
+        return ERROR_GENERAL
+
     # save config file to working directory
     # NOTE:
     #  i.e. ironman_20221108_154015.json
