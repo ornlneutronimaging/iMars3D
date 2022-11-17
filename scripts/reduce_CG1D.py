@@ -84,10 +84,10 @@ def main(inputfile: Union[str, Path], outputdir: Union[str, Path]) -> int:
     # step 1: load the template configuration file to memory
     try:
         config_path = _find_template_config()
+        config_dict = load_template_config(config_path)
     except FileNotFoundError as e:
         logger.error(str(e))
         return ERROR_GENERAL
-    config_dict = load_template_config(config_path)
 
     # step 2: extract info from inputfile
     update_dict = extract_info_from_path(str(inputfile))
@@ -96,7 +96,11 @@ def main(inputfile: Union[str, Path], outputdir: Union[str, Path]) -> int:
     update_dict["workingdir"] = str(outputdir)
 
     # step 3: update the dict and save dict to disk
-    config_dict = substitute_template(config_dict, update_dict)
+    try:
+        config_dict = substitute_template(config_dict, update_dict)
+    except Exception as e:
+        logger.error(str(e))
+        return ERROR_GENERAL
 
     # save config file to working directory
     # NOTE:

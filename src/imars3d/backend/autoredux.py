@@ -162,5 +162,6 @@ def substitute_template(config: dict, values: dict) -> dict:
             "dcdir": str(pre_path / "df" / values["subpath"]),
         }
     )
+    assert set(values.keys()).issubset(set(config.keys())), "Config template dict is missing keys."
     template = Template(json.dumps(config))
     return json.loads(template.substitute(**values))
