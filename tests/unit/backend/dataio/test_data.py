@@ -279,48 +279,75 @@ def check_savefiles(direc: Path, prefix: str, num_files: int = 3, has_omega=Fals
         assert filepath.name.startswith(prefix)
 
 
-@pytest.mark.parametrize("filename", ["junk", "*"])  # gets default name
-def test_save_data(filename):
+def create_fake_data():
+    return np.zeros((3, 3, 3)) + 1.0
+
+
+@pytest.mark.parametrize("name", ["junk", ""])  # gets default name
+def test_save_data(name):
     # this context will remove directory on exit
     with TemporaryDirectory() as tmpdirname:
         assert tmpdirname
-        data = np.zeros((3, 3, 3)) + 1.0
+        data = create_fake_data()
         tmpdir = Path(tmpdirname)
 
         # run the code
-
-        save_data(data=data, outputdir=tmpdir, filename=filename)
+        if name:
+            outputdir = save_data(data=data, outputbase=tmpdir, name=name)
+        else:
+            outputdir = save_data(data=data, outputbase=tmpdir)
+        print(outputdir)
 
         # check the result
-        if filename == "*":
-            prefix = "output_20"  # special name and first 2 of the year
+        if name:
+            prefix = name + "_"
         else:
-            prefix = filename + "_"
-        check_savefiles(tmpdir, prefix)
+            prefix = "save_data_"  # special name
+
+        assert outputdir.name.startswith(prefix), str(outputdir.name)
+        check_savefiles(outputdir, prefix)
 
 
-def test_save_data_subdir():
+def xtest_save_data_subdir():
+    name = "subdirtest"
     # this context will remove directory on exit
     with TemporaryDirectory() as tmpdirname:
-        data = np.zeros((3, 3, 3)) + 1.0
+        data = create_fake_data()
         tmpdir = Path(tmpdirname) / "subdirectory"  # make it create a subdirectory
 
         # run the code
-        save_data(data=data, outputdir=tmpdir, filename="subdirtest")
+        outputdir = save_data(data=data, outputbase=tmpdir, name=name)
+        assert outputdir.name.startswith(f"{name}_"), str(outputdir)
 
         # check the result
         check_savefiles(tmpdir, "subdirtest_")
 
 
 def test_save_checkpoint():
-    # this context will remove directory on exit
+    name = "chktest"
+    data = create_fake_data()
+
+    # check without omegas
     with TemporaryDirectory() as tmpdirname:
         assert tmpdirname
-        data = np.zeros((3, 3, 3)) + 1.0
+        omegas = np.asarray([1.0, 2.0, 3.0])
         tmpdir = Path(tmpdirname)
 
-        outputdir = save_checkpoint(data=data, outputdir=tmpdir, filename="chk")
+        outputdir = save_checkpoint(data=data, outputbase=tmpdir, name=name)
 
+        assert outputdir.name.startswith(f"{name}_chkpt_"), str(outputdir)
+        # check the tiffs result
+        check_savefiles(outputdir, "chk", num_files=3)
+
+    # check with omegas
+    with TemporaryDirectory() as tmpdirname:
+        assert tmpdirname
+        omegas = np.asarray([1.0, 2.0, 3.0])
+        tmpdir = Path(tmpdirname)
+
+        outputdir = save_checkpoint(data=data, outputbase=tmpdir, name=name, omegas=omegas)
+
+        assert outputdir.name.startswith(f"{name}_chkpt_"), str(outputdir)
         # check the tiffs result
         check_savefiles(outputdir, "chk", num_files=4, has_omega=True)
 
