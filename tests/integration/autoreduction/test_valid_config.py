@@ -33,6 +33,7 @@ def load_template(IRON_MAN_DIR):
 
 
 # TODO: remove the mocks as the parts of reduce_CG1D become completed
+@pytest.mark.datarepo
 @mock.patch("reduce_CG1D.extract_info_from_path")
 @mock.patch("reduce_CG1D.load_template_config")
 @mock.patch("reduce_CG1D._find_template_config")
