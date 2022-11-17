@@ -4,13 +4,11 @@ import param
 import panel as pn
 import holoviews as hv
 import numpy as np
-import datetime
-import os
-import dxchange
 from holoviews import streams
 from holoviews import opts
 from holoviews.operation.datashader import rasterize
 from pathlib import Path
+from imars3d.backend.data.dataio import save_checkpoint as imars_save_checkpoint
 from imars3d.ui.widgets.gamma_filter import GammaFilter
 from imars3d.ui.widgets.normalization import Normalization
 from imars3d.ui.widgets.denoise import Denoise
@@ -100,22 +98,7 @@ class Preprocess(param.Parameterized):
         if self.ct is None:
             pn.state.warning("No CT to save")
         else:
-            # make dir
-            chk_root = datetime.datetime.now().isoformat().replace(":", "_")
-            savedirname = f"{self.temp_root}/{self.recn_name}/{chk_root}"
-            os.makedirs(savedirname)
-            # save the current CT
-            dxchange.writer.write_tiff_stack(
-                data=self.ct,
-                fname=f"{savedirname}/chk.tiff",
-                axis=0,
-                digit=5,
-            )
-            # save omega list as well
-            np.save(
-                file=f"{savedirname}/omegas.py",
-                arr=self.omegas,
-            )
+            imars_save_checkpoint(data=self.ct, outputbase=self.temp_root, name=self.recn_name, omegas=self.omegas)
 
     def cross_hair_view(self, x, y):
         """Cross hair view."""
