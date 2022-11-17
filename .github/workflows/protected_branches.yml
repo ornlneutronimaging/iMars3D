@@ -7,7 +7,7 @@ on:
 
 jobs:
   integration-tests:
-    runs-on: cades
+    runs-on: imars3d-builder
     defaults:
       run:
         shell: bash -l {0}
