@@ -6,7 +6,16 @@ from reduce_CG1D import ERROR_GENERAL
 import pytest
 
 # standard imports
+import os
 from pathlib import Path
+
+
+@pytest.fixture(autouse=True)
+def setup_rename_template():
+    template_path = Path(__file__).parents[3] / "scripts/reduce_CG1D_config_template.json"
+    os.rename(template_path, template_path.with_stem("temp_rename"))
+    yield
+    os.rename(template_path.with_stem("temp_rename"), template_path)
 
 
 @pytest.mark.datarepo
