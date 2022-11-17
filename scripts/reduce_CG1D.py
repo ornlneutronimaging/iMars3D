@@ -75,12 +75,12 @@ def main(inputfile: Union[str, Path], outputdir: Union[str, Path]) -> int:
     if input_checking > 0:
         return input_checking
 
-    # step 0: check if data is ready for reduction
+    # check if data is ready for reduction
     if not auto_reduction_ready(inputfile):
         logger.warning("Data incomplete, waiting for next try.")
         return SCAN_INCOMPLETE
 
-    # step 1: load the template configuration file to memory
+    # load the template configuration file to memory
     try:
         config_path = _find_template_config()
         config_dict = load_template_config(config_path)
@@ -88,13 +88,13 @@ def main(inputfile: Union[str, Path], outputdir: Union[str, Path]) -> int:
         logger.error(str(e))
         return ERROR_GENERAL
 
-    # step 2: extract info from inputfile
+    # extract info from inputfile
     update_dict = extract_info_from_path(str(inputfile))
     assert update_dict["instrument"] == "CG1D", "Instrument is not CG1D"
     update_dict["outputdir"] = str(outputdir)
     update_dict["workingdir"] = str(outputdir)
 
-    # step 3: update the dict and save dict to disk
+    # update the dict and save dict to disk
     try:
         config_dict = substitute_template(config_dict, update_dict)
     except Exception as e:
@@ -110,7 +110,7 @@ def main(inputfile: Union[str, Path], outputdir: Union[str, Path]) -> int:
     config_fn = outputdir / f"{exp_name}_{time_str}.json"
     save_config(config_dict, config_fn)
 
-    # step 4: call the auto reduction with updated dict
+    # call the auto reduction with updated dict
     try:
         workflow = WorkflowEngineAuto(config_dict)
         workflow.run()
