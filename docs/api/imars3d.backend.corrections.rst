@@ -16,7 +16,7 @@ imars3d.backend.corrections.denoise module
    :members:
    :undoc-members:
    :show-inheritance:
-   :exclude-members: arrays, max_workers, bilateral_sigma_color, bilateral_sigma_spatial, median_filter_kernel, method, name
+   :exclude-members: arrays, max_workers, bilateral_sigma_color, bilateral_sigma_spatial, median_filter_kernel, method, name, tqdm_class
 
 imars3d.backend.corrections.gamma\_filter module
 ------------------------------------------------
@@ -34,7 +34,7 @@ imars3d.backend.corrections.intensity\_fluctuation\_correction module
    :members:
    :undoc-members:
    :show-inheritance:
-   :exclude-members: ct, air_pixels, max_workers, name, sigma
+   :exclude-members: ct, air_pixels, max_workers, name, sigma, tqdm_class
 
 imars3d.backend.corrections.ring\_removal module
 ------------------------------------------------
@@ -43,4 +43,4 @@ imars3d.backend.corrections.ring\_removal module
    :members:
    :undoc-members:
    :show-inheritance:
-   :exclude-members: arrays, correction_range, kernel_size, max_workers, name, sub_division
+   :exclude-members: arrays, correction_range, kernel_size, max_workers, name, sub_division, tqdm_class, sinogram

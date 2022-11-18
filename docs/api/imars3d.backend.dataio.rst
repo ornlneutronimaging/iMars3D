@@ -24,6 +24,7 @@ imars3d.backend.dataio.data module
    :members:
    :undoc-members:
    :show-inheritance:
+   :exclude-members: ct_dir, ct_files, ct_fnmatch, dc_dir, dc_files, dc_fnmatch, max_workers, name, ob_dir, ob_files, ob_fnmatch, tqdm_class, omegas, outputbase, data
 
 imars3d.backend.dataio.phantom module
 -------------------------------------

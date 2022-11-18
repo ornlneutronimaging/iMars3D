@@ -16,6 +16,7 @@ imars3d.backend.diagnostics.rotation module
    :members:
    :undoc-members:
    :show-inheritance:
+   :exclude-members: angles, arrays, atol_deg, in_degrees, max_workers, name, tqdm_class
 
 imars3d.backend.diagnostics.tilt module
 ---------------------------------------
@@ -24,3 +25,4 @@ imars3d.backend.diagnostics.tilt module
    :members:
    :undoc-members:
    :show-inheritance:
+   :exclude-members: arrays, max_workers, name, tilt, tqdm_class, cut_off_angle_deg, high_bound, low_bound, rot_angles

@@ -16,3 +16,4 @@ imars3d.backend.morph.crop module
    :members:
    :undoc-members:
    :show-inheritance:
+   :exclude-members: arrays, border_pix, crop_limit, expand_ratio, name, rel_intensity_threshold_air_or_slit, rel_intensity_threshold_fov, rel_intensity_threshold_sample
