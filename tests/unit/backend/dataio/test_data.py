@@ -270,7 +270,7 @@ def check_savefiles(direc: Path, prefix: str, num_files: int = 3, has_omega=Fals
     for filepath in filepaths:
         print(filepath)
         assert filepath.is_file()
-        if has_omega and filepath.name == "omegas.npy":
+        if has_omega and filepath.name == "rot_angles.npy":
             continue
         assert filepath.suffix == ".tiff"
         # the names are zero-padded
