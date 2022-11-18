@@ -491,7 +491,7 @@ def _to_time_str(value: datetime) -> str:
     return value.strftime("%Y%m%d%H%M")
 
 
-def _save_data(data, filename: Path) -> None:
+def _save_data(data: np.ndarray, filename: Path) -> None:
     if data is None:
         raise ValueError("Failed to supply data")
     logger.info(f'saving tiffs to "{filename.parent}"')
@@ -597,21 +597,3 @@ class save_checkpoint(param.ParameterizedFunction):
             np.save(file=save_dir / "omegas.npy", arr=params.omegas)
 
         return save_dir
-        """
-        # make dir
-        chk_root = _to_time_str(datetime.now())
-        savedirname = f"{self.temp_root}/{self.recn_name}/{chk_root}"
-        os.makedirs(savedirname)
-        # save the current CT
-        dxchange.writer.write_tiff_stack(
-            data=self.ct,
-            fname=f"{savedirname}/{filename}.tiff",
-            axis=0,
-            digit=5,
-        )
-        # save omega list as well
-        np.save(
-            file=f"{savedirname}/omegas.py",
-            arr=self.omegas,
-        )
-        """
