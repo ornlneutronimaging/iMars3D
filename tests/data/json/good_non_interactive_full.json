@@ -108,6 +108,7 @@
             "inputs": {
                 "data": "result",
                 "name": "testfull",
+                "omegas": "rot_angles",
                 "outputbase" : "outputdir"
             },
             "outputs": []

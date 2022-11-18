@@ -549,7 +549,7 @@ class save_data(param.ParameterizedFunction):
         if params.data is None:
             raise ValueError("Did not supply data")
 
-        save_dir = params.outputbase / f"{params.name}_{_to_time_str(datetime.now())}"
+        save_dir = Path(params.outputbase) / f"{params.name}_{_to_time_str(datetime.now())}"
 
         # save the data as tiffs
         _save_data(filename=save_dir / params.name, data=params.data, omegas=params.omegas)
