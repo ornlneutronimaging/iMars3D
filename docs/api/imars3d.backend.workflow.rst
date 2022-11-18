@@ -17,6 +17,7 @@ imars3d.backend.workflow.engine module
    :members:
    :undoc-members:
    :show-inheritance:
+   :exclude-members: TaskOutputTypes, config, load_data_function, save_data_function
 
 imars3d.backend.workflow.validate module
 ----------------------------------------

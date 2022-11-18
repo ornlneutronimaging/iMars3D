@@ -32,3 +32,12 @@ imars3d.backend.reconstruction module
    :members:
    :undoc-members:
    :show-inheritance:
+   :exclude-members: algorithm, arrays, center, filter_name, is_radians, name, perform_minus_log, theta
+
+imars3d.backend.autoredux module
+--------------------------------
+
+.. automodule:: imars3d.backend.autoredux
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -82,15 +82,20 @@ def extract_info_from_path(data_file: Union[str, Path]) -> dict:
     Extract information from the data file path.
 
     The data file path must conform to the following directory hierarchy
-        /FACILITY/INSTRUMENT/IPTS/raw/[PREPATH]/ct_scans/[SUBPATH]/IMAGENAME.tiff
-    PREPATH and SUBPATH are optional and can encompass one or more directories.
+    .. code-block:: sh
+
+       /FACILITY/INSTRUMENT/IPTS/raw/[PREPATH]/ct_scans/[SUBPATH]/IMAGENAME.tiff
+
+    ``PREPATH`` and ``SUBPATH`` are optional and can encompass one or more directories.
 
     Examples
     --------
-    /HFIR/CG1D/IPTS-25777/raw/ct_scans/20191029_ironman_small_0070_000_000_0002.tiff
-    /HFIR/CG1D/IPTS-25777/raw/2019_Oct/ct_scans/20191029_ironman_small_0070_000_000_0002.tiff
-    /HFIR/CG1D/IPTS-25777/raw/2019_Oct/29/ct_scans/20191029_ironman_small_0070_000_000_0002.tiff
-    /HFIR/CG1D/IPTS-25777/raw/2019_Oct/29/ct_scans/iron_man/XYZ/20191029_ironman_small_0070_000_000_0002.tiff
+    .. code-block:: sh
+
+       /HFIR/CG1D/IPTS-25777/raw/ct_scans/20191029_ironman_small_0070_000_000_0002.tiff
+       /HFIR/CG1D/IPTS-25777/raw/2019_Oct/ct_scans/20191029_ironman_small_0070_000_000_0002.tiff
+       /HFIR/CG1D/IPTS-25777/raw/2019_Oct/29/ct_scans/20191029_ironman_small_0070_000_000_0002.tiff
+       /HFIR/CG1D/IPTS-25777/raw/2019_Oct/29/ct_scans/iron_man/XYZ/20191029_ironman_small_0070_000_000_0002.tiff
 
     Parameters
     ----------
