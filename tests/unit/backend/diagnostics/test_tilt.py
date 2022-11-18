@@ -164,7 +164,7 @@ def test_calculate_tilt(tilt_reference):
     tilt_angle = calculate_tilt(img0, img180).x
     # verify
     # NOTE: tolerance is set to half a pixel at the edge of the FOV
-    assert np.isclose(tilt_angle, tilt_reference, atol=np.degrees(0.5 / 100))
+    np.testing.assert_allclose(tilt_angle, tilt_reference, atol=np.degrees(0.5 / 100))
 
 
 def test_calculate_dissimilarity():
@@ -173,7 +173,7 @@ def test_calculate_dissimilarity():
     img180 = np.fliplr(img0)
     # case 1: perfectly matched 180 deg pair
     err = calculate_dissimilarity(0, img0, img180)
-    assert np.isclose(err, 0.0)
+    np.testing.assert_allclose(err, 0.0)
     # case 2: moving away from minimum increases error
     err_1 = calculate_dissimilarity(1, img0, img180)
     err_2 = calculate_dissimilarity(2, img0, img180)
@@ -184,7 +184,7 @@ def test_calculate_dissimilarity():
     # case 3: ensure dissimilarity calculate is abelian
     err_ab = calculate_dissimilarity(1, img0, img180)
     err_ba = calculate_dissimilarity(-1, img180, img0)
-    assert np.isclose(err_ab, err_ba, atol=1e-4)
+    np.testing.assert_allclose(err_ab, err_ba, atol=1e-4)
 
 
 def test_calculate_shift():
@@ -197,7 +197,7 @@ def test_calculate_shift():
         emission=False,
     )
     shift_calculated = calculate_shift(projs[0], projs[1])
-    assert np.isclose(shift_calculated, 0.0)
+    np.testing.assert_allclose(shift_calculated, 0.0)
     # case 1: positive shift
     projs = tomopy.sim.project.project(
         shepp3d,
@@ -206,7 +206,7 @@ def test_calculate_shift():
         center=100,
     )
     shift_calculated = calculate_shift(projs[0], projs[1])
-    assert np.isclose(shift_calculated, 16.0)
+    np.testing.assert_allclose(shift_calculated, 16.0)
     # case 2: negative shift
     projs = tomopy.sim.project.project(
         shepp3d,
@@ -215,7 +215,7 @@ def test_calculate_shift():
         center=50,
     )
     shift_calculated = calculate_shift(projs[0], projs[1])
-    assert np.isclose(shift_calculated, -84.0)
+    np.testing.assert_allclose(shift_calculated, -84.0)
 
 
 def test_find_180_deg_pairs():
@@ -287,10 +287,10 @@ def test_tilt_correction():
     # case 1: null
     projs_corrected = tilt_correction(arrays=projs_ref, rot_angles=omegas)
     # verify
-    assert np.allclose(projs_corrected, projs_ref)
+    np.testing.assert_allclose(projs_corrected, projs_ref)
     # case 1a: null with the progress bar
     projs_corrected = tilt_correction(arrays=projs_ref, rot_angles=omegas, tqdm_class=Tqdm())
-    assert np.allclose(projs_corrected, projs_ref)
+    np.testing.assert_allclose(projs_corrected, projs_ref)
     # case 2: small angle tilt
     tilt_inplane = np.radians(0.5)
     tilt_outplane = np.radians(0.0)
