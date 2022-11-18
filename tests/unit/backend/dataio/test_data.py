@@ -285,15 +285,18 @@ def create_fake_data():
 
 @pytest.mark.parametrize("name", ["junk", ""])  # gets default name
 def test_save_data(name):
+    data = create_fake_data()
+    omegas = np.asarray([1.0, 2.0, 3.0])
     # this context will remove directory on exit
     with TemporaryDirectory() as tmpdirname:
         assert tmpdirname
-        data = create_fake_data()
         tmpdir = Path(tmpdirname)
 
         # run the code
+        numfiles = 3
         if name:
-            outputdir = save_data(data=data, outputbase=tmpdir, name=name)
+            outputdir = save_data(data=data, outputbase=tmpdir, name=name, omegas=omegas)
+            numfiles += 1
         else:
             outputdir = save_data(data=data, outputbase=tmpdir)
         print(outputdir)
@@ -305,10 +308,10 @@ def test_save_data(name):
             prefix = "save_data_"  # special name
 
         assert outputdir.name.startswith(prefix), str(outputdir.name)
-        check_savefiles(outputdir, prefix)
+        check_savefiles(outputdir, prefix, has_omega=bool(name), num_files=numfiles)
 
 
-def xtest_save_data_subdir():
+def test_save_data_subdir():
     name = "subdirtest"
     # this context will remove directory on exit
     with TemporaryDirectory() as tmpdirname:
@@ -320,7 +323,7 @@ def xtest_save_data_subdir():
         assert outputdir.name.startswith(f"{name}_"), str(outputdir)
 
         # check the result
-        check_savefiles(tmpdir, "subdirtest_")
+        check_savefiles(outputdir, "subdirtest_")
 
 
 def test_save_checkpoint():
