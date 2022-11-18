@@ -1,5 +1,5 @@
 # package imports
-from imars3d.backend.workflow.engine import WorkflowEngineAuto, WorkflowEngineError
+from imars3d.backend.workflow.engine import WorkflowEngineAuto, WorkflowValidationError
 
 # third party imports
 import numpy as np
@@ -131,7 +131,7 @@ class TestWorkflowEngineAuto:
         workflow = WorkflowEngineAuto(config_bad)
         workflow.load_data_function = f"{__name__}.load_data"
         workflow.save_data_function = f"{__name__}.save_data"
-        with pytest.raises(WorkflowEngineError, match="ct for task task0 are missing"):
+        with pytest.raises(WorkflowValidationError, match="ct for task task0 are missing"):
             workflow._dryrun()
 
     def test_dryrun_missing_rot(self, config):
@@ -141,7 +141,7 @@ class TestWorkflowEngineAuto:
         workflow = WorkflowEngineAuto(config_bad)
         workflow.load_data_function = f"{__name__}.load_data"
         workflow.save_data_function = f"{__name__}.save_data"
-        with pytest.raises(WorkflowEngineError, match="rot_center for task task4 are missing"):
+        with pytest.raises(WorkflowValidationError, match="rot_center for task task4 are missing"):
             workflow._dryrun()
 
     def test_run(self, config):

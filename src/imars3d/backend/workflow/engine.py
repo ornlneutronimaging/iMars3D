@@ -13,17 +13,24 @@ import importlib
 from typing import Any, Optional
 
 
-class WorkflowEngineError(RuntimeError):
-    """Base class for workflow engine errors."""
-
-    pass
-
-
 class WorkflowEngineExitCodes(Enum):
     r"""Exit codes to be used with workflow engine errors."""
 
     SUCCESS = 0
     ERROR_GENERAL = 1
+    ERROR_VALIDATION = 2
+
+
+class WorkflowEngineError(RuntimeError):
+    """Base class for workflow engine errors."""
+
+    exit_code = WorkflowEngineExitCodes.ERROR_GENERAL.value
+
+
+class WorkflowValidationError(WorkflowEngineError):
+    """Class for workflow validation errors."""
+
+    exit_code = WorkflowEngineExitCodes.ERROR_GENERAL.value
 
 
 class WorkflowEngine:
@@ -48,7 +55,7 @@ class WorkflowEngine:
 
         def validate_type(outputs):
             if not isinstance(outputs, (list, tuple)):
-                raise WorkflowEngineError("Task outputs must be a list or a tuple")
+                raise WorkflowValidationError("Task outputs must be a list or a tuple")
 
         validate_type(task_outputs)
         if function_outputs is not None:
@@ -57,7 +64,7 @@ class WorkflowEngine:
             # import pdb; pdb.set_trace()
             if len(task_outputs) != len(function_outputs):
                 error = "Task and Function have different number of outputs"
-                raise WorkflowEngineError(error)
+                raise WorkflowValidationError(error)
         return function_outputs
 
     def __init__(self) -> None:
@@ -152,11 +159,11 @@ class WorkflowEngineAuto(WorkflowEngine):
         tasks = self.config["tasks"]
         if len(tasks) >= 2:
             if tasks[0]["function"] != self.load_data_function:
-                raise WorkflowEngineError("Incomplete Workflow:  Workflow must begin with a load data task.")
+                raise WorkflowValidationError("Incomplete Workflow:  Workflow must begin with a load data task.")
             if tasks[len(tasks) - 1]["function"] != self.save_data_function:
-                raise WorkflowEngineError("Incomplete Workflow:  Workflow must end with a save data task")
+                raise WorkflowValidationError("Incomplete Workflow:  Workflow must end with a save data task")
         elif len(tasks) == 1:
-            raise WorkflowEngineError(
+            raise WorkflowValidationError(
                 "Incomplete Workflow:  Workflow does not contain at minimum a load task and a save task."
             )
 
@@ -175,7 +182,7 @@ class WorkflowEngineAuto(WorkflowEngine):
         unacounted = set(task.get("inputs", set())) - set(peek.paramdict)
         if unacounted:
             pnames = ", ".join([f'"{p}"' for p in unacounted])
-            raise WorkflowEngineError(f"Parameter(s) {pnames} are not input parameters of {task['function']}")
+            raise WorkflowValidationError(f"Parameter(s) {pnames} are not input parameters of {task['function']}")
         # assess each function parameter. Is it missing?
         missing = set([])
         for pname, param in peek.paramdict.items():
@@ -195,7 +202,7 @@ class WorkflowEngineAuto(WorkflowEngine):
             if pname not in registry:
                 missing.add(pname)
         if missing:
-            raise WorkflowEngineError(f"input(s) {', '.join(missing)} for task {task['name']} are missing")
+            raise WorkflowValidationError(f"input(s) {', '.join(missing)} for task {task['name']} are missing")
 
     def _dryrun(self) -> None:
         r"""Verify validity of the workflow configuration.
@@ -205,7 +212,7 @@ class WorkflowEngineAuto(WorkflowEngine):
 
         Raises
         ------
-        WorkflowEngineError
+        WorkflowValidationError
             one or more global inputs are not the output(s) of any previous task(s).
         """
         # registry stores parameters that have already been set or computed. Initialize with metadata
