@@ -5,17 +5,21 @@ Unit tests for backend data loading.
 
 import pytest
 import astropy.io.fits as fits
+from datetime import datetime
 import tifffile
 import numpy as np
 from functools import partial
-from unittest import mock
 from pathlib import Path
+from tempfile import TemporaryDirectory
+from unittest import mock
 from imars3d.backend.dataio.data import load_data
+from imars3d.backend.dataio.data import save_data, save_checkpoint
 from imars3d.backend.dataio.data import _forgiving_reader
 from imars3d.backend.dataio.data import _load_images
 from imars3d.backend.dataio.data import _load_by_file_list
 from imars3d.backend.dataio.data import _get_filelist_by_dir
 from imars3d.backend.dataio.data import _extract_rotation_angles
+from imars3d.backend.dataio.data import _to_time_str
 
 
 @pytest.fixture(scope="module")
@@ -237,6 +241,118 @@ def test_get_filelist_by_dir(tiff_with_metadata):
         ob_fnmatch=None,
     )
     assert rst == ([], [], [])
+
+
+@pytest.mark.parametrize(
+    "timestamp",
+    [
+        datetime(2022, 1, 1, 1, 1),
+        datetime(2022, 12, 12, 12, 12),
+    ],
+)
+def test_time_str(timestamp):
+    value = _to_time_str(datetime.now())
+    assert isinstance(value, str)
+    assert len(value) == 12
+    assert int(value), "Cannot be converted to an integer"
+
+
+def test_save_data_fail():
+    with pytest.raises(ValueError):
+        save_data()
+
+
+def check_savefiles(direc: Path, prefix: str, num_files: int = 3, has_omega=False):
+    assert direc.exists()
+    assert direc.is_dir()
+    filepaths = [direc / item for item in direc.iterdir()]
+    assert len(filepaths) == num_files
+    for filepath in filepaths:
+        print(filepath)
+        assert filepath.is_file()
+        if has_omega and filepath.name == "omegas.npy":
+            continue
+        assert filepath.suffix == ".tiff"
+        # the names are zero-padded
+        assert "_0000" in filepath.name
+        # verify the file starts with the name
+        assert filepath.name.startswith(prefix)
+
+
+def create_fake_data():
+    return np.zeros((3, 3, 3)) + 1.0
+
+
+@pytest.mark.parametrize("name", ["junk", ""])  # gets default name
+def test_save_data(name):
+    data = create_fake_data()
+    omegas = np.asarray([1.0, 2.0, 3.0])
+    # this context will remove directory on exit
+    with TemporaryDirectory() as tmpdirname:
+        assert tmpdirname
+        tmpdir = Path(tmpdirname)
+
+        # run the code
+        numfiles = 3
+        if name:
+            outputdir = save_data(data=data, outputbase=tmpdir, name=name, omegas=omegas)
+            numfiles += 1
+        else:
+            outputdir = save_data(data=data, outputbase=tmpdir)
+        print(outputdir)
+
+        # check the result
+        if name:
+            prefix = name + "_"
+        else:
+            prefix = "save_data_"  # special name
+
+        assert outputdir.name.startswith(prefix), str(outputdir.name)
+        check_savefiles(outputdir, prefix, has_omega=bool(name), num_files=numfiles)
+
+
+def test_save_data_subdir():
+    name = "subdirtest"
+    # this context will remove directory on exit
+    with TemporaryDirectory() as tmpdirname:
+        data = create_fake_data()
+        tmpdir = Path(tmpdirname) / "subdirectory"  # make it create a subdirectory
+
+        # run the code
+        outputdir = save_data(data=data, outputbase=tmpdir, name=name)
+        assert outputdir.name.startswith(f"{name}_"), str(outputdir)
+
+        # check the result
+        check_savefiles(outputdir, "subdirtest_")
+
+
+def test_save_checkpoint():
+    name = "chktest"
+    data = create_fake_data()
+
+    # check without omegas
+    with TemporaryDirectory() as tmpdirname:
+        assert tmpdirname
+        omegas = np.asarray([1.0, 2.0, 3.0])
+        tmpdir = Path(tmpdirname)
+
+        outputdir = save_checkpoint(data=data, outputbase=tmpdir, name=name)
+
+        assert outputdir.name.startswith(f"{name}_chkpt_"), str(outputdir)
+        # check the tiffs result
+        check_savefiles(outputdir, "chk", num_files=3)
+
+    # check with omegas
+    with TemporaryDirectory() as tmpdirname:
+        assert tmpdirname
+        omegas = np.asarray([1.0, 2.0, 3.0])
+        tmpdir = Path(tmpdirname)
+
+        outputdir = save_checkpoint(data=data, outputbase=tmpdir, name=name, omegas=omegas)
+
+        assert outputdir.name.startswith(f"{name}_chkpt_"), str(outputdir)
+        # check the tiffs result
+        check_savefiles(outputdir, "chk", num_files=4, has_omega=True)
 
 
 if __name__ == "__main__":

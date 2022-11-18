@@ -4,14 +4,13 @@ import param
 import panel as pn
 import holoviews as hv
 import numpy as np
-import datetime
-import os
-import dxchange
 from holoviews import streams
 from holoviews import opts
 from holoviews.operation.datashader import rasterize
 from pathlib import Path
 from imars3d.backend.reconstruction import recon
+from imars3d.backend.dataio.data import save_checkpoint as imars_save_checkpoint
+from imars3d.backend.dataio.data import save_data
 from imars3d.ui.widgets.rotation import FindRotationCenter
 
 
@@ -131,22 +130,7 @@ class Reconstruction(param.Parameterized):
         if self.ct is None:
             pn.state.warning("No CT to save")
         else:
-            # make dir
-            chk_root = datetime.datetime.now().isoformat().replace(":", "_")
-            savedirname = f"{self.temp_root}/{self.recn_name}/{chk_root}"
-            os.makedirs(savedirname)
-            # save the current CT
-            dxchange.writer.write_tiff_stack(
-                data=self.ct,
-                fname=f"{savedirname}/chk.tiff",
-                axis=0,
-                digit=5,
-            )
-            # save omega list as well
-            np.save(
-                file=f"{savedirname}/omegas.py",
-                arr=self.omegas,
-            )
+            imars_save_checkpoint(data=self.ct, outputbase=self.temp_root, name=self.recn_name, omegas=self.omegas)
 
     @param.depends("recon_save", watch=True)
     def save_reconstruction_results(self):
@@ -154,22 +138,7 @@ class Reconstruction(param.Parameterized):
         if self.recon is None:
             pn.state.warning("No reconstruction results to save")
         else:
-            # make dir
-            chk_root = datetime.datetime.now().isoformat().replace(":", "_")
-            savedirname = f"{self.recn_root}/{self.recn_name}/{chk_root}"
-            os.makedirs(savedirname)
-            # save the current CT
-            dxchange.writer.write_tiff_stack(
-                data=self.recon,
-                fname=f"{savedirname}/recon.tiff",
-                axis=0,
-                digit=5,
-            )
-            # save omega list as well
-            np.save(
-                file=f"{savedirname}/omegas.py",
-                arr=self.omegas,
-            )
+            savedirname = save_data(data=self.ct, outputbase=self.recn_root, name=self.recn_name)
             # save the rotation center
             with open(f"{savedirname}/rot_center.txt", "w") as f_rotcnt:
                 f_rotcnt.write(f"{self.rotation_center_finder.rot_center}")

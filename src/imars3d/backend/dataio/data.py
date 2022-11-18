@@ -475,41 +475,131 @@ def _extract_rotation_angles(
     return rotation_angles
 
 
+def _to_time_str(value: datetime) -> str:
+    """
+    Convert the supplied datetime to a formatted string.
+
+    Parameters
+    ----------
+    value:
+        datetime object to format correctly
+
+    Returns
+    -------
+        The datetime as YYYYMMDDhhmm
+    """
+    return value.strftime("%Y%m%d%H%M")
+
+
+def _save_data(filename: Path, data: np.ndarray, omegas: np.ndarray = None) -> None:
+    if data is None:
+        raise ValueError("Failed to supply data")
+    logger.info(f'saving tiffs to "{filename.parent}"')
+
+    # make sure the directory exists
+    if not filename.parent.exists():
+        filename.parent.mkdir(parents=True)
+    # save the stack of tiffs
+    dxchange.write_tiff_stack(data, fname=str(filename))
+
+    # save the angles as a numpy object
+    if omegas is not None:
+        np.save(file=filename.parent / "omegas.npy", arr=omegas)
+
+
 class save_data(param.ParameterizedFunction):
     """
     Save data with given input.
+
+    The filenames will be
+    ``<outputbase>/<name>_YYYYMMDDhhmm/<name>_####.tiff``
+    where a canonical ``outputbase`` is ``/HFIR/CG1D/IPTS-23788/shared/processed_data/``.
 
     Parameters
     ----------
     data: Array
         array of data to save
-    outputdir: str
-        where to save the output on disk
-    filename: str
-        Used to name file of output, defaults to output_{datetime}
+    outputbase: Path
+        where to save the output on disk.
+        ``param.Foldername`` will warn if the directory does not already exist.
+    name: str
+        Used to name file of output, defaults to ``save_data``
+    omegas: Array
+        Optional for writing out the array of omega angles
 
     Returns
     -------
-        None
+        The directory the files were actually saved in
     """
 
-    #
     data = param.Array(doc="Data to save", precedence=1)
-    outputdir = param.Foldername(default="/tmp/", doc="radiograph directory")
-
-    filename = param.String(default="*", doc="fnmatch for selecting dc files from dc_dir")
+    outputbase = param.Foldername(default="/tmp/", doc="radiograph directory")
+    name = param.String(default="save_data", doc="name for the radiograph")
+    omegas = param.Array(doc="Collection of omega angles")
 
     def __call__(self, **params):
         """Parse inputs and perform multiple dispatch."""
         # type bounds check via Parameter
-        _ = self.instance(**params)
+        with param.logging_level("CRITICAL"):
+            # do not complain about directories that don't exist
+            _ = self.instance(**params)
         # sanitize arguments
         params = param.ParamOverrides(self, params)
 
-        if params.filename == "*":
-            params.filename = "output_" + str(datetime.now())
+        if params.data is None:
+            raise ValueError("Did not supply data")
 
-        self._save_data(params.data, params.outputdir + params.filename)
+        save_dir = params.outputbase / f"{params.name}_{_to_time_str(datetime.now())}"
 
-    def _save_data(self, data, filename):
-        dxchange.write_tiff_stack(data, fname=filename)
+        # save the data as tiffs
+        _save_data(filename=save_dir / params.name, data=params.data, omegas=params.omegas)
+
+        return save_dir
+
+
+class save_checkpoint(param.ParameterizedFunction):
+    """
+    Save current state to checkpoint in a datetime stamped directory name.
+
+    The filenames will be
+    ``<outputbase>/<name>_chkpt_YYYYMMDDhhmm/<name>_####.tiff``
+    where a canonical ``outputbase`` is ``/HFIR/CG1D/IPTS-23788/shared/processed_data/``.
+
+    Parameters
+    ----------
+    data: Array
+        array of data to save
+    outputbase: Path
+        The parent directory of where to save the output on disk.
+        ``param.Foldername`` will warn if the directory does not already exist.
+    name: str
+        Used to name file of output, defaults to output_{datetime}
+    omegas: Array
+        Optional for writing out the array of omega angles
+
+    Returns
+    -------
+        The directory the files were actually saved in
+    """
+
+    data = param.Array(doc="Data to save", precedence=1)
+    outputbase = param.Foldername(default="/tmp/", doc="directory checkpoint should exist in")
+
+    name = param.String(default="*", doc="name for the checkpoint")
+    omegas = param.Array(doc="Collection of omega angles")
+
+    def __call__(self, **params):
+        """Parse inputs and perform multiple dispatch."""
+        # type bounds check via Parameter
+        with param.logging_level("CRITICAL"):
+            # do not complain about directories that don't exist
+            _ = self.instance(**params)
+        # sanitize arguments
+        params = param.ParamOverrides(self, params)
+
+        save_dir = params.outputbase / f"{params.name}_chkpt_{_to_time_str(datetime.now())}"
+
+        # save the data as tiffs
+        _save_data(filename=save_dir / params.name, data=params.data, omegas=params.omegas)
+
+        return save_dir

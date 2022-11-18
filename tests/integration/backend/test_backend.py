@@ -3,7 +3,9 @@
 # package imports
 from imars3d.backend.workflow.engine import WorkflowEngineAuto
 from imars3d.backend.workflow.engine import WorkflowEngineError
+from imars3d.backend.dataio.data import _load_images as load_images
 from imars3d.backend.workflow.validate import JSONValidationError
+from imars3d.backend.util.functions import clamp_max_workers
 
 # third party imports
 import pytest
@@ -12,7 +14,7 @@ import pytest
 from copy import deepcopy
 import json
 import numpy as np
-import dxchange
+from pathlib import Path
 
 
 @pytest.fixture(scope="module")
@@ -56,7 +58,9 @@ class TestWorkflowEngineAuto:
         expected_slice_300 = np.load(str(THIS_DATA_DIR / "expected_slice_300.npy"))
         workflow.run()
         # extract slice and crop to region of interest
-        result = dxchange.read_tiff(self.outputdir + "test*")
+        outdir = Path(self.outputdir)
+        outfiles = [outdir / item for item in outdir.glob("test*.tiff")]
+        result = load_images(outfiles, desc="test", max_workers=clamp_max_workers(None), tqdm_class=None)
         slice_300 = crop_roi(result[300])
         np.allclose(slice_300, expected_slice_300)
 

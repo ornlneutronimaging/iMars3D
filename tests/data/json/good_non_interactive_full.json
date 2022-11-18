@@ -107,8 +107,8 @@
             "function": "imars3d.backend.dataio.data.save_data",
             "inputs": {
                 "data": "result",
-                "filename": "test",
-                "outputdir" : "outputdir"
+                "name": "testfull",
+                "outputbase" : "outputdir"
             },
             "outputs": []
         }
