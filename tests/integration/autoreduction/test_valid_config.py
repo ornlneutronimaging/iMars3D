@@ -86,7 +86,7 @@ def test_valid_config(
     assert Path(config_path).exists()
 
     # Check resulting radiographs by extracting a slice and cropping to region of interest
-    output_tiffs = tmp_path.glob("test_*.tiff")
+    output_tiffs = list(tmp_path.glob("test_*.tiff"))
     assert len(output_tiffs) == 525, str(tmp_path)
     result = load_images(filelist=output_tiffs, descr="test")
 
