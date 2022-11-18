@@ -18,6 +18,7 @@ import sys
 # declare the conda environment for this to run in
 CONDA_ENV = "imars3d-dev"
 ERROR_GENERAL = -1  # for things that aren't workflow
+SCAN_INCOMPLETE = 10  # TODO need to discus this
 WORKFLOW_SUCCESS: int = WorkflowEngineExitCodes.SUCCESS.value
 
 logger = logger_autoredux.getChild("reduce_CG1D")
@@ -75,7 +76,7 @@ def main(inputfile: Union[str, Path], outputdir: Union[str, Path]) -> int:
     # step 0: check if data is ready for reduction
     if not auto_reduction_ready(inputfile):
         logger.warning("Data incomplete, waiting for next try.")
-        return ERROR_GENERAL  # TODO need to discus this
+        return SCAN_INCOMPLETE
 
     # step 1: load the template configuration file to memory
     try:
