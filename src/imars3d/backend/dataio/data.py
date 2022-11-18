@@ -161,7 +161,7 @@ class load_data(param.ParameterizedFunction):
             logger.warning("No valid signature found, need to specify either files or dir")
             raise ValueError("No valid signature found, need to specify either files or dir")
 
-        # extracting omegas from
+        # extracting rotational angles from
         # 1. filename
         # 2. metadata (only possible for Tiff)
         rot_angles = _extract_rotation_angles(ct_files)
@@ -491,7 +491,7 @@ def _to_time_str(value: datetime) -> str:
     return value.strftime("%Y%m%d%H%M")
 
 
-def _save_data(filename: Path, data: np.ndarray, omegas: np.ndarray = None) -> None:
+def _save_data(filename: Path, data: np.ndarray, rot_angles: np.ndarray = None) -> None:
     if data is None:
         raise ValueError("Failed to supply data")
     logger.info(f'saving tiffs to "{filename.parent}"')
@@ -503,8 +503,8 @@ def _save_data(filename: Path, data: np.ndarray, omegas: np.ndarray = None) -> N
     dxchange.write_tiff_stack(data, fname=str(filename))
 
     # save the angles as a numpy object
-    if omegas is not None:
-        np.save(file=filename.parent / "omegas.npy", arr=omegas)
+    if rot_angles is not None:
+        np.save(file=filename.parent / "rot_angles.npy", arr=rot_angles)
 
 
 class save_data(param.ParameterizedFunction):
@@ -524,8 +524,8 @@ class save_data(param.ParameterizedFunction):
         ``param.Foldername`` will warn if the directory does not already exist.
     name: str
         Used to name file of output, defaults to ``save_data``
-    omegas: Array
-        Optional for writing out the array of omega angles
+    rot_angles: Array
+        Optional for writing out the array of rotational (omega) angles
 
     Returns
     -------
@@ -535,7 +535,7 @@ class save_data(param.ParameterizedFunction):
     data = param.Array(doc="Data to save", precedence=1)
     outputbase = param.Foldername(default="/tmp/", doc="radiograph directory")
     name = param.String(default="save_data", doc="name for the radiograph")
-    omegas = param.Array(doc="Collection of omega angles")
+    rot_angles = param.Array(doc="Collection of omega angles")
 
     def __call__(self, **params):
         """Parse inputs and perform multiple dispatch."""
@@ -552,7 +552,7 @@ class save_data(param.ParameterizedFunction):
         save_dir = Path(params.outputbase) / f"{params.name}_{_to_time_str(datetime.now())}"
 
         # save the data as tiffs
-        _save_data(filename=save_dir / params.name, data=params.data, omegas=params.omegas)
+        _save_data(filename=save_dir / params.name, data=params.data, rot_angles=params.rot_angles)
 
         return save_dir
 
@@ -574,8 +574,8 @@ class save_checkpoint(param.ParameterizedFunction):
         ``param.Foldername`` will warn if the directory does not already exist.
     name: str
         Used to name file of output, defaults to output_{datetime}
-    omegas: Array
-        Optional for writing out the array of omega angles
+    rot_angles: Array
+        Optional for writing out the array of rotational (omega) angles
 
     Returns
     -------
@@ -586,7 +586,7 @@ class save_checkpoint(param.ParameterizedFunction):
     outputbase = param.Foldername(default="/tmp/", doc="directory checkpoint should exist in")
 
     name = param.String(default="*", doc="name for the checkpoint")
-    omegas = param.Array(doc="Collection of omega angles")
+    rot_angles = param.Array(doc="Collection of rotational (omega) angles")
 
     def __call__(self, **params):
         """Parse inputs and perform multiple dispatch."""
@@ -600,6 +600,6 @@ class save_checkpoint(param.ParameterizedFunction):
         save_dir = params.outputbase / f"{params.name}_chkpt_{_to_time_str(datetime.now())}"
 
         # save the data as tiffs
-        _save_data(filename=save_dir / params.name, data=params.data, omegas=params.omegas)
+        _save_data(filename=save_dir / params.name, data=params.data, rot_angles=params.rot_angles)
 
         return save_dir

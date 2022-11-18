@@ -295,7 +295,7 @@ def test_save_data(name):
         # run the code
         numfiles = 3
         if name:
-            outputdir = save_data(data=data, outputbase=tmpdir, name=name, omegas=omegas)
+            outputdir = save_data(data=data, outputbase=tmpdir, name=name, rot_angles=omegas)
             numfiles += 1
         else:
             outputdir = save_data(data=data, outputbase=tmpdir)
@@ -348,7 +348,7 @@ def test_save_checkpoint():
         omegas = np.asarray([1.0, 2.0, 3.0])
         tmpdir = Path(tmpdirname)
 
-        outputdir = save_checkpoint(data=data, outputbase=tmpdir, name=name, omegas=omegas)
+        outputdir = save_checkpoint(data=data, outputbase=tmpdir, name=name, rot_angles=omegas)
 
         assert outputdir.name.startswith(f"{name}_chkpt_"), str(outputdir)
         # check the tiffs result
