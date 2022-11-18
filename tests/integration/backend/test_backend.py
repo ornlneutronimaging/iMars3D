@@ -15,6 +15,8 @@ from copy import deepcopy
 import json
 import numpy as np
 from pathlib import Path
+import re
+from typing import Callable
 
 
 @pytest.fixture(scope="module")
@@ -52,17 +54,18 @@ class TestWorkflowEngineAuto:
         assert workflow.config == config
 
     @pytest.mark.datarepo
-    def test_run(self, config, THIS_DATA_DIR, cleanfile):
+    def test_run(self, config: dict, THIS_DATA_DIR: Path, cleanfile: Callable, caplog):
         cleanfile(self.outputdir)
         workflow = WorkflowEngineAuto(config)
         expected_slice_300 = np.load(str(THIS_DATA_DIR / "expected_slice_300.npy"))
         workflow.run()
         # extract slice and crop to region of interest
-        outdir = Path(self.outputdir)
-        outfiles = [outdir / item for item in outdir.glob("test*.tiff")]
+        tiff_dir = re.search(r'saving tiffs to "([-/\.\w]+)"', caplog.text).groups()[0]
+        assert Path(tiff_dir).exists()
+        outfiles = [str(tiff_file) for tiff_file in Path(tiff_dir).glob("save_data_*.tiff")]
         result = load_images(outfiles, desc="test", max_workers=clamp_max_workers(None), tqdm_class=None)
         slice_300 = crop_roi(result[300])
-        np.allclose(slice_300, expected_slice_300)
+        np.testing.assert_allclose(slice_300, expected_slice_300, atol=1.0e-7)
 
     def test_no_config(self):
         with pytest.raises(TypeError):
