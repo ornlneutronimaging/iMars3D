@@ -88,7 +88,7 @@ def test_valid_config(
     # Check resulting radiographs by extracting a slice and cropping to region of interest
     result = dxchange.read_tiff(str(tmp_path / "test*"))
     roi_x, roi_y = (400, 600), (400, 600)
-    slice_cropped = result[300][roi_x[0] : roi_x[1], roi_y[0] : roi_y[1]]
+    slice_cropped = np.array(result[300][roi_x[0] : roi_x[1], roi_y[0] : roi_y[1]])
     expected = np.load(str(DATA_DIR.parent / "integration" / "backend" / "expected_slice_300.npy"))
     np.testing.assert_allclose(slice_cropped, expected, atol=1.0e-7)
 
