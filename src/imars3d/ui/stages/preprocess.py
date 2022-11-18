@@ -8,7 +8,7 @@ from holoviews import streams
 from holoviews import opts
 from holoviews.operation.datashader import rasterize
 from pathlib import Path
-from imars3d.backend.data.dataio import save_checkpoint as imars_save_checkpoint
+from imars3d.backend.dataio.data import save_checkpoint as imars_save_checkpoint
 from imars3d.ui.widgets.gamma_filter import GammaFilter
 from imars3d.ui.widgets.normalization import Normalization
 from imars3d.ui.widgets.denoise import Denoise

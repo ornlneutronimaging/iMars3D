@@ -9,8 +9,8 @@ from holoviews import opts
 from holoviews.operation.datashader import rasterize
 from pathlib import Path
 from imars3d.backend.reconstruction import recon
-from imars3d.backend.data.dataio import save_checkpoint as imars_save_checkpoint
-from imars3d.backend.data.dataio import save_data
+from imars3d.backend.dataio.data import save_checkpoint as imars_save_checkpoint
+from imars3d.backend.dataio.data import save_data
 from imars3d.ui.widgets.rotation import FindRotationCenter
 
 

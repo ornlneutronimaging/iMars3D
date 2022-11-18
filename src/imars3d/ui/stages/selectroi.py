@@ -8,7 +8,7 @@ from holoviews import opts
 from holoviews import streams
 from pathlib import Path
 from imars3d.backend.morph.crop import crop
-from imars3d.backend.data.dataio import save_checkpoint as imars_save_checkpoint
+from imars3d.backend.dataio.data import save_checkpoint as imars_save_checkpoint
 
 
 class SelectROI(param.Parameterized):
