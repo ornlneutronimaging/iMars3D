@@ -1,5 +1,6 @@
 from imars3d.backend.__main__ import main as main_backend
 from reduce_CG1D import main as main_CG1D
+from reduce_CG1D import ERROR_GENERAL
 import pytest
 from json.decoder import JSONDecodeError
 
@@ -20,11 +21,11 @@ def test_good(JSON_DIR):
 
 @pytest.mark.datarepo
 def test_outputdir_not_writable():
-    assert main_CG1D(TIFF_DIR, "this/dir/doesnt/exist") != 0
+    assert main_CG1D(TIFF_DIR, "this/dir/doesnt/exist") == ERROR_GENERAL
 
 
 def test_input_dir_doesnt_exist():
-    assert main_CG1D("this/dir/doesnt/exist", "/tmp/") != 0
+    assert main_CG1D("this/dir/doesnt/exist", "/tmp/") == ERROR_GENERAL
 
 
 if __name__ == "__main__":
