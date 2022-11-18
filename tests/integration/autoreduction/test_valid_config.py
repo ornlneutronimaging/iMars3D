@@ -1,10 +1,10 @@
 # package imports
 from imars3d.backend.autoredux import extract_info_from_path, substitute_template
+from imars3d.backend.dataio.data import _load_images as load_images
 from reduce_CG1D import main as main_CG1D
 from reduce_CG1D import WORKFLOW_SUCCESS
 
 # third-party imports
-import dxchange
 import numpy as np
 import pytest
 
@@ -79,14 +79,17 @@ def test_valid_config(
         "Find Rotation Center",
         "Reconstruction",
     ]:
-        assert "FINISHED Executing Filter: " + filter_name in caplog.text
+        assert f"FINISHED Executing Filter: {filter_name}" in caplog.text
 
     # Check for saved configuration
     config_path = re.search(r"Configuration saved to ([-/\.\w]+)\n", caplog.text).groups()[0]
     assert Path(config_path).exists()
 
     # Check resulting radiographs by extracting a slice and cropping to region of interest
-    result = dxchange.read_tiff(str(tmp_path / "test_*.tiff"))
+    output_tiffs = tmp_path.glob("test_*.tiff")
+    assert len(output_tiffs) == 525, str(tmp_path)
+    result = load_images(filelist=output_tiffs, descr="test")
+
     roi_x, roi_y = (400, 600), (400, 600)
     slice_cropped = np.array(result[300][roi_x[0] : roi_x[1], roi_y[0] : roi_y[1]])
     expected = np.load(str(DATA_DIR.parent / "integration" / "backend" / "expected_slice_300.npy"))
