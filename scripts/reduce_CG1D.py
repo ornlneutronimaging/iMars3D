@@ -20,7 +20,7 @@ import sys
 CONDA_ENV = "imars3d-dev"
 ERROR_GENERAL = 1  # if more errors, they could be turned into enum.Enum
 WORKFLOW_SUCCESS: int = WorkflowEngineExitCodes.SUCCESS.value
-WORKFLOW_ERROR: int = WorkflowEngineExitCodes.SUCCESS.value
+WORKFLOW_ERROR: int = WorkflowEngineExitCodes.ERROR_GENERAL.value
 
 logger = logger_autoredux.getChild("reduce_CG1D")
 
@@ -112,11 +112,12 @@ def main(inputfile: Union[str, Path], outputdir: Union[str, Path]) -> int:
     save_config(config_dict, config_fn)
 
     # step 4: call the auto reduction with updated dict
-    workflow = WorkflowEngineAuto(config_dict)
     try:
+        workflow = WorkflowEngineAuto(config_dict)
         workflow.run()
         return WORKFLOW_SUCCESS
     except WorkflowEngineError:
+        logger.exception("Failed to create and run workflow")
         return WORKFLOW_ERROR
 
 
