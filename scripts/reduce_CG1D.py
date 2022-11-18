@@ -25,6 +25,8 @@ logger = logger_autoredux.getChild("reduce_CG1D")
 
 
 def _validate_inputs(inputfile: Path, outputdir: Path) -> int:
+    """This returns the number of inputs that are broken.
+    The result is useful for a return code"""
     input_checking = 0
     if not inputfile.is_file():
         logger.error(f"'{inputfile}' is not a file")
