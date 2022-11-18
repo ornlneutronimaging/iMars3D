@@ -1,6 +1,7 @@
 # package imports
 from imars3d.backend.autoredux import extract_info_from_path, substitute_template
 from imars3d.backend.dataio.data import _load_images as load_images
+from imars3d.backend.util.functions import clamp_max_workers
 from reduce_CG1D import main as main_CG1D
 from reduce_CG1D import WORKFLOW_SUCCESS
 
@@ -89,7 +90,7 @@ def test_valid_config(
     output_tiffs = list(tmp_path.glob("*/*.tiff"))
     assert len(output_tiffs) == 525, f"{tmp_path} should have tiffs in a subdir"
 
-    result = load_images(filelist=output_tiffs, desc="test")
+    result = load_images(filelist=output_tiffs, desc="test", max_workers=clamp_max_workers(None), tqdm_class=None)
 
     roi_x, roi_y = (400, 600), (400, 600)
     slice_cropped = np.array(result[300][roi_x[0] : roi_x[1], roi_y[0] : roi_y[1]])
