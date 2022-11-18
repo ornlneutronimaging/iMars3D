@@ -1,6 +1,6 @@
 # package imports
 from reduce_CG1D import main as main_CG1D
-from reduce_CG1D import ERROR_GENERAL
+from reduce_CG1D import ERROR_GENERAL, SCAN_INCOMPLETE
 
 # third-party imports
 import pytest
@@ -23,19 +23,19 @@ def test_auto_reduction_ready(mock__find_template_config: MagicMock, caplog, IRO
     # non-canonical data file path
     bad_path_tiff = tmp_path / "20191030_OB_0070_0625.tiff"
     open(bad_path_tiff, "w").write("")
-    assert main_CG1D(bad_path_tiff, tmp_path) == ERROR_GENERAL
+    assert main_CG1D(bad_path_tiff, tmp_path) == SCAN_INCOMPLETE
     assert "non-canonical data file path" in caplog.text
 
     # checking an open beam
     caplog.clear()
     ob_tiff = raw_dir / "ob" / "Oct29_2019" / "20191030_OB_0070_0625.tiff"
-    assert main_CG1D(ob_tiff, tmp_path) == ERROR_GENERAL
+    assert main_CG1D(ob_tiff, tmp_path) == SCAN_INCOMPLETE
     assert "The input image is not a radiograph." in caplog.text
 
     # checking a dark field
     caplog.clear()
     df_tiff = raw_dir / "df" / "Oct29_2019" / "20191030_DF_0070_0632.tiff"
-    assert main_CG1D(df_tiff, tmp_path) == ERROR_GENERAL
+    assert main_CG1D(df_tiff, tmp_path) == SCAN_INCOMPLETE
     assert "The input image is not a radiograph." in caplog.text
 
     # TODO: the first_tiff should return a non-complete scan
