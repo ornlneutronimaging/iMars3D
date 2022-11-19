@@ -62,14 +62,14 @@ def test_valid_config(
     DATA_DIR: Path,
     JSON_DIR: Path,
     IRON_MAN_DIR: Path,
-    tmp_path: Path,
+    tmpdir: Path,
     caplog,
 ):
     last_tiff = IRON_MAN_DIR / "20191030_ironman_small_0070_360_760_0624.tiff"
     mock_extract_info_from_path.return_value = tweak_extract_info_from_path(last_tiff)
     mock_substitute_template.side_effect = tweak_substitute_template
     # Check for autoreduction success
-    assert main_CG1D(last_tiff, tmp_path) == WORKFLOW_SUCCESS
+    assert main_CG1D(last_tiff, tmpdir) == WORKFLOW_SUCCESS
 
     # Check log messages
     for filter_name in [
@@ -87,8 +87,10 @@ def test_valid_config(
     assert Path(config_path).exists()
 
     # Check resulting radiographs by extracting a slice and cropping to region of interest
-    output_tiffs = list(tmp_path.glob("*/*.tiff"))
-    assert len(output_tiffs) == 525, f"{tmp_path} should have tiffs in a subdir"
+    radiographs_dir = re.search(r'saving tiffs to "([-/\.\w]+)"', caplog.text).groups()[0]
+    assert Path(radiographs_dir).exists()
+    output_tiffs = [str(file) for file in Path(radiographs_dir).glob("*.tiff")]
+    assert len(output_tiffs) == 525, f"{config_path} should have 525 tiffs"
 
     result = load_images(filelist=output_tiffs, desc="test", max_workers=clamp_max_workers(None), tqdm_class=None)
 
