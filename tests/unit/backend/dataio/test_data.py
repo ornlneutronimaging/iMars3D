@@ -5,7 +5,6 @@ Unit tests for backend data loading.
 
 import pytest
 import astropy.io.fits as fits
-from datetime import datetime
 import tifffile
 import numpy as np
 from functools import partial
@@ -19,7 +18,6 @@ from imars3d.backend.dataio.data import _load_images
 from imars3d.backend.dataio.data import _load_by_file_list
 from imars3d.backend.dataio.data import _get_filelist_by_dir
 from imars3d.backend.dataio.data import _extract_rotation_angles
-from imars3d.backend.util.functions import to_time_str
 
 
 @pytest.fixture(scope="module")

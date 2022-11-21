@@ -72,7 +72,7 @@ class WorkflowEngine:
 
     @property
     def registry(self):
-        r"""Read only registry"""
+        r"""Read only registry."""
         return self._registry
 
     def _instrospect_task_function(self, function_str: str) -> namedtuple:

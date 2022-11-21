@@ -96,7 +96,7 @@ def main(inputfile: Union[str, Path], outputdir: Union[str, Path]) -> int:
     try:
         config_path = _find_template_config()
         config_dict = load_template_config(config_path)
-    except FileNotFoundError as e:
+    except FileNotFoundError:
         logger.exception("Unable to load the template configuration")
         return ERROR_GENERAL
 
@@ -109,7 +109,7 @@ def main(inputfile: Union[str, Path], outputdir: Union[str, Path]) -> int:
     # update the dict and save dict to disk
     try:
         config_dict = substitute_template(config_dict, update_dict)
-    except Exception as e:
+    except Exception:
         logger.exception("Unable to update the template configuration")
         return ERROR_GENERAL
 
