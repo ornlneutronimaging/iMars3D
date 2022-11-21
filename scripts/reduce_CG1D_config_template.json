@@ -110,7 +110,7 @@
                 "filename": "test",
                 "outputdir" : "outputdir"
             },
-            "outputs": []
+            "outputs": ["save_dir"]
         }
     ]
 }
