@@ -78,7 +78,8 @@ def main(inputfile: Union[str, Path], outputdir: Union[str, Path]) -> int:
     log_file_path = outputdir / f"reduce_CG1D_{time_str}.log"
     log_file_handler = logging.FileHandler(log_file_path)
     log_file_handler.setLevel(logging.INFO)
-    logging.getLogger().addHandler(log_file_handler)
+    root_logger = logging.getLogger()
+    root_logger.addHandler(log_file_handler)
 
     # verify the inputs are sensible
     input_checking = _validate_inputs(inputfile, outputdir)
@@ -126,7 +127,9 @@ def main(inputfile: Union[str, Path], outputdir: Union[str, Path]) -> int:
     if exit_code == WORKFLOW_SUCCESS and radiographs_dir:
         config_file_path = radiographs_dir / f"{config_file_name}_{time_str}.json"
         save_config(config_dict, config_file_path)
-        logging.shutdown()  # flushing and closing all handlers
+        log_file_handler.flush()
+        root_logger.removeHandler(log_file_handler)
+        log_file_handler.close()
         shutil.move(log_file_path, radiographs_dir)  # move the log file to the radiographs directory
     else:
         config_file_path = outputdir / f"{config_file_name}_{time_str}.json"
