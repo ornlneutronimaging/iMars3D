@@ -46,7 +46,7 @@ def config(CONFIG_FILE, DATA_DIR):
 
 
 def crop_roi(slice_input):
-    return slice_input[ROI_X[0] : ROI_X[1]][ROI_Y[0] : ROI_Y[1]]
+    return slice_input[ROI_X[0] : ROI_X[1], ROI_Y[0] : ROI_Y[1]]
 
 
 class TestWorkflowEngineAuto:
@@ -69,8 +69,8 @@ class TestWorkflowEngineAuto:
         assert Path(tiff_dir).exists()
         outfiles = [str(tiff_file) for tiff_file in Path(tiff_dir).glob("save_data_*.tiff")]
         result = load_images(outfiles, desc="test", max_workers=clamp_max_workers(None), tqdm_class=None)
-        slice_300 = crop_roi(result[300])
-        np.testing.assert_allclose(slice_300, expected_slice_300, atol=1.0e-7)
+        slice_300 = crop_roi(result[300])  # 200x200 image
+        np.testing.assert_allclose(slice_300, expected_slice_300, atol=1.0e-3)
 
     def test_no_config(self):
         with pytest.raises(TypeError):
