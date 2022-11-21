@@ -16,4 +16,4 @@ imars3d.backend.preparation.normalization module
    :members:
    :undoc-members:
    :show-inheritance:
-   :exclude-members: arrays, cut_off, darks, flats, max_workers, name
+   :exclude-members: arrays, darks, flats, max_workers, name
