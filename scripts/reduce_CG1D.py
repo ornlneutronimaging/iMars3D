@@ -75,10 +75,10 @@ def main(inputfile: Union[str, Path], outputdir: Union[str, Path]) -> int:
     time_str = to_time_str()  # date stamp for log and configuration files
 
     # create log file to capture the root logger, in order to also capture messages from the backend
-    log_fn = outputdir / f"reduce_CG1D_{time_str}.log"
-    log_fh = logging.FileHandler(log_fn)
-    log_fh.setLevel(logging.INFO)
-    logging.getLogger().addHandler(log_fh)
+    log_file_path = outputdir / f"reduce_CG1D_{time_str}.log"
+    log_file_handler = logging.FileHandler(log_file_path)
+    log_file_handler.setLevel(logging.INFO)
+    logging.getLogger().addHandler(log_file_handler)
 
     # verify the inputs are sensible
     input_checking = _validate_inputs(inputfile, outputdir)
@@ -111,13 +111,6 @@ def main(inputfile: Union[str, Path], outputdir: Union[str, Path]) -> int:
         logger.exception("Unable to update the template configuration")
         return ERROR_GENERAL
 
-    # save config file to working directory
-    # NOTE:
-    #  i.e. ironman_20221108_154015.json
-    exp_name = config_dict["name"].replace(" ", "_")
-    config_fn = outputdir / f"{exp_name}_{time_str}.json"
-    save_config(config_dict, config_fn)
-
     # call the auto reduction with updated dict
     try:
         workflow = WorkflowEngineAuto(config_dict)
@@ -127,12 +120,17 @@ def main(inputfile: Union[str, Path], outputdir: Union[str, Path]) -> int:
         logger.exception("Failed to create and run workflow")
         exit_code = e.exit_code
 
-    # move files to image directory if auto-reduction is successful
-    logging.shutdown()  # flushing and closing all handlers
-    target_dir = workflow.registry["save_dir"]
-    if exit_code == WORKFLOW_SUCCESS:
-        shutil.move(config_fn, target_dir)
-        shutil.move(log_fn, target_dir)
+    # save configuration and log files to appropriate directory
+    config_file_name = config_dict["name"].replace(" ", "_")
+    radiographs_dir = workflow.registry.get("save_dir")
+    if exit_code == WORKFLOW_SUCCESS and radiographs_dir:
+        config_file_path = radiographs_dir / f"{config_file_name}_{time_str}.json"
+        save_config(config_dict, config_file_path)
+        logging.shutdown()  # flushing and closing all handlers
+        shutil.move(log_file_path, radiographs_dir)  # move the log file to the radiographs directory
+    else:
+        config_file_path = outputdir / f"{config_file_name}_{time_str}.json"
+        save_config(config_dict, config_file_path)
 
     return exit_code
 
