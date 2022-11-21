@@ -8,10 +8,12 @@ from imars3d.backend import extract_info_from_path
 from imars3d.backend import substitute_template
 from imars3d.backend.autoredux import logger as logger_autoredux
 from imars3d.backend.workflow.engine import WorkflowEngineAuto, WorkflowEngineError, WorkflowEngineExitCodes
+from imars3d.backend.util.functions import to_time_str
 
 # standard imports
-from datetime import datetime
+import logging
 from pathlib import Path
+import shutil
 from typing import Union
 import sys
 
@@ -70,54 +72,69 @@ def main(inputfile: Union[str, Path], outputdir: Union[str, Path]) -> int:
     inputfile = Path(inputfile)
     outputdir = Path(outputdir)
 
+    time_str = to_time_str()  # date stamp for log and configuration files
+
+    # create log file to capture the root logger, in order to also capture messages from the backend
+    log_fn = outputdir / f"reduce_CG1D_{time_str}.log"
+    log_fh = logging.FileHandler(log_fn)
+    log_fh.setLevel(logging.INFO)
+    logging.getLogger().addHandler(log_fh)
+
     # verify the inputs are sensible
     input_checking = _validate_inputs(inputfile, outputdir)
     if input_checking > 0:
         return input_checking
 
-    # step 0: check if data is ready for reduction
+    # check if data is ready for reduction
     if not auto_reduction_ready(inputfile):
         logger.warning("Data incomplete, waiting for next try.")
         return SCAN_INCOMPLETE
 
-    # step 1: load the template configuration file to memory
+    # load the template configuration file to memory
     try:
         config_path = _find_template_config()
         config_dict = load_template_config(config_path)
-    except FileNotFoundError as e:
-        logger.error(str(e))
+    except FileNotFoundError:
+        logger.exception("Unable to load the template configuration")
         return ERROR_GENERAL
 
-    # step 2: extract info from inputfile
+    # extract info from inputfile
     update_dict = extract_info_from_path(str(inputfile))
     assert update_dict["instrument"] == "CG1D", "Instrument is not CG1D"
     update_dict["outputdir"] = str(outputdir)
     update_dict["workingdir"] = str(outputdir)
 
-    # step 3: update the dict and save dict to disk
+    # update the dict and save dict to disk
     try:
         config_dict = substitute_template(config_dict, update_dict)
-    except Exception as e:
-        logger.error(str(e))
+    except Exception:
+        logger.exception("Unable to update the template configuration")
         return ERROR_GENERAL
 
     # save config file to working directory
     # NOTE:
     #  i.e. ironman_20221108_154015.json
     exp_name = config_dict["name"].replace(" ", "_")
-    now = datetime.now()
-    time_str = now.strftime("%Y%m%d_%H%M%S")
     config_fn = outputdir / f"{exp_name}_{time_str}.json"
     save_config(config_dict, config_fn)
 
-    # step 4: call the auto reduction with updated dict
+    # call the auto reduction with updated dict
     try:
         workflow = WorkflowEngineAuto(config_dict)
         workflow.run()
-        return WORKFLOW_SUCCESS
+        exit_code = WORKFLOW_SUCCESS
     except WorkflowEngineError as e:
         logger.exception("Failed to create and run workflow")
-        return e.exit_code
+        exit_code = e.exit_code
+
+    # move files to image directory if auto-reduction is successful
+    logging.shutdown()  # flushing and closing all handlers
+    target_dir = workflow.registry["save_dir"]
+    if exit_code == WORKFLOW_SUCCESS:
+        shutil.move(config_fn, target_dir)
+        shutil.move(log_fn, target_dir)
+
+    return exit_code
 
 
 if __name__ == "__main__":

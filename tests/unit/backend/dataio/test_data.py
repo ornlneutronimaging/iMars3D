@@ -5,7 +5,6 @@ Unit tests for backend data loading.
 
 import pytest
 import astropy.io.fits as fits
-from datetime import datetime
 import tifffile
 import numpy as np
 from functools import partial
@@ -19,7 +18,6 @@ from imars3d.backend.dataio.data import _load_images
 from imars3d.backend.dataio.data import _load_by_file_list
 from imars3d.backend.dataio.data import _get_filelist_by_dir
 from imars3d.backend.dataio.data import _extract_rotation_angles
-from imars3d.backend.dataio.data import _to_time_str
 
 
 @pytest.fixture(scope="module")
@@ -241,20 +239,6 @@ def test_get_filelist_by_dir(tiff_with_metadata):
         ob_fnmatch=None,
     )
     assert rst == ([], [], [])
-
-
-@pytest.mark.parametrize(
-    "timestamp",
-    [
-        datetime(2022, 1, 1, 1, 1),
-        datetime(2022, 12, 12, 12, 12),
-    ],
-)
-def test_time_str(timestamp):
-    value = _to_time_str(datetime.now())
-    assert isinstance(value, str)
-    assert len(value) == 12
-    assert int(value), "Cannot be converted to an integer"
 
 
 def test_save_data_fail():
