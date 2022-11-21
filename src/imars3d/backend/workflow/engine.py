@@ -70,6 +70,11 @@ class WorkflowEngine:
     def __init__(self) -> None:
         self._registry: Optional[dict] = None  # will store set or computed parameters
 
+    @property
+    def registry(self):
+        r"""Read only registry"""
+        return self._registry
+
     def _instrospect_task_function(self, function_str: str) -> namedtuple:
         r"""Obtain information from the function associated to one task in the workflow.
 
