@@ -1,7 +1,6 @@
 name: imars3d
 channels:
   - conda-forge
-  - defaults
 dependencies:
   - astropy
   - boa
