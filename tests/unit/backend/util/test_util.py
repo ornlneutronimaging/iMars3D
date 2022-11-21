@@ -21,7 +21,7 @@ def test_clamp_max_workers():
     ],
 )
 def test_time_str(timestamp):
-    value = to_time_str(datetime.now())
+    value = to_time_str(timestamp)
     assert isinstance(value, str)
     assert len(value) == 12
     assert int(value), "Cannot be converted to an integer"

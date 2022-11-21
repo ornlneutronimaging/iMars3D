@@ -11,7 +11,6 @@ from imars3d.backend.workflow.engine import WorkflowEngineAuto, WorkflowEngineEr
 from imars3d.backend.util.functions import to_time_str
 
 # standard imports
-from datetime import datetime
 import logging
 from pathlib import Path
 import shutil
@@ -73,8 +72,7 @@ def main(inputfile: Union[str, Path], outputdir: Union[str, Path]) -> int:
     inputfile = Path(inputfile)
     outputdir = Path(outputdir)
 
-    # date stamps for log and configuration files
-    time_str = to_time_str(datetime.now())
+    time_str = to_time_str()  # date stamp for log and configuration files
 
     # create log file to capture the root logger, in order to also capture messages from the backend
     log_fn = outputdir / f"reduce_CG1D_{time_str}.log"

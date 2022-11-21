@@ -18,7 +18,7 @@ def clamp_max_workers(max_workers: Union[int, None]) -> int:
     return min(resource.RLIMIT_NPROC, max(1, multiprocessing.cpu_count() - 2)) if max_workers <= 0 else max_workers
 
 
-def to_time_str(value: datetime) -> str:
+def to_time_str(value: datetime = datetime.now()) -> str:
     """
     Convert the supplied datetime to a formatted string.
 
