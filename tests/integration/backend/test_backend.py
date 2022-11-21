@@ -34,9 +34,14 @@ def CONFIG_FILE(JSON_DIR):
 
 
 @pytest.fixture(scope="module")
-def config(CONFIG_FILE):
+def config(CONFIG_FILE, DATA_DIR):
     with open(CONFIG_FILE, "r") as handle:
         result = json.load(handle)
+    # endow input data directories with absolute paths
+    inputs = result["tasks"][0]["inputs"]
+    repo_dir = DATA_DIR.parent.parent.parent
+    for image_type in ["ct_dir", "ob_dir", "dc_dir"]:
+        inputs[image_type] = repo_dir / inputs[image_type]
     return result
 
 
