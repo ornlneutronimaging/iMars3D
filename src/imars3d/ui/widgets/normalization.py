@@ -36,13 +36,7 @@ class Normalization(param.Parameterized):
             return
 
         # call the filter
-        cutoff = -1.0 if self.auto_cutoff else self.cutoff
-        self.parent.ct = normalization(
-            arrays=self.parent.ct,
-            flats=self.parent.ob,
-            darks=self.parent.dc,
-            cut_off=cutoff,
-        )
+        self.parent.ct = normalization(arrays=self.parent.ct, flats=self.parent.ob, darks=self.parent.dc)
         #
         self.status = True
         pn.state.notifications.success("normalization complete.", duration=3000)
