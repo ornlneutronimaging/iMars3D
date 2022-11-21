@@ -12,7 +12,6 @@ import tifffile
 from tqdm.contrib.concurrent import process_map
 
 # standard imports
-from datetime import datetime
 from functools import partial
 from fnmatch import fnmatchcase
 import logging
@@ -539,7 +538,7 @@ class save_data(param.ParameterizedFunction):
         if params.data is None:
             raise ValueError("Did not supply data")
 
-        save_dir = Path(params.outputbase) / f"{params.name}_{to_time_str(datetime.now())}"
+        save_dir = Path(params.outputbase) / f"{params.name}_{to_time_str()}"
 
         # save the data as tiffs
         _save_data(filename=save_dir / params.name, data=params.data, rot_angles=params.rot_angles)
@@ -587,7 +586,7 @@ class save_checkpoint(param.ParameterizedFunction):
         # sanitize arguments
         params = param.ParamOverrides(self, params)
 
-        save_dir = params.outputbase / f"{params.name}_chkpt_{to_time_str(datetime.now())}"
+        save_dir = params.outputbase / f"{params.name}_chkpt_{to_time_str()}"
 
         # save the data as tiffs
         _save_data(filename=save_dir / params.name, data=params.data, rot_angles=params.rot_angles)
