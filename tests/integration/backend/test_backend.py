@@ -16,7 +16,6 @@ import json
 import numpy as np
 from pathlib import Path
 import re
-from typing import Callable
 
 
 @pytest.fixture(scope="module")
@@ -50,17 +49,17 @@ def crop_roi(slice_input):
 
 
 class TestWorkflowEngineAuto:
-    outputdir = "/tmp/imars3d/"
-
     @pytest.mark.datarepo
-    def test_config(self, config, cleanfile):
-        cleanfile(self.outputdir)
+    def test_config(self, config: dict, tmpdir: Path):
+        config["workingdir"] = str(tmpdir)
+        config["outputdir"] = str(tmpdir)
         workflow = WorkflowEngineAuto(config)
         assert workflow.config == config
 
     @pytest.mark.datarepo
-    def test_run(self, config: dict, THIS_DATA_DIR: Path, cleanfile: Callable, caplog):
-        cleanfile(self.outputdir)
+    def test_run(self, config: dict, THIS_DATA_DIR: Path, tmpdir: Path, caplog):
+        config["workingdir"] = str(tmpdir)
+        config["outputdir"] = str(tmpdir)
         workflow = WorkflowEngineAuto(config)
         expected_slice_300 = np.load(str(THIS_DATA_DIR / "expected_slice_300.npy"))
         workflow.run()
@@ -70,7 +69,7 @@ class TestWorkflowEngineAuto:
         outfiles = [str(tiff_file) for tiff_file in Path(tiff_dir).glob("save_data_*.tiff")]
         result = load_images(outfiles, desc="test", max_workers=clamp_max_workers(None), tqdm_class=None)
         slice_300 = crop_roi(result[300])  # 200x200 image
-        np.testing.assert_allclose(slice_300, expected_slice_300, atol=1.0e-3)
+        np.testing.assert_allclose(slice_300, expected_slice_300, atol=1.0e-4)
 
     def test_no_config(self):
         with pytest.raises(TypeError):
