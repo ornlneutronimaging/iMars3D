@@ -80,7 +80,7 @@ class TestWorkflowEngineAuto:
         # extract slice and crop to region of interest
         tiff_dir = re.search(r'saving tiffs to "([-/\.\w]+)"', caplog.text).groups()[0]
         assert Path(tiff_dir).exists()
-        outfiles = [str(tiff_file) for tiff_file in Path(tiff_dir).glob("save_data_*.tiff")]
+        outfiles = sorted([str(tiff_file) for tiff_file in Path(tiff_dir).glob("save_data_*.tiff")])
         result = load_images(
             outfiles,
             desc="test",
@@ -102,7 +102,7 @@ class TestWorkflowEngineAuto:
         # extract slice and crop to region of interest
         tiff_dir = re.search(r'saving tiffs to "([-/\.\w]+)"', caplog.text).groups()[0]
         assert Path(tiff_dir).exists()
-        outfiles = [str(tiff_file) for tiff_file in Path(tiff_dir).glob("save_data_*.tiff")]
+        outfiles = sorted([str(tiff_file) for tiff_file in Path(tiff_dir).glob("save_data_*.tiff")])
         result = load_images(
             outfiles,
             desc="test",
