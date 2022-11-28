@@ -33,7 +33,8 @@ jobs:
           mamba-version: "*"
           environment-file: environment.yml
       - name: clean /tmp/
-        run: /bin/rm -rf /tmp/ | true
+        run: |
+          /bin/rm -rf /tmp/ | true
       - name: Tests with data repository
         # DEBUG: substitute datarepotestrun with datarepo"
         run: python -m pytest -m datarepotestrun
