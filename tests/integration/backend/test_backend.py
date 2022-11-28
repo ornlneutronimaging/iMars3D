@@ -103,13 +103,15 @@ class TestWorkflowEngineAuto:
         tiff_dir = re.search(r'saving tiffs to "([-/\.\w]+)"', caplog.text).groups()[0]
         assert Path(tiff_dir).exists()
         outfiles = sorted([str(tiff_file) for tiff_file in Path(tiff_dir).glob("save_data_*.tiff")])
+        assert len(outfiles) == 525, f"{tiff_dir} should have 525 tiffs"
         result = load_images(
             outfiles,
             desc="test",
             max_workers=clamp_max_workers(None),
             tqdm_class=None,
         )
-        slice_300 = result[0:600:3, 300, 400:600]  # 200x200 image
+        # slice_300 = result[0:600:3, 300, 400:600]  # 200x200 image
+        slice_300 = result[300, 400:600, 400:600]
         expected_slice_300 = np.load(str(THIS_DATA_DIR / "expected_slice_300.npy"))
         np.testing.assert_allclose(slice_300, expected_slice_300, atol=1.0e-4)
 
