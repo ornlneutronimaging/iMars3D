@@ -5,7 +5,8 @@ from imars3d.backend.workflow.engine import WorkflowEngineAuto
 from imars3d.backend.workflow.engine import WorkflowEngineError
 from imars3d.backend.dataio.data import _load_images as load_images
 from imars3d.backend.workflow.validate import JSONValidationError
-from imars3d.backend.util.functions import clamp_max_workers
+
+# from imars3d.backend.util.functions import clamp_max_workers
 
 # third party imports
 import pytest
@@ -67,7 +68,13 @@ class TestWorkflowEngineAuto:
         tiff_dir = re.search(r'saving tiffs to "([-/\.\w]+)"', caplog.text).groups()[0]
         assert Path(tiff_dir).exists()
         outfiles = [str(tiff_file) for tiff_file in Path(tiff_dir).glob("save_data_*.tiff")]
-        result = load_images(outfiles, desc="test", max_workers=clamp_max_workers(None), tqdm_class=None)
+        result = load_images(
+            outfiles,
+            desc="test",
+            max_workers=1,
+            # max_workers=clamp_max_workers(None),
+            tqdm_class=None,
+        )
         slice_300 = crop_roi(result[300])  # 200x200 image
         np.testing.assert_allclose(slice_300, expected_slice_300, atol=1.0e-4)
 

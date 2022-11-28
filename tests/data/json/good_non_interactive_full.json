@@ -9,6 +9,7 @@
             "name": "task1",
             "function": "imars3d.backend.dataio.data.load_data",
             "inputs": {
+                "max_workers": 1,
                 "ct_dir": "tests/data/imars3d-data/HFIR/CG1D/IPTS-25777/raw/ct_scans/iron_man",
                 "ob_dir": "tests/data/imars3d-data/HFIR/CG1D/IPTS-25777/raw/ob/Oct29_2019/",
                 "dc_dir": "tests/data/imars3d-data/HFIR/CG1D/IPTS-25777/raw/df/Oct29_2019/",
@@ -49,6 +50,7 @@
             "name": "task3",
             "function": "imars3d.backend.corrections.gamma_filter.gamma_filter",
             "inputs": {
+                "max_workers": 1,
                 "arrays" : "ct"
             },
             "outputs": ["ct"]
@@ -57,6 +59,7 @@
             "name": "task4",
             "function": "imars3d.backend.preparation.normalization.normalization",
             "inputs": {
+                "max_workers": 1,
                 "arrays": "ct",
                 "flats": "ob",
                 "darks": "dc"
@@ -67,6 +70,7 @@
             "name": "task5",
             "function": "imars3d.backend.corrections.denoise.denoise",
             "inputs": {
+                "max_workers": 1,
                 "arrays": "ct"
             },
             "outputs": ["ct"]
@@ -75,6 +79,7 @@
             "name": "task6",
             "function": "imars3d.backend.corrections.ring_removal.remove_ring_artifact",
             "inputs": {
+                "max_workers": 1,
                 "arrays": "ct"
             },
             "outputs": ["ct"]
@@ -83,6 +88,7 @@
             "name": "task7",
             "function": "imars3d.backend.diagnostics.rotation.find_rotation_center",
             "inputs": {
+                "max_workers": 1,
                 "arrays": "ct",
                 "angles": "rot_angles",
                 "in_degrees": true,
@@ -94,6 +100,7 @@
             "name": "task8",
             "function": "imars3d.backend.reconstruction.recon",
             "inputs": {
+                "max_workers": 1,
                 "arrays": "ct",
                 "theta": "rot_angles",
                 "center": "rot_center",

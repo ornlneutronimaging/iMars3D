@@ -50,7 +50,7 @@ class find_rotation_center(param.ParameterizedFunction):
     max_workers = param.Integer(
         default=0,
         bounds=(0, None),
-        doc="Maximum number of processes to use for parallel median filtering, default is -1, which means using all available cores.",
+        doc="Maximum number of processes to use for parallel median filtering, default is 0, which means using all available cores.",
     )
     tqdm_class = param.ClassSelector(class_=object, doc="Progress bar to render with")
 
