@@ -59,7 +59,7 @@ jobs:
           environment-file: environment.yml
       - name: Build Conda Package
         run: |
-          conda build --output-folder . -c conda-forge .
+          conda mambabuild --output-folder . -c conda-forge .
       - name: Verify Conda Package
         run: |
           conda verify noarch/imars3d*.tar.bz2
