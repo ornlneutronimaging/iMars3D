@@ -72,6 +72,11 @@ def main(inputfile: Union[str, Path], outputdir: Union[str, Path]) -> int:
     inputfile = Path(inputfile)
     outputdir = Path(outputdir)
 
+    # verify the inputs are sensible
+    input_checking = _validate_inputs(inputfile, outputdir)
+    if input_checking > 0:
+        return input_checking
+
     time_str = to_time_str()  # date stamp for log and configuration files
 
     # create log file to capture the root logger, in order to also capture messages from the backend
@@ -80,11 +85,6 @@ def main(inputfile: Union[str, Path], outputdir: Union[str, Path]) -> int:
     log_file_handler.setLevel(logging.INFO)
     root_logger = logging.getLogger()
     root_logger.addHandler(log_file_handler)
-
-    # verify the inputs are sensible
-    input_checking = _validate_inputs(inputfile, outputdir)
-    if input_checking > 0:
-        return input_checking
 
     # check if data is ready for reduction
     if not auto_reduction_ready(inputfile):

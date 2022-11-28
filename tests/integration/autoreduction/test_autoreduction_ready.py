@@ -13,7 +13,6 @@ from unittest.mock import MagicMock
 
 @pytest.mark.datarepo
 @mock.patch("reduce_CG1D._find_template_config")
-@pytest.mark.skip(reason="To be fixed in branch `happy_path`")
 def test_auto_reduction_ready(mock__find_template_config: MagicMock, caplog, IRON_MAN_DIR: Path, tmp_path: Path):
     # Force _find_template_config() to throw error in order to stop execution of main_CG1D()
     # right after auto_reduction_ready() is called
