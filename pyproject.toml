@@ -28,5 +28,6 @@ testpaths = ["tests"]
 python_files = ["test*.py"]
 norecursedirs = [".git", "tmp*", "_tmp*", "__pycache__", "*dataset*", "*data_set*"]
 markers = [
-  "datarepo: mark a test as using imars3d-data repository"
+  "datarepo: mark a test as using imars3d-data repository",
+  "datarepotestrun: DEBUG remote this marker"
 ]

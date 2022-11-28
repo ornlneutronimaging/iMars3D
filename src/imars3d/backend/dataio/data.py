@@ -172,7 +172,7 @@ class load_data(param.ParameterizedFunction):
         rot_angles = _extract_rotation_angles(ct_files)
 
         # return everything
-        return ct, ob, dc, rot_angles
+        return ct.astype(float), ob.astype(float), dc.astype(float), rot_angles.astype(float)
 
 
 # use _func to avoid sphinx pulling it into docs
