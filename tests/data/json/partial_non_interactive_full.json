@@ -16,34 +16,7 @@
                 "ob_fnmatch": "*.tiff",
                 "dc_fnmatch": "*.tiff"
             },
-            "outputs": ["ct", "ob", "dc", "rot_angles"]
-        },
-        {
-            "name": "task2.1",
-            "function": "imars3d.backend.morph.crop.crop",
-            "inputs": {
-                "arrays": "ct",
-                "crop_limit": [552, 1494, 771, 1296]
-            },
-            "outputs": ["result"]
-        },
-        {
-            "name": "task2.2",
-            "function": "imars3d.backend.morph.crop.crop",
-            "inputs": {
-                "arrays": "ob",
-                "crop_limit": [552, 1494, 771, 1296]
-            },
-            "outputs": ["ob"]
-        },
-        {
-            "name": "task2.3",
-            "function": "imars3d.backend.morph.crop.crop",
-            "inputs": {
-                "arrays": "dc",
-                "crop_limit": [552, 1494, 771, 1296]
-            },
-            "outputs": ["dc"]
+            "outputs": ["result", "ob", "dc", "rot_angles"]
         },
         {
             "name": "task9",
