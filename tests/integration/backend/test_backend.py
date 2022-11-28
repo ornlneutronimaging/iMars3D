@@ -24,24 +24,6 @@ def THIS_DATA_DIR(DATA_DIR):
     return DATA_DIR.parent / "integration" / "backend"
 
 
-ROI_X = (400, 600)
-ROI_Y = (400, 600)
-
-
-# DEBUG: remove this fixture
-@pytest.fixture(scope="module")
-def partial_config(JSON_DIR, DATA_DIR):
-    CONFIG_FILE = JSON_DIR / "partial_non_interactive_full.json"
-    with open(CONFIG_FILE, "r") as handle:
-        result = json.load(handle)
-    # endow input data directories with absolute paths
-    inputs = result["tasks"][0]["inputs"]
-    repo_dir = DATA_DIR.parent.parent.parent
-    for image_type in ["ct_dir", "ob_dir", "dc_dir"]:
-        inputs[image_type] = repo_dir / inputs[image_type]
-    return result
-
-
 @pytest.fixture(scope="module")
 def CONFIG_FILE(JSON_DIR):
     return JSON_DIR / "good_non_interactive_full.json"
@@ -57,10 +39,6 @@ def config(CONFIG_FILE, DATA_DIR):
     for image_type in ["ct_dir", "ob_dir", "dc_dir"]:
         inputs[image_type] = repo_dir / inputs[image_type]
     return result
-
-
-def crop_roi(slice_input):
-    return slice_input[ROI_X[0] : ROI_X[1], ROI_Y[0] : ROI_Y[1]]
 
 
 class TestWorkflowEngineAuto:
@@ -87,31 +65,7 @@ class TestWorkflowEngineAuto:
             max_workers=clamp_max_workers(None),
             tqdm_class=None,
         )
-        slice_300 = crop_roi(result[300])  # 200x200 image
-        expected_slice_300 = np.load(str(THIS_DATA_DIR / "expected_slice_300.npy"))
-        np.testing.assert_allclose(slice_300, expected_slice_300, atol=1.0e-4)
-
-    # DEBUG: remove this test
-    @pytest.mark.datarepotestrun
-    def test_run_2(self, partial_config: dict, THIS_DATA_DIR: Path, tmpdir: Path, caplog):
-        config = partial_config
-        config["workingdir"] = str(tmpdir)
-        config["outputdir"] = str(tmpdir)
-        workflow = WorkflowEngineAuto(config)
-        workflow.run()
-        # extract slice and crop to region of interest
-        tiff_dir = re.search(r'saving tiffs to "([-/\.\w]+)"', caplog.text).groups()[0]
-        assert Path(tiff_dir).exists()
-        outfiles = sorted([str(tiff_file) for tiff_file in Path(tiff_dir).glob("save_data_*.tiff")])
-        assert len(outfiles) == 525, f"{tiff_dir} should have 525 tiffs"
-        result = load_images(
-            outfiles,
-            desc="test",
-            max_workers=clamp_max_workers(None),
-            tqdm_class=None,
-        )
-        # slice_300 = result[0:600:3, 300, 400:600]  # 200x200 image
-        slice_300 = result[300, 400:600, 400:600]
+        slice_300 = result[300, 400:600, 400:600]  # 200x200 image
         expected_slice_300 = np.load(str(THIS_DATA_DIR / "expected_slice_300.npy"))
         np.testing.assert_allclose(slice_300, expected_slice_300, atol=1.0e-4)
 

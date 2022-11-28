@@ -32,12 +32,8 @@ jobs:
           auto-update-conda: true
           mamba-version: "*"
           environment-file: environment.yml
-      - name: clean /tmp/
-        run: |
-          /bin/rm -rf /tmp/ || true
       - name: Tests with data repository
-        # DEBUG: substitute datarepotestrun with datarepo"
-        run: python -m pytest -m datarepotestrun
+        run: python -m pytest -m datarepo
       - name: Update job status
         uses: Sibz/github-status-action@v1
         if: ${{ always() && github.event_name == 'workflow_dispatch' }}

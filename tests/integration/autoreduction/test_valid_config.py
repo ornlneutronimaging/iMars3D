@@ -89,15 +89,13 @@ def test_valid_config(
     # Check resulting radiographs by extracting a slice and cropping to region of interest
     radiographs_dir = re.search(r'saving tiffs to "([-/\.\w]+)"', caplog.text).groups()[0]
     assert Path(radiographs_dir).exists()
-    output_tiffs = [str(file) for file in Path(radiographs_dir).glob("*.tiff")]
+    output_tiffs = sorted([str(file) for file in Path(radiographs_dir).glob("*.tiff")])
     assert len(output_tiffs) == 525, f"{config_path} should have 525 tiffs"
 
     result = load_images(filelist=output_tiffs, desc="test", max_workers=clamp_max_workers(None), tqdm_class=None)
-
-    roi_x, roi_y = (400, 600), (400, 600)
-    slice_cropped = np.array(result[42][roi_x[0] : roi_x[1], roi_y[0] : roi_y[1]])
+    slice_cropped = result[42, 400:600, 400:600]
     expected = np.load(str(DATA_DIR.parent / "integration" / "backend" / "expected_slice_42.npy"))
-    np.testing.assert_allclose(slice_cropped, expected, atol=1.0e-3)
+    np.testing.assert_allclose(slice_cropped, expected, atol=1.0e-6)
 
 
 if __name__ == "__main__":
