@@ -4,7 +4,6 @@ channels:
   - defaults
 dependencies:
   - astropy
-  - boa
   - tomopy
   - dxchange
   - jsonschema
