@@ -60,6 +60,8 @@ jobs:
           environment-file: environment.yml
       - name: Build Conda Package
         run: |
+          # boa uses mamba to resolve dependencies
+          conda install -y boa
           conda mambabuild --output-folder . -c conda-forge .
       - name: Verify Conda Package
         run: |
