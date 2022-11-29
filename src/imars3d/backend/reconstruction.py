@@ -51,6 +51,12 @@ class recon(param.ParameterizedFunction):
     )
     is_radians = param.Boolean(default=True, doc="Whether or not input angle is in radians")
     perform_minus_log = param.Boolean(default=False, doc="Whether or not to run tomopy.minus_log on arrays")
+    max_workers = param.Integer(
+        default=0,
+        bounds=(0, None),
+        doc="Number of processes to use for parallel median filtering, default is 0, "
+        "which means leave to tomopy to determine the number of cores to use.",
+    )
 
     def __call__(self, **params):
         """See class level documentation for help."""
@@ -67,6 +73,7 @@ class recon(param.ParameterizedFunction):
             params.filter_name,
             params.is_radians,
             params.perform_minus_log,
+            params.max_workers,
             **params.extra_keywords(),
         )
 
@@ -74,7 +81,7 @@ class recon(param.ParameterizedFunction):
         return reconstructed_image
 
     def _recon(
-        self, arrays, theta, center, algorithm, filter_name, is_radians, perform_minus_log, **kwargs
+        self, arrays, theta, center, algorithm, filter_name, is_radians, perform_minus_log, ncore, **kwargs
     ) -> np.ndarray:
 
         if not is_radians:
@@ -86,6 +93,11 @@ class recon(param.ParameterizedFunction):
         if perform_minus_log:
             arrays = tomopy.minus_log(arrays)
 
+        if ncore <= 0:
+            ncore = None  # leave to tomopy to determine the number of cores
+
         # TODO: allow different backends besides tomopy
-        result = tomo_recon(arrays, theta, center=center, algorithm=algorithm, filter_name=filter_name, **kwargs)
+        result = tomo_recon(
+            arrays, theta, center=center, algorithm=algorithm, ncore=ncore, filter_name=filter_name, **kwargs
+        )
         return result

@@ -3,14 +3,7 @@
 Unit tests for backend data loading.
 """
 
-import pytest
-import astropy.io.fits as fits
-import tifffile
-import numpy as np
-from functools import partial
-from pathlib import Path
-from tempfile import TemporaryDirectory
-from unittest import mock
+# package imports
 from imars3d.backend.dataio.data import load_data
 from imars3d.backend.dataio.data import save_data, save_checkpoint
 from imars3d.backend.dataio.data import _forgiving_reader
@@ -19,38 +12,58 @@ from imars3d.backend.dataio.data import _load_by_file_list
 from imars3d.backend.dataio.data import _get_filelist_by_dir
 from imars3d.backend.dataio.data import _extract_rotation_angles
 
+# third party imports
+import astropy.io.fits as fits
+import numpy as np
+import pytest
+import tifffile
 
-@pytest.fixture(scope="module")
-def data_fixture(tmpdir_factory):
+# standard imports
+from functools import partial
+from pathlib import Path
+from unittest import mock
+from unittest.mock import MagicMock
+
+
+@pytest.fixture(scope="function")
+def data_fixture(tmpdir):
     # dummy tiff image data
     data = np.ones((3, 3))
     #
-    tmpdirname = "test_data"
     # TIFF files
     # -- valid tiff with generic name, no metadata
-    generic_tiff = tmpdir_factory.mktemp(tmpdirname).join("generic.tiff")
+    generic_tiff = tmpdir / "generic_tiff_dir" / "generic.tiff"
+    generic_tiff.parent.mkdir()
     tifffile.imwrite(str(generic_tiff), data)
     # -- valid tiff with good name for angle extraction, no metadata
-    good_tiff = tmpdir_factory.mktemp(tmpdirname).join("20191030_expname_0080_010_020_1960.tiff")
+    good_tiff = tmpdir / "good_tiff_dir" / "20191030_expname_0080_010_020_1960.tiff"
+    good_tiff.parent.mkdir()
     tifffile.imwrite(str(good_tiff), data)
     # -- valid tiff with generic name, but has metadata
     ex_tags = [
         (65039, "s", 0, "RotationActual:0.1", True),
     ]
-    metadata_tiff = tmpdir_factory.mktemp(tmpdirname).join("metadata.tiff")
+    metadata_tiff = tmpdir / "metadata_tiff_dir" / "metadata.tiff"
+    metadata_tiff.parent.mkdir()
     tifffile.imwrite(str(metadata_tiff), data, extratags=ex_tags)
     # Fits files
-    generic_fits = tmpdir_factory.mktemp(tmpdirname).join("generic.fits")
+    generic_fits = tmpdir / "generic_fits_dir" / "generic.fits"
+    generic_fits.parent.mkdir()
     hdu = fits.PrimaryHDU(data)
     hdu.writeto(str(generic_fits))
     # return the tmp files
     return generic_tiff, good_tiff, metadata_tiff, generic_fits
 
 
-@mock.patch("imars3d.backend.dataio.data._extract_rotation_angles", return_value=4)
-@mock.patch("imars3d.backend.dataio.data._get_filelist_by_dir", return_value=("1", "2", "3"))
-@mock.patch("imars3d.backend.dataio.data._load_by_file_list", return_value=(1, 2, 3))
-def test_load_data(_load_by_file_list, _get_filelist_by_dir, _extract_rotation_angles):
+@mock.patch("imars3d.backend.dataio.data._extract_rotation_angles")
+@mock.patch("imars3d.backend.dataio.data._get_filelist_by_dir")
+@mock.patch("imars3d.backend.dataio.data._load_by_file_list")
+def test_load_data(
+    mock__load_by_file_list: MagicMock, mock__get_filelist_by_dir: MagicMock, mock__extract_rotation_angles: MagicMock
+):
+    mock__load_by_file_list.return_value = (np.array([1.0]), np.array([2.0]), np.array([3.0]))
+    mock__get_filelist_by_dir.return_value = ("1", "2", "3")
+    mock__extract_rotation_angles.return_value = np.array([4.0])
     # error_0: incorrect input argument types
     with pytest.raises(ValueError):
         load_data(ct_files=1, ob_files=[], dc_files=[])
@@ -71,10 +84,10 @@ def test_load_data(_load_by_file_list, _get_filelist_by_dir, _extract_rotation_a
         load_data(ct_fnmatch=1)
     # case_0: load data from file list
     rst = load_data(ct_files=["1", "2"], ob_files=["3", "4"], dc_files=["5", "6"])
-    assert rst == (1, 2, 3, 4)
+    np.testing.assert_almost_equal(np.array(rst).flatten(), np.arange(1, 5, dtype=float))
     # case_1: load data from given directory
     rst = load_data(ct_dir="/tmp", ob_dir="/tmp", dc_dir="/tmp")
-    assert rst == (1, 2, 3, 4)
+    np.testing.assert_almost_equal(np.array(rst).flatten(), np.arange(1, 5, dtype=float))
 
 
 def test_forgiving_reader():
@@ -137,8 +150,8 @@ def test_extract_rotation_angles(data_fixture):
     np.testing.assert_array_almost_equal(rst, ref)
 
 
-@pytest.fixture(scope="module")
-def tiff_with_metadata(tmpdir_factory):
+@pytest.fixture(scope="function")
+def tiff_with_metadata(tmpdir):
     # create testing tiff images
     data = np.ones((3, 3))
     #
@@ -163,13 +176,17 @@ def tiff_with_metadata(tmpdir_factory):
         (65068, "s", 0, "MotSlitHR.RBV:11.000000", True),
     ]
     # write testing data
-    ct = tmpdir_factory.mktemp("test_metadata").join("test_ct.tiff")
+    ct = tmpdir / "ct_dir" / "test_ct.tiff"
+    ct.parent.mkdir()
     tifffile.imwrite(str(ct), data, extratags=ext_tags_ct)
-    ob = tmpdir_factory.mktemp("test_metadata").join("test_ob.tiff")
+    ob = tmpdir / "ob_dir" / "test_ob.tiff"
+    ob.parent.mkdir()
     tifffile.imwrite(str(ob), data, extratags=ext_tags_ct)
-    dc = tmpdir_factory.mktemp("test_metadata").join("test_dc.tiff")
+    dc = tmpdir / "dc_dir" / "test_dc.tiff"
+    dc.parent.mkdir()
     tifffile.imwrite(str(dc), data, extratags=ext_tags_dc)
-    ct_alt = tmpdir_factory.mktemp("test_metadata").join("test_ct_alt.tiff")
+    ct_alt = tmpdir / "ct_alt_dir" / "test_ct_alt.tiff"
+    ct_alt.parent.mkdir()
     tifffile.imwrite(str(ct_alt), data, extratags=ext_tags_ct_alt)
     return ct, ob, dc, ct_alt
 
@@ -268,75 +285,57 @@ def create_fake_data():
 
 
 @pytest.mark.parametrize("name", ["junk", ""])  # gets default name
-def test_save_data(name):
+def test_save_data(name, tmpdir):
     data = create_fake_data()
     omegas = np.asarray([1.0, 2.0, 3.0])
-    # this context will remove directory on exit
-    with TemporaryDirectory() as tmpdirname:
-        assert tmpdirname
-        tmpdir = Path(tmpdirname)
+    # run the code
+    numfiles = 3
+    if name:
+        outputdir = save_data(data=data, outputbase=tmpdir, name=name, rot_angles=omegas)
+        numfiles += 1
+    else:
+        outputdir = save_data(data=data, outputbase=tmpdir)
+    print(outputdir)
 
-        # run the code
-        numfiles = 3
-        if name:
-            outputdir = save_data(data=data, outputbase=tmpdir, name=name, rot_angles=omegas)
-            numfiles += 1
-        else:
-            outputdir = save_data(data=data, outputbase=tmpdir)
-        print(outputdir)
+    # check the result
+    if name:
+        prefix = name + "_"
+    else:
+        prefix = "save_data_"  # special name
 
-        # check the result
-        if name:
-            prefix = name + "_"
-        else:
-            prefix = "save_data_"  # special name
-
-        assert outputdir.name.startswith(prefix), str(outputdir.name)
-        check_savefiles(outputdir, prefix, has_omega=bool(name), num_files=numfiles)
+    assert outputdir.name.startswith(prefix), str(outputdir.name)
+    check_savefiles(outputdir, prefix, has_omega=bool(name), num_files=numfiles)
 
 
-def test_save_data_subdir():
+def test_save_data_subdir(tmpdir):
     name = "subdirtest"
-    # this context will remove directory on exit
-    with TemporaryDirectory() as tmpdirname:
-        data = create_fake_data()
-        tmpdir = Path(tmpdirname) / "subdirectory"  # make it create a subdirectory
-
-        # run the code
-        outputdir = save_data(data=data, outputbase=tmpdir, name=name)
-        assert outputdir.name.startswith(f"{name}_"), str(outputdir)
-
-        # check the result
-        check_savefiles(outputdir, "subdirtest_")
+    data = create_fake_data()
+    # run the code
+    outputdir = save_data(data=data, outputbase=tmpdir, name=name)
+    assert outputdir.name.startswith(f"{name}_"), str(outputdir)
+    # check the result
+    check_savefiles(outputdir, "subdirtest_")
 
 
-def test_save_checkpoint():
+def test_save_checkpoint(tmpdir):
     name = "chktest"
     data = create_fake_data()
 
     # check without omegas
-    with TemporaryDirectory() as tmpdirname:
-        assert tmpdirname
-        omegas = np.asarray([1.0, 2.0, 3.0])
-        tmpdir = Path(tmpdirname)
-
-        outputdir = save_checkpoint(data=data, outputbase=tmpdir, name=name)
-
-        assert outputdir.name.startswith(f"{name}_chkpt_"), str(outputdir)
-        # check the tiffs result
-        check_savefiles(outputdir, "chk", num_files=3)
+    subdir = tmpdir / "omegas_false"
+    subdir.mkdir()
+    outputdir = save_checkpoint(data=data, outputbase=subdir, name=name)
+    assert outputdir.name.startswith(f"{name}_chkpt_"), str(outputdir)
+    check_savefiles(outputdir, "chk", num_files=3)
+    outputdir = save_checkpoint(data=data, outputbase=tmpdir, name=name)
 
     # check with omegas
-    with TemporaryDirectory() as tmpdirname:
-        assert tmpdirname
-        omegas = np.asarray([1.0, 2.0, 3.0])
-        tmpdir = Path(tmpdirname)
-
-        outputdir = save_checkpoint(data=data, outputbase=tmpdir, name=name, rot_angles=omegas)
-
-        assert outputdir.name.startswith(f"{name}_chkpt_"), str(outputdir)
-        # check the tiffs result
-        check_savefiles(outputdir, "chk", num_files=4, has_omega=True)
+    subdir = tmpdir / "omegas_true"
+    subdir.mkdir()
+    omegas = np.asarray([1.0, 2.0, 3.0])
+    outputdir = save_checkpoint(data=data, outputbase=subdir, name=name, rot_angles=omegas)
+    assert outputdir.name.startswith(f"{name}_chkpt_"), str(outputdir)
+    check_savefiles(outputdir, "chk", num_files=4, has_omega=True)
 
 
 if __name__ == "__main__":

@@ -3,8 +3,10 @@ from reduce_CG1D import main as main_CG1D
 import pytest
 from json.decoder import JSONDecodeError
 
-TIFF_DIR = "tests/data/imars3d-data/HFIR/CG1D/IPTS-25777/raw/ct_scans/iron_man"
-TIFF_RANDOM = TIFF_DIR + "/20191030_ironman_small_0070_233_740_0405.tiff"
+
+@pytest.fixture(scope="module")
+def TIFF_RANDOM(IRON_MAN_DIR):
+    return IRON_MAN_DIR / "20191030_ironman_small_0070_233_740_0405.tiff"
 
 
 def test_bad(JSON_DIR):
@@ -20,8 +22,7 @@ def test_good(JSON_DIR):
 
 
 @pytest.mark.datarepo
-@pytest.mark.skip(reason="To be fixed in branch `happy_path`")
-def test_outputdir_not_writable():
+def test_outputdir_not_writable(TIFF_RANDOM):
     assert main_CG1D(TIFF_RANDOM, "this/dir/doesnt/exist") == 1
 
 

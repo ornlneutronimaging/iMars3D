@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 """Configuration file handler for the imars3d."""
 import json
+import logging
 from pathlib import Path
 from typing import Union
+
+# setup module level logger
+logger = logging.getLogger(__name__)
 
 
 def save_config(
@@ -30,3 +34,4 @@ def save_config(
     # now write to disk
     with open(filepath, "w") as outfile:
         json.dump(config_dict, outfile, indent=2, sort_keys=False)
+    logger.info(f"Configuration saved to {str(filepath)}")

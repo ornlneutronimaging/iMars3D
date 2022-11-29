@@ -2,15 +2,18 @@
 """
 Unit tests for backend metadata auxiliary class.
 """
+# package imports
+from imars3d.backend.dataio.metadata import _extract_metadata_from_tiff
+from imars3d.backend.dataio.metadata import MetaData
+
+# third party imports
 import pytest
 import numpy as np
 import tifffile
-from imars3d.backend.dataio.metadata import MetaData
-from imars3d.backend.dataio.metadata import _extract_metadata_from_tiff
 
 
-@pytest.fixture(scope="module")
-def data_fixture(tmpdir_factory):
+@pytest.fixture(scope="function")
+def data_fixture(tmpdir):
     # create testing tiff images
     data = np.ones((3, 3))
     #
@@ -35,16 +38,21 @@ def data_fixture(tmpdir_factory):
         (65068, "s", 0, "MotSlitHR.RBV:11.000000", True),
     ]
     # write testing data
-    ct = tmpdir_factory.mktemp("test_metadata").join("test_ct.tiff")
+    ct = tmpdir / "ct_dir" / "test_ct.tiff"
+    ct.parent.mkdir()
     tifffile.imwrite(str(ct), data, extratags=ext_tags_ct)
-    ob = tmpdir_factory.mktemp("test_metadata").join("test_ob.tiff")
+    ob = tmpdir / "ob_dir" / "test_ob.tiff"
+    ob.parent.mkdir()
     tifffile.imwrite(str(ob), data, extratags=ext_tags_ct)
-    dc = tmpdir_factory.mktemp("test_metadata").join("test_dc.tiff")
+    dc = tmpdir / "dc_dir" / "test_dc.tiff"
+    dc.parent.mkdir()
     tifffile.imwrite(str(dc), data, extratags=ext_tags_dc)
-    ct_alt = tmpdir_factory.mktemp("test_metadata").join("test_ct_alt.tiff")
+    ct_alt = tmpdir / "ct_alt_dir" / "test_ct_alt.tiff"
+    ct_alt.parent.mkdir()
     tifffile.imwrite(str(ct_alt), data, extratags=ext_tags_ct_alt)
     # for extension checking
-    fits = tmpdir_factory.mktemp("test_metadata").join("test.fits")
+    fits = tmpdir / "fits_dir" / "test.fits"
+    fits.parent.mkdir()
     tifffile.imwrite(str(fits), data)
     return ct, ob, dc, ct_alt, fits
 

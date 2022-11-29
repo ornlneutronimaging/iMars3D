@@ -5,6 +5,7 @@ from imars3d.backend.workflow.engine import WorkflowEngineAuto
 from imars3d.backend.workflow.engine import WorkflowEngineError
 from imars3d.backend.dataio.data import _load_images as load_images
 from imars3d.backend.workflow.validate import JSONValidationError
+
 from imars3d.backend.util.functions import clamp_max_workers
 
 # third party imports
@@ -16,16 +17,11 @@ import json
 import numpy as np
 from pathlib import Path
 import re
-from typing import Callable
 
 
 @pytest.fixture(scope="module")
 def THIS_DATA_DIR(DATA_DIR):
     return DATA_DIR.parent / "integration" / "backend"
-
-
-ROI_X = (400, 600)
-ROI_Y = (400, 600)
 
 
 @pytest.fixture(scope="module")
@@ -34,38 +30,44 @@ def CONFIG_FILE(JSON_DIR):
 
 
 @pytest.fixture(scope="module")
-def config(CONFIG_FILE):
+def config(CONFIG_FILE, DATA_DIR):
     with open(CONFIG_FILE, "r") as handle:
         result = json.load(handle)
+    # endow input data directories with absolute paths
+    inputs = result["tasks"][0]["inputs"]
+    repo_dir = DATA_DIR.parent.parent.parent
+    for image_type in ["ct_dir", "ob_dir", "dc_dir"]:
+        inputs[image_type] = repo_dir / inputs[image_type]
     return result
 
 
-def crop_roi(slice_input):
-    return slice_input[ROI_X[0] : ROI_X[1]][ROI_Y[0] : ROI_Y[1]]
-
-
 class TestWorkflowEngineAuto:
-    outputdir = "/tmp/imars3d/"
-
     @pytest.mark.datarepo
-    def test_config(self, config, cleanfile):
-        cleanfile(self.outputdir)
+    def test_config(self, config: dict, tmpdir: Path):
+        config["workingdir"] = str(tmpdir)
+        config["outputdir"] = str(tmpdir)
         workflow = WorkflowEngineAuto(config)
         assert workflow.config == config
 
     @pytest.mark.datarepo
-    def test_run(self, config: dict, THIS_DATA_DIR: Path, cleanfile: Callable, caplog):
-        cleanfile(self.outputdir)
+    def test_run(self, config: dict, THIS_DATA_DIR: Path, tmpdir: Path, caplog):
+        config["workingdir"] = str(tmpdir)
+        config["outputdir"] = str(tmpdir)
         workflow = WorkflowEngineAuto(config)
-        expected_slice_300 = np.load(str(THIS_DATA_DIR / "expected_slice_300.npy"))
         workflow.run()
         # extract slice and crop to region of interest
         tiff_dir = re.search(r'saving tiffs to "([-/\.\w]+)"', caplog.text).groups()[0]
         assert Path(tiff_dir).exists()
-        outfiles = [str(tiff_file) for tiff_file in Path(tiff_dir).glob("save_data_*.tiff")]
-        result = load_images(outfiles, desc="test", max_workers=clamp_max_workers(None), tqdm_class=None)
-        slice_300 = crop_roi(result[300])
-        np.testing.assert_allclose(slice_300, expected_slice_300, atol=1.0e-7)
+        outfiles = sorted([str(tiff_file) for tiff_file in Path(tiff_dir).glob("save_data_*.tiff")])
+        result = load_images(
+            outfiles,
+            desc="test",
+            max_workers=clamp_max_workers(None),
+            tqdm_class=None,
+        )
+        slice_300 = result[300, 400:600, 400:600]  # 200x200 image
+        expected_slice_300 = np.load(str(THIS_DATA_DIR / "expected_slice_300.npy"))
+        np.testing.assert_allclose(slice_300, expected_slice_300, atol=1.0e-4)
 
     def test_no_config(self):
         with pytest.raises(TypeError):

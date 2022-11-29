@@ -240,7 +240,7 @@ def _load_images(filelist: List[str], desc: str, max_workers: int, tqdm_class) -
 
     rst = process_map(partial(_forgiving_reader, reader=reader), filelist, **kwargs)
     # return the results
-    return np.array([me for me in rst if me is not None])
+    return np.array([me for me in rst if me is not None], dtype="float")
 
 
 # use _func to avoid sphinx pulling it into docs
@@ -475,7 +475,8 @@ def _extract_rotation_angles(
         # img.pages[0].tags[65039].value
         # >> 'RotationActual:0.579840'
         rotation_angles = np.array(
-            [float(tifffile.TiffFile(f).pages[0].tags[metadata_idx].value.split(":")[-1]) for f in filelist]
+            [float(tifffile.TiffFile(f).pages[0].tags[metadata_idx].value.split(":")[-1]) for f in filelist],
+            dtype="float",
         )
     return rotation_angles
 

@@ -263,7 +263,7 @@ class denoise(param.ParameterizedFunction):
         params = param.ParamOverrides(self, params)
 
         # type validation is done, now replacing max_worker with an actual integer
-        self.max_workers = clamp_max_workers(self.max_workers)
+        self.max_workers = clamp_max_workers(params.max_workers)
         logger.debug(f"max_worker={self.max_workers}")
         denoised_array = None
         if params.method == "median":
