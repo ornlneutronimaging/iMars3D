@@ -6,11 +6,119 @@ import param
 from imars3d.backend.util.functions import clamp_max_workers
 import scipy
 import numpy as np
+import bm3d_streak_removal as bm3dsr
 from multiprocessing.managers import SharedMemoryManager
 from tqdm.contrib.concurrent import process_map
 from functools import partial
 
 logger = logging.getLogger(__name__)
+
+
+class bm3d_ring_removal(param.ParameterizedFunction):
+    """
+    Remove ring artifact from sinograms using BM3D method.
+
+    ref: `10.1107/S1600577521001910 <http://doi.org/10.1107/S1600577521001910>`_
+
+    Parameters
+    ----------
+    arrays: np.ndarray
+        Input radiograph stack.
+
+    Returns
+    -------
+        Radiograph stack with ring artifact removed.
+
+    Notes
+    -----
+    1. The parallel processing is handled at the bm3d level, and it is an intrinsic
+    slow correction algorithm running on CPU.
+    2. The underlying BM3D library uses stdout to print progress instead of a progress
+    bar.
+    """
+
+    arrays = param.Array(doc="Input radiograph stack.", default=None)
+    # parameters passed to bm3dsr.extreme_streak_attenuation
+    extreme_streak_iterations = param.Integer(default=3, doc="Number of iterations for extreme streak attenuation.")
+    extreme_detect_lambda = param.Number(
+        default=4.0,
+        doc="Consider streaks which are stronger than lambda * local_std as extreme.",
+    )
+    extreme_detect_size = param.Integer(
+        default=9,
+        doc="Half window size for extreme streak detection -- total (2*s + 1).",
+    )
+    extreme_replace_size = param.Integer(
+        default=2,
+        doc="Half window size for extreme streak replacement -- total (2*s + 1).",
+    )
+    # parameters passed to bm3dsr.multiscale_streak_removal
+    max_bin_iter_horizontal = param.Integer(
+        default=0,
+        doc="The number of total horizontal scales (counting the full scale).",
+        bounds=(0, None),
+    )
+    bin_vertical = param.Integer(
+        default=0,
+        doc="The factor of vertical binning, e.g. bin_vertical=32 would perform denoising in 1/32th of the original vertical size.",
+        bounds=(0, None),
+    )
+    filter_strength = param.Number(
+        default=1.0,
+        doc="Strength of BM4D denoising (>0), where 1 is the standard application, >1 is stronger, and <1 is weaker.",
+        bounds=(0, None),
+    )
+    use_slices = param.Boolean(
+        default=True,
+        doc="If True, the sinograms will be split horizontally across each binning iteration into overlapping.",
+    )
+    slice_sizes = param.List(
+        default=None,
+        doc="A list of horizontal sizes for use of the slicing if use_slices=True. By default, slice size is either 39 pixels or 1/5th of the total width of the current iteration, whichever is larger.",
+    )
+    slice_step_sizes = param.List(
+        default=None,
+        doc="List of number of pixels between slices obtained with use_slices=True, one for each binning iteration. By default 1/4th of the corresponding slice size.",
+    )
+    denoise_indices = param.List(
+        default=None,
+        doc="Indices of sinograms to denoise; by default, denoises the full stack provided.",
+    )
+    # note: we are skipping the bm3d_profile_obj parameter as bm3d is not explicitly used in iMars3D.
+
+    def __call__(self, **params):
+        """See class level documentation for help."""
+        logger.info("Executing Filter: Remove Ring Artifact with BM3D")
+        _ = self.instance(**params)
+        params = param.ParamOverrides(self, params)
+        # mangle parameters
+        if params.max_bin_iter_horizontal == 0:
+            params.max_bin_iter_horizontal = "auto"
+        if params.bin_vertical == 0:
+            params.bin_vertical = "auto"
+        # step 1: extreme streak attenuation
+        logger.debug("Perform extreme streak attenuation")
+        param.arrays = bm3dsr.extreme_streak_attenuation(
+            data=params.arrays,
+            extreme_streak_iterations=params.extreme_streak_iterations,
+            extreme_detect_lambda=params.extreme_detect_lambda,
+            extreme_detect_size=params.extreme_detect_size,
+            extreme_replace_size=params.extreme_replace_size,
+        )
+        # step 2: multiscale streak removal
+        logger.debug("Perform multiscale streak removal")
+        param.arrays = bm3dsr.multiscale_streak_removal(
+            data=params.arrays,
+            max_bin_iter_horizontal=params.max_bin_iter_horizontal,
+            bin_vertical=params.bin_vertical,
+            filter_strength=params.filter_strength,
+            use_slices=params.use_slices,
+            slice_sizes=params.slice_sizes,
+            slice_step_sizes=params.slice_step_sizes,
+            denoise_indices=params.denoise_indices,
+        )
+        logger.info("FINISHED Executing Filter: Remove Ring Artifact")
+        return param.arrays
 
 
 class remove_ring_artifact(param.ParameterizedFunction):
