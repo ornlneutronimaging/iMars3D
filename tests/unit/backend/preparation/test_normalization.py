@@ -1,9 +1,17 @@
 #!/usr/bin/env python3
+# package imports
+from imars3d.backend.preparation.normalization import minus_log, normalization
+from imars3d.backend.workflow.engine import WorkflowEngineAuto
+
+# third party imports
 import numpy as np
 import pytest
-import skimage
 from scipy.ndimage import gaussian_filter
-from imars3d.backend.preparation.normalization import normalization
+import skimage
+
+# standard library
+import json
+from pathlib import Path
 
 
 def generate_fake_darkfield(
@@ -114,6 +122,37 @@ def test_normalization_bright_dark():
     # compare
     diff = np.absolute(proj_imars3d - proj).sum() / np.prod(proj.shape)
     assert diff < 0.01
+
+
+class TestMinusLog:
+    @pytest.mark.parametrize("ncore", [1, 2])
+    def test_execution(self, ncore: int) -> None:
+        r"""Invoke minus_log on a simple array with different number of processing cores"""
+        arrays = 42 * np.ones(6).reshape((1, 2, 3))
+        arrays_normalized = minus_log(arrays=arrays, max_workers=ncore)
+        np.testing.assert_allclose(arrays_normalized, -np.log(arrays), atol=1.0e-3)
+
+    def test_dryrun(self, JSON_DIR: Path) -> None:
+        r"""Validate a JSON file containing a minus_log task"""
+        task = json.loads(
+            """
+        {
+            "name": "minus_log",
+            "function": "imars3d.backend.preparation.normalization.minus_log",
+            "inputs": {"arrays": "ct", "max_workers": 2},
+            "outputs": ["ct"]
+        }"""
+        )
+        config = json.load(open(JSON_DIR / "good_non_interactive_full.json"))
+        config["tasks"].insert(6, task)  # insert minus_log task after normalization
+        workflow = WorkflowEngineAuto(config)
+        workflow._dryrun()
+
+    def test_exception(self) -> None:
+        r"""Applying minus_log to an array with elements equal or smaller than zero should raise ValueError"""
+        with pytest.raises(ValueError) as e:
+            minus_log(arrays=1.0 * np.arange(42), max_workers=1)
+        assert "'minus_log' cannot be applied" in str(e.value)
 
 
 if __name__ == "__main__":
