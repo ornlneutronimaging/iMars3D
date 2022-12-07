@@ -106,6 +106,7 @@ class minus_log(param.ParameterizedFunction):
     )
 
     def __call__(self, **params):
+        """Perform minus_log via tomopy."""
         logger.info("Executing Filter: minus_log")
         # type*bounds check via Parameter
         _ = self.instance(**params)
