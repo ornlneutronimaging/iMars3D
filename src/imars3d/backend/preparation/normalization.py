@@ -1,10 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """iMars3D normalization module."""
-import logging
-import param
+
+# package imports
 from imars3d.backend.util.functions import clamp_max_workers
+
+# third party imports
 import numpy as np
+import param
+from tomopy.prep.normalize import minus_log as tm_minus_log
+
+# standard imports
+import logging
 
 
 logger = logging.getLogger(__name__)
@@ -38,7 +45,7 @@ class normalization(param.ParameterizedFunction):
     max_workers = param.Integer(
         default=0,
         bounds=(0, None),
-        doc="Maximum number of processes allowed during loading",
+        doc="Maximum number of processes allowed during execution",
     )
 
     def __call__(self, **params):
@@ -48,7 +55,6 @@ class normalization(param.ParameterizedFunction):
         _ = self.instance(**params)
         # sanitize arguments
         params = param.ParamOverrides(self, params)
-        # import pdb; pdb.set_trace()
         # type validation is done, now replacing max_worker with an actual integer
         self.max_workers = clamp_max_workers(params.max_workers)
         logger.debug(f"max_worker={self.max_workers}")
@@ -66,4 +72,51 @@ class normalization(param.ParameterizedFunction):
         # return
         logger.info("FINISHED Executing Filter: Normalization")
 
+        return arrays_normalized
+
+
+class minus_log(param.ParameterizedFunction):
+    r"""Computation of the minus natural log of a given array.
+
+    Calls `tomopy.prep.normalize.minus_log`.
+
+    Parameters
+    ----------
+    arrays : np.ndarray
+        any multidimensional array with values greater than one.
+
+    max_workers : int
+        number of cores to use for parallel processing, default is 0, which means using all available cores.
+
+    Returns
+    -------
+        np.ndarray
+
+    Raises
+    ------
+    ValueError
+        Any entry in the input array is equal or smaller than zero
+    """
+
+    arrays = param.Array(doc="any multidimensional array with values greater than one.", default=None)
+    max_workers = param.Integer(
+        default=0,
+        bounds=(0, None),
+        doc="Maximum number of processes allowed during execution",
+    )
+
+    def __call__(self, **params):
+        """Perform minus_log via tomopy."""
+        logger.info("Executing Filter: minus_log")
+        # type*bounds check via Parameter
+        _ = self.instance(**params)
+        # sanitize arguments
+        params = param.ParamOverrides(self, params)
+        # type validation is done, now replacing max_worker with an actual integer
+        self.max_workers = clamp_max_workers(params.max_workers)
+        logger.debug(f"max_worker={self.max_workers}")
+        if not np.all(params.arrays > 0.0):
+            raise ValueError("'minus_log' cannot be applied to arrays containing elements equal or smaller than zero")
+        arrays_normalized = tm_minus_log(params.arrays, ncore=self.max_workers)
+        logger.info("FINISHED Executing Filter: minus_log")
         return arrays_normalized
