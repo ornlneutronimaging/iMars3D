@@ -3,9 +3,13 @@
 
 # standard imports
 from datetime import datetime
+import logging
 import multiprocessing
 import resource
 from typing import Union
+
+
+logger = logging.getLogger(__name__)
 
 
 def clamp_max_workers(max_workers: Union[int, None]) -> int:
@@ -15,7 +19,14 @@ def clamp_max_workers(max_workers: Union[int, None]) -> int:
     """
     if max_workers is None:
         max_workers = 0
-    return min(resource.RLIMIT_NPROC, max(1, multiprocessing.cpu_count() - 2)) if max_workers <= 0 else max_workers
+
+    result = min(resource.RLIMIT_NPROC, max(1, multiprocessing.cpu_count() - 2)) if max_workers <= 0 else max_workers
+
+    # log if the value was different than what was asked for
+    if max_workers == 0 and result != max_workers:
+        logger.info(f"Due to system load, setting maximum workers to {result}")
+
+    return result
 
 
 def to_time_str(value: datetime = datetime.now()) -> str:
