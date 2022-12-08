@@ -10,7 +10,6 @@ import numpy as np
 try:
     import bm3d_streak_removal as bm3dsr
 except ImportError:
-    # add a log?
     bm3dsr = None
 from multiprocessing.managers import SharedMemoryManager
 from tqdm.contrib.concurrent import process_map
@@ -23,12 +22,36 @@ class bm3d_ring_removal(param.ParameterizedFunction):
     """
     Remove ring artifact from sinograms using BM3D method.
 
+    This method requires BM3D suite, which can be installed by ``pip install bm3d_streak_removal``.
+
     ref: `10.1107/S1600577521001910 <http://doi.org/10.1107/S1600577521001910>`_
 
     Parameters
     ----------
     arrays: np.ndarray
         Input radiograph stack.
+    extreme_streak_iterations: int
+        Number of iterations for extreme streak attenuation.
+    extreme_detect_lambda: float
+        Consider streaks which are stronger than lambda * local_std as extreme.
+    extreme_detect_size: int
+        Half window size for extreme streak detection -- total (2*s + 1).
+    extreme_replace_size: int
+        Half window size for extreme streak replacement -- total (2*s + 1).
+    max_bin_iter_horizontal: int
+        The number of total horizontal scales (counting the full scale).
+    bin_vertical: int
+        The factor of vertical binning, e.g. bin_vertical=32 would perform denoising in 1/32th of the original vertical size.
+    filter_strength: float
+        Strength of BM4D denoising (>0), where 1 is the standard application, >1 is stronger, and <1 is weaker.
+    use_slices: bool
+        If True, the sinograms will be split horizontally across each binning iteration into overlapping.
+    slice_sizes: list
+        A list of horizontal sizes for use of the slicing if use_slices=True. By default, slice size is either 39 pixels or 1/5th of the total width of the current iteration, whichever is larger.
+    slice_step_sizes: list
+        List of number of pixels between slices obtained with use_slices=True, one for each binning iteration. By default 1/4th of the corresponding slice size.
+    denoise_indices: list
+        Indices of sinograms to denoise; by default, denoises the full stack provided.
 
     Returns
     -------
@@ -94,8 +117,8 @@ class bm3d_ring_removal(param.ParameterizedFunction):
     def __call__(self, **params):
         """See class level documentation for help."""
         if not bm3dsr:
-            logger.warning("something informative")
-            raise RuntimeError("probably same as warning")
+            logger.warning("To use method, make sure to install bm3d_streak_removal package via pip.")
+            raise RuntimeError("BM3D suite not installed, please install with pip install bm3d_streak_removal")
         else:
             logger.info("Executing Filter: Remove Ring Artifact with BM3D")
         _ = self.instance(**params)
