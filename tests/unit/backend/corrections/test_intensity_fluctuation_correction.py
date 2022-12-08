@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from functools import cache
 import numpy as np
 import pytest
 import tomopy
@@ -10,6 +11,7 @@ from imars3d.backend.corrections.intensity_fluctuation_correction import (
 np.random.seed(0)
 
 
+@cache
 def generate_fake_projections(
     n_projections: int = 1440,
 ) -> np.ndarray:
