@@ -29,3 +29,4 @@ dependencies:
     - versioningit
     - check-wheel-contents
     - pytest-playwright
+    - bm3d-streak-removal
