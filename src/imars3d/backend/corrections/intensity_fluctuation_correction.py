@@ -199,3 +199,61 @@ def intensity_fluctuation_correction_skimage(
     factor = np.concatenate((left, right)).mean()
     # apply the correction factor
     return image / factor
+
+
+class normalize_roi(param.ParameterizedFunction):
+    """
+    Normalize raw projection data using an average of a selected window on projection images.
+
+    Parameters
+    ----------
+    ct: np.ndarray
+        The image/radiograph stack.
+    roi: int = 5
+        [top-left, top-right, bottom-left, bottom-right] pixel coordinates.
+    max_workers: int = 0
+        The number of cores to use for parallel processing, default is 0, which means using all available cores.
+
+
+    Returns
+    -------
+        The normalized image/radiograph stack.
+    """
+
+    ct = param.Array(default=None, doc="The image/radiograph stack.")
+    roi = param.List(
+        default=[0, 0, 10, 10],
+        doc="[top-left, top-right, bottom-left, bottom-right] pixel coordinates",
+        item_type=int,
+    )
+    max_workers = param.Integer(
+        default=0,
+        bounds=(0, None),
+        doc="The number of cores to use for parallel processing, default is 0, which means using all available cores.",
+    )
+
+    def __call__(self, **params):
+        """Call the function."""
+        logger.info("Executing Filter: Normalize ROI")
+        # forced type+bounds check
+        _ = self.instance(**params)
+        # sanitize arguments
+        params = param.ParamOverrides(self, params)
+
+        # type validation is done, now replacing max_worker with an actual integer
+        self.max_workers = clamp_max_workers(params.max_workers)
+        logger.debug(f"max_workers={self.max_workers}")
+        output_array = self._normalize_roi(
+            params.ct,
+            params.roi,
+            self.max_workers,
+        )
+        logger.info("FINISHED Executing Filter: Normalize ROI")
+        return output_array
+
+    def _normalize_roi(self, ct, roi, max_workers):
+        # sanity check
+        if ct.ndim != 3:
+            raise ValueError("This correction can only be used for a stack, i.e. a 3D image.")
+        proj_norm_beam_fluctuation = tomopy.prep.normalize.normalize_roi(ct, roi=roi, ncore=max_workers)
+        return proj_norm_beam_fluctuation
