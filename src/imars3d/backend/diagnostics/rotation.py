@@ -28,6 +28,8 @@ class find_rotation_center(param.ParameterizedFunction):
         whether angles are in degrees or radians, default is True (degrees)
     atol_deg: float = 1e-3
         tolerance for the search of 180 deg paris, default is 0.1 degrees
+    num_pairs: int = 1
+        Number of pairs to look for. Specifying -1 means as many pairs as possible.
     max_workers: int = 0
         number of cores to use for parallel median filtering, default is 0, which means using all available cores.
     tqdm_class: imars3d.ui.widgets.TqdmType
@@ -47,6 +49,9 @@ class find_rotation_center(param.ParameterizedFunction):
         default=1e-3,
         doc="tolerance for the search of 180 deg paris, default is 0.1 degrees",
     )
+    num_pairs = param.Integer(
+        default=1, bounds=(-1, None), doc="Number of pairs to look for. Specifying -1 means as many pairs as possible."
+    )
     max_workers = param.Integer(
         default=0,
         bounds=(0, None),
@@ -64,7 +69,13 @@ class find_rotation_center(param.ParameterizedFunction):
         self.max_workers = clamp_max_workers(params.max_workers)
 
         val = self._find_rotation_center(
-            params.arrays, params.angles, params.in_degrees, params.atol_deg, self.max_workers, params.tqdm_class
+            arrays=params.arrays,
+            angles=params.angles,
+            in_degrees=params.in_degrees,
+            atol_deg=params.atol_deg,
+            num_pairs=params.num_pairs,
+            max_workers=self.max_workers,
+            tqdm_class=params.tqdm_class,
         )
         logger.info("FINISHED Executing Filter: Find Rotation Center")
         return val
@@ -75,6 +86,7 @@ class find_rotation_center(param.ParameterizedFunction):
         angles: np.ndarray,
         in_degrees: bool = True,
         atol_deg: float = 1e-3,
+        num_pairs: int = 1,
         max_workers: int = -1,
         tqdm_class=None,
     ) -> float:
@@ -86,6 +98,26 @@ class find_rotation_center(param.ParameterizedFunction):
         # locate 180 degree pairs
         atol = atol_deg if in_degrees else np.radians(atol_deg)
         idx_low, idx_hgh = find_180_deg_pairs_idx(angles, atol=atol, in_degrees=in_degrees)
+        if num_pairs <= 0 or num_pairs >= idx_low.size:
+            logger.info("Using all pairs of angles")
+        elif num_pairs == 1:
+            idx_low = [idx_low[0]]
+            idx_hgh = [idx_hgh[0]]
+            logger.info("Using one pair of angles")
+        else:
+            # integer division to get correct size if possible
+            span = idx_low.size // num_pairs
+            # get equally spaced items if possible
+            if span > 1:
+                idx_low = idx_low[::span]
+                idx_hgh = idx_hgh[::span]
+            # trim down to the requested number
+            # the selected angels are not equally spaced
+            if idx_low.size > num_pairs:
+                idx_low = idx_low[:num_pairs]
+                idx_hgh = idx_hgh[:num_pairs]
+            logger.info(f"Using {idx_low.size} pairs of angles")
+
         # process
         max_workers = clamp_max_workers(max_workers)
         # use shared memory model and tqdm wrapper for multiprocessing to reduce
