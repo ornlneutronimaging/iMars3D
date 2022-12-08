@@ -5,10 +5,11 @@ import tomopy
 from imars3d.backend.corrections.ring_removal import remove_ring_artifact
 from imars3d.backend.corrections.ring_removal import remove_ring_artifact_Ketcham
 from imars3d.backend.corrections.ring_removal import bm3d_ring_removal
+
 try:
-  import bm3d_streak_removal as bm3dsr
+    import bm3d_streak_removal as bm3dsr
 except ImportError:
-  bm3dsr = None
+    bm3dsr = None
 
 
 def get_synthetic_stack(N_omega: int = 181, size: int = 200) -> np.ndarray:
