@@ -93,7 +93,11 @@ class bm3d_ring_removal(param.ParameterizedFunction):
 
     def __call__(self, **params):
         """See class level documentation for help."""
-        logger.info("Executing Filter: Remove Ring Artifact with BM3D")
+        if not bm3dsr:
+            logger.warning("something informative")
+            raise RuntimeError("probably same as warning")
+        else:
+            logger.info("Executing Filter: Remove Ring Artifact with BM3D")
         _ = self.instance(**params)
         params = param.ParamOverrides(self, params)
         # mangle parameters
