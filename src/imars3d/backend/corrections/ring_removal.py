@@ -6,7 +6,11 @@ import param
 from imars3d.backend.util.functions import clamp_max_workers
 import scipy
 import numpy as np
-import bm3d_streak_removal as bm3dsr
+try:
+  import bm3d_streak_removal as bm3dsr
+except ImportError:
+  # add a log?
+  bm3dsr = None
 from multiprocessing.managers import SharedMemoryManager
 from tqdm.contrib.concurrent import process_map
 from functools import partial
