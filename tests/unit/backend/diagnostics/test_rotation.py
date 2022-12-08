@@ -11,6 +11,7 @@ OMEGAS = np.linspace(0, np.pi * 2, 181)
 # decorator creates a dict of previous parameter/return pairs
 # the cache does not empty
 # each call takes ~1s
+# Time difference on 2022-12-09 was 17s vs 11s
 
 
 @cache
