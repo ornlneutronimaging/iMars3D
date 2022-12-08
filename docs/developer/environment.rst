@@ -46,9 +46,9 @@ To use it, first install git-lfs, then setup the git-submodule
 Useful Functions
 ----------------
 
-The [cache](https://docs.python.org/3/library/functools.html#functools.cache) decorator can be used to hold onto returns of functions.
+The `cache <https://docs.python.org/3/library/functools.html#functools.cache>`_ decorator can be used to hold onto returns of functions.
 The data is stored in a ``dict`` with the function parameters as the key, and the return as the value.
-The cache remains in memory for the lifetime of the pytest run and a [pytest fixture](https://docs.pytest.org/en/7.1.x/how-to/fixtures.html) with more limited scope may be more appropriate.
+The cache remains in memory for the lifetime of the pytest run and a `pytest fixture <https://docs.pytest.org/en/7.1.x/how-to/fixtures.html>`_ with more limited scope may be more appropriate.
 
 Access Development Version on Analysis Cluster
 ----------------------------------------------
