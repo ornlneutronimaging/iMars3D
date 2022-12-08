@@ -66,6 +66,7 @@ def test_remove_ring_artifact_Ketcham():
     assert err_correction < err_no_correction
 
 
+@pytest.mark.skipif(not bm3dsr, reason="something meaningful array")
 def test_bm3d_ring_removal():
     # step_0: prepare synthetic data
     # note: we need a tiny test data as bm3d is very slow
