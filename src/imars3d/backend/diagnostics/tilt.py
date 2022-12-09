@@ -26,8 +26,6 @@ def find_180_deg_pairs_idx(
     """
     Return the indices of the 180 degree pairs from given list of angles.
 
-    If atol is set to None (default), the input angles MUST BE SORTED.
-
     Parameters
     ----------
     angles:
@@ -49,7 +47,9 @@ def find_180_deg_pairs_idx(
     angles = angles if in_degrees else np.degrees(angles)
     # compute atol if not specified
     if atol is None:
-        atol = np.min(np.absolute(np.diff(angles))) / 2.0
+        sorted_indices = np.argsort(angles)
+        atol = np.min(np.diff(angles[sorted_indices])) / 2.0
+        del sorted_indices
         logger.debug(f"use computed atol = {atol}")
     # compute the self difference matrix
     angles = angles[..., np.newaxis]

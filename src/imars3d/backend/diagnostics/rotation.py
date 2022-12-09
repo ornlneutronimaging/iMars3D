@@ -18,14 +18,6 @@ class find_rotation_center(param.ParameterizedFunction):
     """
     Automatically find the rotation center from a given radiograph stack.
 
-    If atol_deg is set to None (default), the input radiograph stack MUST BE
-    SORTED by rotation angle omega. In most conventional tomography scan, this
-    is automatically the case. However, if the radiograph is collected via
-    non-conventional method, such as grid scan or sampling scan, the radiograph
-    stack must be sorted by omega before using this function.
-    Alternatively, the user can specify the tolerance of the search for 180 deg
-    pairs, which is useful for non-conventional tomography scan.
-
     Parameters
     ----------
     arrays: np.ndarray
@@ -34,7 +26,7 @@ class find_rotation_center(param.ParameterizedFunction):
         array of angles in degrees or radians, which must match the order of arrays
     in_degrees: bool = True
         whether angles are in degrees or radians, default is True (degrees)
-    atol_deg: Union[float, None] = None
+    atol_deg: Optional[float] = None
         tolerance for the search of 180 deg paris, default is None ("auto")
     num_pairs: int = 1
         Number of pairs to look for. Specifying -1 means as many pairs as possible.
