@@ -140,7 +140,8 @@ class crop(param.ParameterizedFunction):
         if arrays.ndim == 2:
             return arrays[top:bottom, left:right]
         elif arrays.ndim == 3:
-            return arrays[:, top:bottom, left:right]
+            # return a copy allowing the uncropped array can be garbage collected in the future
+            return arrays[:, top:bottom, left:right].copy()
 
 
 def detect_bounds(
