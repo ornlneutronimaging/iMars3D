@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
+from functools import cache
 import numpy as np
 import pytest
 import tomopy
-from imars3d.backend.corrections.intensity_fluctuation_correction import intensity_fluctuation_correction
+from imars3d.backend.corrections.intensity_fluctuation_correction import (
+    intensity_fluctuation_correction,
+    normalize_roi,
+)
 
 np.random.seed(0)
 
 
+@cache
 def generate_fake_projections(
     n_projections: int = 1440,
 ) -> np.ndarray:
@@ -91,6 +96,16 @@ def test_incorrect_input_array():
     projs_incorrect = np.array([1, 2, 3])
     with pytest.raises(ValueError):
         intensity_fluctuation_correction(ct=projs_incorrect, air_pixels=5)
+
+
+def test_normalize_roi():
+    projs_ideal = generate_fake_projections()
+    projs_flickering = generate_flickering_projections(projs_ideal)
+    # Use default roi of [0, 0, 10, 10]
+    projs_corrected = normalize_roi(ct=projs_flickering)
+    diff_raw = projs_flickering - projs_ideal
+    diff_corrected = projs_corrected - projs_ideal
+    assert diff_corrected.var() < diff_raw.var()
 
 
 if __name__ == "__main__":
