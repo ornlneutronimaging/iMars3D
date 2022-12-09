@@ -96,10 +96,7 @@ class find_rotation_center(param.ParameterizedFunction):
             logger.error(msg)
             raise ValueError(msg)
         # locate 180 degree pairs
-        if atol is None:
-            idx_low, idx_hgh = find_180_deg_pairs_idx(angles, in_degrees=in_degrees)
-        else:
-            idx_low, idx_hgh = find_180_deg_pairs_idx(angles, atol=atol, in_degrees=in_degrees)
+        idx_low, idx_hgh = find_180_deg_pairs_idx(angles, atol=atol, in_degrees=in_degrees)
         # decide how many pairs to use
         if num_pairs <= 0 or num_pairs >= idx_low.size:
             logger.info("Using all pairs of angles")
