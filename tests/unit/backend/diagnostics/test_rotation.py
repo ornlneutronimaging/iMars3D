@@ -72,10 +72,13 @@ def test_differrent_centers(center_ref):
     projs = get_synthetic_stack(center_ref)
     # this is using default number of pairs (1)
     center_calc = find_rotation_center(arrays=projs, angles=OMEGAS, in_degrees=False)
+    # with atol
+    center_calc2 = find_rotation_center(arrays=projs, angles=OMEGAS, in_degrees=False, atol=0.5)
     # verify
     # NOTE:
     # answer within the same pixel should be sufficient for most cases
     np.testing.assert_allclose(center_calc, center_ref, atol=0.2)
+    np.testing.assert_allclose(center_calc2, center_ref, atol=0.2)
 
 
 def test_wrong_dimension():
