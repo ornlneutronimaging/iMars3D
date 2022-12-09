@@ -31,7 +31,7 @@ def find_180_deg_pairs_idx(
     angles:
         The list of angles as a 1d array.
     atol:
-        The absolute tolerance in degree for the 180 degree pairs.
+        The absolute tolerance for the 180 degree pairs.
     in_degrees:
         Whether the angles are in degrees or radians, default is in degrees.
 
@@ -51,6 +51,8 @@ def find_180_deg_pairs_idx(
         atol = np.min(np.diff(angles[sorted_indices])) / 2.0
         del sorted_indices
         logger.debug(f"use computed atol = {atol}")
+    else:
+        atol = atol if in_degrees else np.degrees(atol)
     # compute the self difference matrix
     angles = angles[..., np.newaxis]
     diff_matrix = angles.T - angles
