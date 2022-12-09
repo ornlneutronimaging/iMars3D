@@ -70,7 +70,7 @@ def test_valid_config(
     MEM_REQUIRED = 23
     if MEM_AVAILABLE < MEM_REQUIRED:
         msg = f"Insufficient memory to run the test: found {MEM_AVAILABLE}GiB require {MEM_REQUIRED}GiB"
-        raise RuntimeError(msg)
+        pytest.fail(msg)
     last_tiff = IRON_MAN_DIR / "20191030_ironman_small_0070_360_760_0624.tiff"
     mock_extract_info_from_path.return_value = tweak_extract_info_from_path(last_tiff)
     mock_substitute_template.side_effect = tweak_substitute_template
