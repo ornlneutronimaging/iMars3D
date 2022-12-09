@@ -34,7 +34,7 @@ imars3d.backend.corrections.intensity\_fluctuation\_correction module
    :members:
    :undoc-members:
    :show-inheritance:
-   :exclude-members: ct, air_pixels, max_workers, name, sigma, tqdm_class
+   :exclude-members: ct, air_pixels, max_workers, name, sigma, tqdm_class, roi
 
 imars3d.backend.corrections.ring\_removal module
 ------------------------------------------------
@@ -43,4 +43,4 @@ imars3d.backend.corrections.ring\_removal module
    :members:
    :undoc-members:
    :show-inheritance:
-   :exclude-members: arrays, correction_range, kernel_size, max_workers, name, sub_division, tqdm_class, sinogram
+   :exclude-members: arrays, correction_range, kernel_size, max_workers, name, sub_division, tqdm_class, sinogram, extreme_streak_iterations, extreme_detect_lambda, extreme_detect_size, extreme_replace_size, max_bin_iter_horizontal, bin_vertical, filter_strength, use_slices, slice_sizes, slice_step_sizes, denoise_indices
