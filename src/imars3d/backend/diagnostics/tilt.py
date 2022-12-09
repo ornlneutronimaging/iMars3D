@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 def find_180_deg_pairs_idx(
     angles: np.ndarray,
-    atol: float = 1e-3,
+    atol: float = None,
     in_degrees: bool = True,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
@@ -29,7 +29,7 @@ def find_180_deg_pairs_idx(
     Parameters
     ----------
     angles:
-        The list of angles as a 1d array.
+        The list of sorted angles as a 1d array.
     atol:
         The absolute tolerance in degree for the 180 degree pairs.
     in_degrees:
@@ -45,6 +45,10 @@ def find_180_deg_pairs_idx(
         raise ValueError("angles must be a 1d array")
     # ensure angles are in degrees
     angles = angles if in_degrees else np.degrees(angles)
+    # compute atol if not specified
+    if atol is None:
+        atol = np.min(np.absolute(np.diff(angles))) / 2.0
+        logger.debug(f"use computed atol = {atol}")
     # compute the self difference matrix
     angles = angles[..., np.newaxis]
     diff_matrix = angles.T - angles

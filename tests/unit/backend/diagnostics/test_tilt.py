@@ -220,7 +220,7 @@ def test_calculate_shift():
 
 def test_find_180_deg_pairs():
     # prepare the input list of angles in radians
-    omegas = np.random.random(5) * np.pi
+    omegas = np.sort(np.random.random(5) * np.pi)
     omegas = np.array(list(omegas) + list(omegas + np.pi))
     # get the pairs
     low_range_idx, high_range_idx = find_180_deg_pairs_idx(omegas, in_degrees=False)
