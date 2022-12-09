@@ -228,8 +228,9 @@ def test_find_180_deg_pairs():
     np.testing.assert_equal(low_range_idx, np.array([0, 1, 2, 3, 4]))
     np.testing.assert_equal(high_range_idx, np.array([5, 6, 7, 8, 9]))
     # test explicit atol
-    omegas = np.sort(omegas)
-    atol = np.min(np.diff(omegas)) / 2.0
+    # NOTE: use the same formula to compute atol outside the function
+    sorted_indices = np.argsort(omegas)
+    atol = np.min(np.diff(omegas[sorted_indices])) / 2.0
     low_range_idx, high_range_idx = find_180_deg_pairs_idx(omegas, in_degrees=False, atol=atol)
     np.testing.assert_equal(low_range_idx, np.array([0, 1, 2, 3, 4]))
     np.testing.assert_equal(high_range_idx, np.array([5, 6, 7, 8, 9]))

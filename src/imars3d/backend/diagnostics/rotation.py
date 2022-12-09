@@ -72,7 +72,7 @@ class find_rotation_center(param.ParameterizedFunction):
             arrays=params.arrays,
             angles=params.angles,
             in_degrees=params.in_degrees,
-            atol_deg=params.atol_deg,
+            atol=params.atol_deg,
             num_pairs=params.num_pairs,
             max_workers=self.max_workers,
             tqdm_class=params.tqdm_class,
@@ -85,7 +85,7 @@ class find_rotation_center(param.ParameterizedFunction):
         arrays: np.ndarray,
         angles: np.ndarray,
         in_degrees: bool = True,
-        atol_deg: float = None,
+        atol: float = None,
         num_pairs: int = 1,
         max_workers: int = -1,
         tqdm_class=None,
@@ -96,10 +96,9 @@ class find_rotation_center(param.ParameterizedFunction):
             logger.error(msg)
             raise ValueError(msg)
         # locate 180 degree pairs
-        if atol_deg is None:
+        if atol is None:
             idx_low, idx_hgh = find_180_deg_pairs_idx(angles, in_degrees=in_degrees)
         else:
-            atol = atol_deg if in_degrees else np.radians(atol_deg)
             idx_low, idx_hgh = find_180_deg_pairs_idx(angles, atol=atol, in_degrees=in_degrees)
         # decide how many pairs to use
         if num_pairs <= 0 or num_pairs >= idx_low.size:
