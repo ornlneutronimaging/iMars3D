@@ -18,11 +18,13 @@ class find_rotation_center(param.ParameterizedFunction):
     """
     Automatically find the rotation center from a given radiograph stack.
 
-    The input radiograph stack must be sorted by rotation angle omega. In most
-    conventional tomography scan, this is automatically the case. However, if
-    the radiograph is collected via non-conventional method, such as grid scan
-    or sampling scan, the radiograph stack must be sorted by omega before using
-    this function.
+    If atol_deg is set to None (default), the input radiograph stack MUST BE
+    SORTED by rotation angle omega. In most conventional tomography scan, this
+    is automatically the case. However, if the radiograph is collected via
+    non-conventional method, such as grid scan or sampling scan, the radiograph
+    stack must be sorted by omega before using this function.
+    Alternatively, the user can specify the tolerance of the search for 180 deg
+    pairs, which is useful for non-conventional tomography scan.
 
     Parameters
     ----------

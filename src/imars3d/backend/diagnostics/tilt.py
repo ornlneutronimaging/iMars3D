@@ -26,10 +26,12 @@ def find_180_deg_pairs_idx(
     """
     Return the indices of the 180 degree pairs from given list of angles.
 
+    If atol is set to None (default), the input angles MUST BE SORTED.
+
     Parameters
     ----------
     angles:
-        The list of sorted angles as a 1d array.
+        The list of angles as a 1d array.
     atol:
         The absolute tolerance in degree for the 180 degree pairs.
     in_degrees:
