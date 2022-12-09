@@ -18,6 +18,12 @@ class find_rotation_center(param.ParameterizedFunction):
     """
     Automatically find the rotation center from a given radiograph stack.
 
+    The input radiograph stack must be sorted by rotation angle omega. In most
+    conventional tomography scan, this is automatically the case. However, if
+    the radiograph is collected via non-conventional method, such as grid scan
+    or sampling scan, the radiograph stack must be sorted by omega before using
+    this function.
+
     Parameters
     ----------
     arrays: np.ndarray
@@ -26,8 +32,8 @@ class find_rotation_center(param.ParameterizedFunction):
         array of angles in degrees or radians, which must match the order of arrays
     in_degrees: bool = True
         whether angles are in degrees or radians, default is True (degrees)
-    atol_deg: float = 1e-3
-        tolerance for the search of 180 deg paris, default is 0.1 degrees
+    atol_deg: Union[float, None] = None
+        tolerance for the search of 180 deg paris, default is None ("auto")
     num_pairs: int = 1
         Number of pairs to look for. Specifying -1 means as many pairs as possible.
     max_workers: int = 0
@@ -46,8 +52,8 @@ class find_rotation_center(param.ParameterizedFunction):
     )
     in_degrees = param.Boolean(default=True, doc="whether angles are in degrees or radians, default is True (degrees)")
     atol_deg = param.Number(
-        default=1e-3,
-        doc="tolerance for the search of 180 deg paris, default is 0.1 degrees",
+        default=None,
+        doc="tolerance for the search of 180 deg paris, default is None (auto)",
     )
     num_pairs = param.Integer(
         default=1, bounds=(-1, None), doc="Number of pairs to look for. Specifying -1 means as many pairs as possible."
@@ -85,7 +91,7 @@ class find_rotation_center(param.ParameterizedFunction):
         arrays: np.ndarray,
         angles: np.ndarray,
         in_degrees: bool = True,
-        atol_deg: float = 1e-3,
+        atol_deg: float = None,
         num_pairs: int = 1,
         max_workers: int = -1,
         tqdm_class=None,
@@ -96,8 +102,12 @@ class find_rotation_center(param.ParameterizedFunction):
             logger.error(msg)
             raise ValueError(msg)
         # locate 180 degree pairs
-        atol = atol_deg if in_degrees else np.radians(atol_deg)
-        idx_low, idx_hgh = find_180_deg_pairs_idx(angles, atol=atol, in_degrees=in_degrees)
+        if atol_deg is None:
+            idx_low, idx_hgh = find_180_deg_pairs_idx(angles, in_degrees=in_degrees)
+        else:
+            atol = atol_deg if in_degrees else np.radians(atol_deg)
+            idx_low, idx_hgh = find_180_deg_pairs_idx(angles, atol=atol, in_degrees=in_degrees)
+        # decide how many pairs to use
         if num_pairs <= 0 or num_pairs >= idx_low.size:
             logger.info("Using all pairs of angles")
         elif num_pairs == 1:
