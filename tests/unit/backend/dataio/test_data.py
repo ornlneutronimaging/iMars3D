@@ -150,44 +150,46 @@ def test_extract_rotation_angles(data_fixture):
     np.testing.assert_array_almost_equal(rst, ref)
 
 
+@pytest.fixture(scope="module")
+def ext_tags():
+    return {
+        "ct": [
+            (65026, "s", 0, "ManufacturerStr:Test", True),
+            (65027, "s", 0, "ExposureTime:70.000000", True),
+            (65068, "s", 0, "MotSlitHR.RBV:10.000000", True),
+            (65070, "s", 0, "MotSlitHL.RBV:20.000000", True),
+            (65066, "s", 0, "MotSlitVT.RBV:10.000000", True),
+            (65068, "s", 0, "MotSlitHR.RBV:10.000000", True),
+        ],
+        "dc": [(65026, "s", 0, "ManufacturerStr:Test", True), (65027, "s", 0, "ExposureTime:70.000000", True)],
+        "ct_alt": [
+            (65026, "s", 0, "ManufacturerStr:Test", True),
+            (65027, "s", 0, "ExposureTime:71.000000", True),
+            (65068, "s", 0, "MotSlitHR.RBV:11.000000", True),
+            (65070, "s", 0, "MotSlitHL.RBV:21.000000", True),
+            (65066, "s", 0, "MotSlitVT.RBV:11.000000", True),
+            (65068, "s", 0, "MotSlitHR.RBV:11.000000", True),
+        ],
+    }
+
+
 @pytest.fixture(scope="function")
-def tiff_with_metadata(tmpdir):
+def tiff_with_metadata(tmpdir, ext_tags):
     # create testing tiff images
     data = np.ones((3, 3))
-    #
-    ext_tags_ct = [
-        (65026, "s", 0, "ManufacturerStr:Test", True),
-        (65027, "s", 0, "ExposureTime:70.000000", True),
-        (65068, "s", 0, "MotSlitHR.RBV:10.000000", True),
-        (65070, "s", 0, "MotSlitHL.RBV:20.000000", True),
-        (65066, "s", 0, "MotSlitVT.RBV:10.000000", True),
-        (65068, "s", 0, "MotSlitHR.RBV:10.000000", True),
-    ]
-    ext_tags_dc = [
-        (65026, "s", 0, "ManufacturerStr:Test", True),
-        (65027, "s", 0, "ExposureTime:70.000000", True),
-    ]
-    ext_tags_ct_alt = [
-        (65026, "s", 0, "ManufacturerStr:Test", True),
-        (65027, "s", 0, "ExposureTime:71.000000", True),
-        (65068, "s", 0, "MotSlitHR.RBV:11.000000", True),
-        (65070, "s", 0, "MotSlitHL.RBV:21.000000", True),
-        (65066, "s", 0, "MotSlitVT.RBV:11.000000", True),
-        (65068, "s", 0, "MotSlitHR.RBV:11.000000", True),
-    ]
     # write testing data
     ct = tmpdir / "ct_dir" / "test_ct.tiff"
     ct.parent.mkdir()
-    tifffile.imwrite(str(ct), data, extratags=ext_tags_ct)
+    tifffile.imwrite(str(ct), data, extratags=ext_tags["ct"])
     ob = tmpdir / "ob_dir" / "test_ob.tiff"
     ob.parent.mkdir()
-    tifffile.imwrite(str(ob), data, extratags=ext_tags_ct)
+    tifffile.imwrite(str(ob), data, extratags=ext_tags["ct"])
     dc = tmpdir / "dc_dir" / "test_dc.tiff"
     dc.parent.mkdir()
-    tifffile.imwrite(str(dc), data, extratags=ext_tags_dc)
+    tifffile.imwrite(str(dc), data, extratags=ext_tags["dc"])
     ct_alt = tmpdir / "ct_alt_dir" / "test_ct_alt.tiff"
     ct_alt.parent.mkdir()
-    tifffile.imwrite(str(ct_alt), data, extratags=ext_tags_ct_alt)
+    tifffile.imwrite(str(ct_alt), data, extratags=ext_tags["ct_alt"])
     return ct, ob, dc, ct_alt
 
 
@@ -240,6 +242,77 @@ def test_get_filelist_by_dir(tiff_with_metadata):
         ob_fnmatch=None,
     )
     assert rst == ([ct], [ob], [])
+    # case_4: load ct_alt, and find no match ob
+    rst = _get_filelist_by_dir(
+        ct_dir=ct_alt_dir,
+        ob_dir=ob_dir,
+        ct_fnmatch="*.tiff",
+        ob_fnmatch=None,
+    )
+    assert rst == ([ct_alt], [], [])
+    # case_5: did not find any match for ct
+    rst = _get_filelist_by_dir(
+        ct_dir=ct_dir,
+        ob_dir=ob_dir,
+        ct_fnmatch="*.not_exist",
+        ob_fnmatch=None,
+    )
+    assert rst == ([], [], [])
+
+
+def test_get_filelist_by_dirs(tmpdir, ext_tags, tiff_with_metadata):
+    ct, ob_1, dc_1, ct_alt = tiff_with_metadata
+    ct_dir = ct.parent
+    ct_alt_dir = ct_alt.parent
+    # additional open-beam and dark-field files
+    data = np.ones((3, 3))
+    ob_2 = tmpdir / "ob_dir_2" / "test_ob.tiff"
+    ob_2.parent.mkdir()
+    tifffile.imwrite(str(ob_2), data, extratags=ext_tags["ct"])
+    ob_dir = [ob_1.parent, ob_2.parent]
+    dc_2 = tmpdir / "dc_dir_2" / "test_dc.tiff"
+    dc_2.parent.mkdir()
+    tifffile.imwrite(str(dc_2), data, extratags=ext_tags["dc"])
+    dc_dir = [dc_1.parent, dc_2.parent]
+    # convert the golden data to string for ease of comparison
+    ct, ct_alt, ob_1, ob_2, dc_1, dc_2 = [str(x) for x in (ct, ct_alt, ob_1, ob_2, dc_1, dc_2)]
+    # case_0: load all three
+    rst = _get_filelist_by_dir(
+        ct_dir=ct_dir,
+        ob_dir=ob_dir,
+        dc_dir=dc_dir,
+        ct_fnmatch="*.tiff",
+        ob_fnmatch="*.tiff",
+        dc_fnmatch="*.tiff",
+    )
+    assert rst == ([ct], [ob_1, ob_2], [dc_1, dc_2])
+    # case_1: load ct and ob, skipping dc
+    rst = _get_filelist_by_dir(
+        ct_dir=ct_dir,
+        ob_dir=ob_dir,
+        ct_fnmatch="*.tiff",
+        ob_fnmatch="*.tiff",
+        dc_fnmatch="*.tiff",
+    )
+    assert rst == ([ct], [ob_1, ob_2], [])
+    # case_2: load ct, and detect ob and dc from metadata
+    rst = _get_filelist_by_dir(
+        ct_dir=ct_dir,
+        ob_dir=ob_dir,
+        dc_dir=dc_dir,
+        ct_fnmatch="*.tiff",
+        ob_fnmatch=None,
+        dc_fnmatch=None,
+    )
+    assert rst == ([ct], [ob_1, ob_2], [dc_1, dc_2])
+    # case_3: load ct, and detect ob from metadata
+    rst = _get_filelist_by_dir(
+        ct_dir=ct_dir,
+        ob_dir=ob_dir,
+        ct_fnmatch="*.tiff",
+        ob_fnmatch=None,
+    )
+    assert rst == ([ct], [ob_1, ob_2], [])
     # case_4: load ct_alt, and find no match ob
     rst = _get_filelist_by_dir(
         ct_dir=ct_alt_dir,
