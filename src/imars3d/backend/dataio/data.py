@@ -376,13 +376,11 @@ def _get_filelist_by_dir(
         open_beam_dirs = [Path(data_dir) for data_dir in ob_dir]
     else:
         raise ValueError("ob_dir must be either a string or a list of strings")
-    # convert each directory string to a pathlib.Path object, and validate for existence
-    for i, data_dir in enumerate(open_beam_dirs):
+    # validate for existence
+    for data_dir in open_beam_dirs:
         if not data_dir.exists():
             logger.error(f"open beam directory {str(data_dir)} does not exist.")
             raise ValueError(f"open beam directory {str(data_dir)} does not exist.")
-        else:
-            open_beam_dirs[i] = data_dir
     ##########
     # -- Process input argument dc_dir for dark current directories
     if dc_dir is None:
@@ -395,13 +393,11 @@ def _get_filelist_by_dir(
             dark_field_dirs = [Path(data_dir) for data_dir in dc_dir]
         else:
             raise ValueError("dc_dir must be either a string or a list of strings")
-    # convert each directory string to a pathlib.Path object, and check for existence
+    # check for existence
     for i, data_dir in enumerate(dark_field_dirs):
         if not data_dir.exists():
             logger.warning(f"dark field directory {str(data_dir)} does not exist, ignoring.")
             dark_field_dirs[i] = None
-        else:
-            dark_field_dirs[i] = data_dir
     dark_field_dirs = [data_dir for data_dir in dark_field_dirs if data_dir is not None]  # extricate None entries
 
     # gather the ct_files
