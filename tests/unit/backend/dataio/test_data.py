@@ -19,6 +19,7 @@ import pytest
 import tifffile
 
 # standard imports
+from copy import deepcopy
 from functools import partial
 from pathlib import Path
 from unittest import mock
@@ -260,7 +261,7 @@ def test_get_filelist_by_dir(tiff_with_metadata):
     assert rst == ([], [], [])
 
 
-def test_get_filelist_by_dirs(tmpdir, ext_tags, tiff_with_metadata):
+def test_get_filelist_by_dirs(tmpdir, caplog, ext_tags, tiff_with_metadata):
     ct, ob_1, dc_1, ct_alt = tiff_with_metadata
     ct_dir = ct.parent
     ct_alt_dir = ct_alt.parent
@@ -276,42 +277,50 @@ def test_get_filelist_by_dirs(tmpdir, ext_tags, tiff_with_metadata):
     dc_dir = [dc_1.parent, dc_2.parent]
     # convert the golden data to string for ease of comparison
     ct, ct_alt, ob_1, ob_2, dc_1, dc_2 = [str(x) for x in (ct, ct_alt, ob_1, ob_2, dc_1, dc_2)]
-    # case_0: load all three
-    rst = _get_filelist_by_dir(
-        ct_dir=ct_dir,
-        ob_dir=ob_dir,
-        dc_dir=dc_dir,
-        ct_fnmatch="*.tiff",
-        ob_fnmatch="*.tiff",
-        dc_fnmatch="*.tiff",
+    common = dict(
+        ct_dir=ct_dir, ob_dir=ob_dir, dc_dir=dc_dir, ct_fnmatch="*.tiff", ob_fnmatch="*.tiff", dc_fnmatch="*.tiff"
     )
+    # corner case, open-beam directory is not a valid entry
+    with pytest.raises(ValueError) as e:
+        kwargs = deepcopy(common)
+        kwargs["ob_dir"] = open(ct, "r")
+        _get_filelist_by_dir(**kwargs)
+    assert "ob_dir must be either a string or a list of strings" == str(e.value)
+    # corner case, dark-field directory is not a valid entry
+    with pytest.raises(ValueError) as e:
+        kwargs = deepcopy(common)
+        kwargs["dc_dir"] = open(ct, "r")
+        _get_filelist_by_dir(**kwargs)
+    assert "dc_dir must be either a string or a list of strings" == str(e.value)
+    # corner case, dark-field directory doesn't exist
+    kwargs = deepcopy(common)
+    kwargs["dc_dir"].append(Path("/tmp/tHIs_dOEs_nOt_EXIsT"))
+    caplog.clear()
+    rst = _get_filelist_by_dir(**kwargs)
+    assert "/tmp/tHIs_dOEs_nOt_EXIsT does not exist, ignoring" in caplog.text
+    assert rst == ([ct], [ob_1, ob_2], [dc_1, dc_2])
+    # case_0: load all three
+    rst = _get_filelist_by_dir(**common)
     assert rst == ([ct], [ob_1, ob_2], [dc_1, dc_2])
     # case_1: load ct and ob, skipping dc
-    rst = _get_filelist_by_dir(
-        ct_dir=ct_dir,
-        ob_dir=ob_dir,
-        ct_fnmatch="*.tiff",
-        ob_fnmatch="*.tiff",
-        dc_fnmatch="*.tiff",
-    )
+    kwargs = deepcopy(common)
+    del kwargs["dc_dir"]
+    rst = _get_filelist_by_dir(**kwargs)
     assert rst == ([ct], [ob_1, ob_2], [])
     # case_2: load ct, and detect ob and dc from metadata
-    rst = _get_filelist_by_dir(
-        ct_dir=ct_dir,
-        ob_dir=ob_dir,
-        dc_dir=dc_dir,
-        ct_fnmatch="*.tiff",
-        ob_fnmatch=None,
-        dc_fnmatch=None,
-    )
+    kwargs = deepcopy(common)
+    kwargs.update(dict(ob_fnmatch=None, dc_fnmatch=None))
+    rst = _get_filelist_by_dir(**kwargs)
     assert rst == ([ct], [ob_1, ob_2], [dc_1, dc_2])
     # case_3: load ct, and detect ob from metadata
+    caplog.clear()
     rst = _get_filelist_by_dir(
         ct_dir=ct_dir,
         ob_dir=ob_dir,
         ct_fnmatch="*.tiff",
         ob_fnmatch=None,
     )
+    assert "dc_dir is None, ignoring" in caplog.text
     assert rst == ([ct], [ob_1, ob_2], [])
     # case_4: load ct_alt, and find no match ob
     rst = _get_filelist_by_dir(
