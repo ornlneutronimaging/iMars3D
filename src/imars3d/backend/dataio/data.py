@@ -371,18 +371,18 @@ def _get_filelist_by_dir(
     ##########
     # -- Process input argument ob_dir for open beam directories
     if isinstance(ob_dir, (str, Path)):  # single directory
-        open_beam_dirs = [ob_dir]  # cast the single directory to a list of input directories
+        open_beam_dirs = [Path(ob_dir)]  # cast the single directory to a list of input directories
     elif isinstance(ob_dir, (list, tuple)):  # multiple input directories, assumed items are of FlexPath type
-        open_beam_dirs = ob_dir
+        open_beam_dirs = [Path(data_dir) for data_dir in ob_dir]
     else:
         raise ValueError("ob_dir must be either a string or a list of strings")
     # convert each directory string to a pathlib.Path object, and validate for existence
     for i, data_dir in enumerate(open_beam_dirs):
-        if not Path(data_dir).exists():
-            logger.error(f"open beam directory {data_dir} does not exist.")
-            raise ValueError(f"open beam directory {data_dir} does not exist.")
+        if not data_dir.exists():
+            logger.error(f"open beam directory {str(data_dir)} does not exist.")
+            raise ValueError(f"open beam directory {str(data_dir)} does not exist.")
         else:
-            open_beam_dirs[i] = Path(data_dir)
+            open_beam_dirs[i] = data_dir
     ##########
     # -- Process input argument dc_dir for dark current directories
     if dc_dir is None:
@@ -390,18 +390,18 @@ def _get_filelist_by_dir(
         dark_field_dirs = []
     else:
         if isinstance(dc_dir, (str, Path)):  # single directory
-            dark_field_dirs = [dc_dir]  # cast the single directory to a list of input directories
+            dark_field_dirs = [Path(dc_dir)]  # cast the single directory to a list of input directories
         elif isinstance(dc_dir, (list, tuple)):  # multiple directories, assumed items are of FlexPath type
-            dark_field_dirs = dc_dir
+            dark_field_dirs = [Path(data_dir) for data_dir in dc_dir]
         else:
             raise ValueError("dc_dir must be either a string or a list of strings")
     # convert each directory string to a pathlib.Path object, and check for existence
     for i, data_dir in enumerate(dark_field_dirs):
-        if not Path(data_dir).exists():
-            logger.warning(f"dark field directory {data_dir} does not exist, ignoring.")
+        if not data_dir.exists():
+            logger.warning(f"dark field directory {str(data_dir)} does not exist, ignoring.")
             dark_field_dirs[i] = None
         else:
-            dark_field_dirs[i] = Path(data_dir)
+            dark_field_dirs[i] = data_dir
     dark_field_dirs = [data_dir for data_dir in dark_field_dirs if data_dir is not None]  # extricate None entries
 
     # gather the ct_files
