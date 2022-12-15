@@ -30,6 +30,7 @@ requirements:
     - tomopy
     - jsonschema
     - dxchange
+    - olefile
     - pooch
     - panel
     - param
