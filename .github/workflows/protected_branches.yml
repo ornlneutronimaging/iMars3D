@@ -3,7 +3,8 @@ name: protected-branches
 on:
   workflow_dispatch:
   push:
-    branches: [next, qa, main]
+    branches: [next]
+    tags: ['v*']
 
 jobs:
   integration-tests:
@@ -61,11 +62,25 @@ jobs:
       - name: Build Conda Package
         run: |
           # boa uses mamba to resolve dependencies
+          echo "versioningit reports version=$(versioningit ../)"
           conda install -y boa
           conda mambabuild --output-folder . -c conda-forge .
       - name: Verify Conda Package
         run: |
           conda verify noarch/imars3d*.tar.bz2
+      - name: Deploy to Anaconda
+        shell: bash -l {0}
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          ANACONDA_API_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
+          IS_RC: ${{ contains(github.ref, 'rc') }}
+        run: |
+          # label is main or rc depending on the tag-name
+          CONDA_LABEL="main"
+          if [ "${IS_RC}" = "true" ]; then CONDA_LABEL="rc"; fi
+          echo pushing ${{ github.ref }} with label $CONDA_LABEL
+          anaconda upload --label $CONDA_LABEL conda.recipe/noarch/imars3d*.tar.bz2
+
 
   trigger-deploy:
     runs-on: ubuntu-22.04
