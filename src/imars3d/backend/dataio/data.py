@@ -54,12 +54,12 @@ class load_data(param.ParameterizedFunction):
         explicit list of open beams (full path)
     dc_files: Optional[List[str]]
         explicit list of dark current (full path)
-    ct_dir: str
+    ct_dir: str, Path
         directory contains radiographs
-    ob_dir: str
-        directory contains open beams
-    dc_dir: Optional[str]
-        directory contains dark currents
+    ob_dir: Union[str, Path, List[str, Path]]
+        directory, or list of directories, containing open beams
+    dc_dir: Optional[Union[str, Path, List[str, Path]]]
+        directory , or list of directories, containing dark current
     ct_fnmatch: Optional[str]
         Unix shells-style wild card (``*.tiff``) for selecting radiographs
     ob_fnmatch: Optional[str]
