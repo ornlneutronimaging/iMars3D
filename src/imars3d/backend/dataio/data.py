@@ -341,9 +341,9 @@ def _get_filelist_by_dir(
     ct_dir:
         Directory for ct files.
     ob_dir:
-        Directory for ob files.
+        Directory, or list of directories, for ob files.
     dc_dir:
-        Directory for dc files.
+        Directory, or list of directories, for dc files.
     ct_fnmatch:
         fnmatch for selecting ct files from ct_dir.
     ob_fnmatch:
