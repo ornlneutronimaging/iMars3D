@@ -42,6 +42,32 @@ logger = logging.getLogger(__name__)
 # }
 
 
+class Foldernames(param.Foldername):
+    r"""
+    Parameter that can be set to a string specifying the path of a folder, or a list of such strings.
+
+    The string(s) should be specified in UNIX style, but they will be
+    returned in the format of the user's operating system.
+
+    The specified path(s) can be absolute, or relative to either:
+
+    * any of the paths specified in the search_paths attribute (if search_paths is not None);
+
+    or
+
+    * any of the paths searched by resolve_dir_path() (if search_paths is None).
+    """
+
+    def _resolve(self, paths):
+        if isinstance(paths, (str, Path)):
+            return super()._resolve(paths)
+        elif isinstance(paths, (List, Tuple)):
+            return [self._resolve(path) for path in paths]
+        else:
+            name = next(x for x in [self.name, self.label, "Foldernames parameter"] if x)
+            raise ValueError(f"{name} must be a string or a list of strings")
+
+
 class load_data(param.ParameterizedFunction):
     """
     Load data with given input.
@@ -100,8 +126,8 @@ class load_data(param.ParameterizedFunction):
     dc_files = param.List(doc="list of all dc files to load")
     #
     ct_dir = param.Foldername(doc="radiograph directory")
-    ob_dir = param.Foldername(doc="open beam directory")
-    dc_dir = param.Foldername(doc="dark current directory")
+    ob_dir = Foldernames(doc="open beam directory")
+    dc_dir = Foldernames(doc="dark current directory")
     # NOTE: we need to provide a default value here as param.String default to "", which will
     #       not trigger dict.get(key, value) to get the value as "" is not None.
     ct_fnmatch = param.String(default="*", doc="fnmatch for selecting ct files from ct_dir")

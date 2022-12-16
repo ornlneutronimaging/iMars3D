@@ -2,15 +2,21 @@
 """
 Unit tests for backend data loading.
 """
+import param
 
 # package imports
-from imars3d.backend.dataio.data import load_data
-from imars3d.backend.dataio.data import save_data, save_checkpoint
-from imars3d.backend.dataio.data import _forgiving_reader
-from imars3d.backend.dataio.data import _load_images
-from imars3d.backend.dataio.data import _load_by_file_list
-from imars3d.backend.dataio.data import _get_filelist_by_dir
-from imars3d.backend.dataio.data import _extract_rotation_angles
+from imars3d.backend.dataio.data import (
+    _extract_rotation_angles,
+    _forgiving_reader,
+    _get_filelist_by_dir,
+    _load_by_file_list,
+    _load_images,
+    Foldernames,
+    load_data,
+    save_checkpoint,
+    save_data,
+)
+
 
 # third party imports
 import astropy.io.fits as fits
@@ -54,6 +60,29 @@ def data_fixture(tmpdir):
     hdu.writeto(str(generic_fits))
     # return the tmp files
     return generic_tiff, good_tiff, metadata_tiff, generic_fits
+
+
+def test_Foldernames(tmpdir):
+    class TestFoldernames(param.Parameterized):
+        f = Foldernames(doc="input folders")
+
+    # test wrong input
+    with pytest.raises(ValueError) as e:
+        TestFoldernames(f=open(tmpdir / "temp.txt", "w"))
+    assert str(e.value) == "f must be a string or a list of strings"
+    # test single directory
+    tf = TestFoldernames(f=str(tmpdir))
+    assert tf.f == str(tmpdir)
+    tf = TestFoldernames(f=str(tmpdir))
+    assert tf.f == str(tmpdir)
+    # test multiple directories
+    dir1, dir2 = tmpdir / "dir1", tmpdir / "dir2"
+    dir1.mkdir()
+    dir2.mkdir()
+    tf = TestFoldernames(f=[str(dir1), str(dir2)])
+    assert tf.f == [str(dir1), str(dir2)]
+    tf = TestFoldernames(f=[dir1, dir2])
+    assert tf.f == [str(dir1), str(dir2)]
 
 
 @mock.patch("imars3d.backend.dataio.data._extract_rotation_angles")
