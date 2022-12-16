@@ -64,7 +64,7 @@ jobs:
           # boa uses mamba to resolve dependencies
           echo "versioningit reports version=$(versioningit ../)"
           conda install -y anaconda-client boa
-          conda mambabuild --output-folder . -c conda-forge .
+          VERSION=$(versioningit ../) conda mambabuild --output-folder . -c conda-forge .
       - name: Verify Conda Package
         run: |
           conda verify noarch/imars3d*.tar.bz2
