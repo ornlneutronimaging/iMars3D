@@ -29,7 +29,10 @@ class find_rotation_center(param.ParameterizedFunction):
     atol_deg: Optional[float] = None
         tolerance for the search of 180 deg paris, default is None ("auto")
     num_pairs: int = 1
-        Number of pairs to look for. Specifying -1 means as many pairs as possible.
+        Number of pairs to look for.
+        Specifying -1 means as many pairs as possible.
+        The pairs will be equally spaced if possible.
+        If the number of pairs requested is more than half of what is available, it will take the first n-piars.
     max_workers: int = 0
         number of cores to use for parallel median filtering, default is 0, which means using all available cores.
     tqdm_class: imars3d.ui.widgets.TqdmType
