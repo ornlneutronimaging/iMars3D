@@ -61,7 +61,7 @@ class Foldernames(param.Foldername):
     def _resolve(self, paths):
         if isinstance(paths, (str, Path)):
             return super()._resolve(paths)
-        elif isinstance(paths, (List, Tuple)):
+        elif isinstance(paths, (list, tuple)):
             return [self._resolve(path) for path in paths]
         else:
             name = next(x for x in [self.name, self.label, "Foldernames parameter"] if x)
