@@ -79,7 +79,7 @@ jobs:
           CONDA_LABEL="main"
           if [ "${IS_RC}" = "true" ]; then CONDA_LABEL="rc"; fi
           echo pushing ${{ github.ref }} with label $CONDA_LABEL
-          anaconda upload --label $CONDA_LABEL conda.recipe/noarch/imars3d*.tar.bz2
+          anaconda upload --label $CONDA_LABEL noarch/imars3d*.tar.bz2
 
 
   trigger-deploy:
