@@ -24,9 +24,9 @@ dependencies:
   - pre-commit
   - sphinx
   - sphinx_rtd_theme
+  - versioningit
   - pip
   - pip:
-    - versioningit
     - check-wheel-contents
     - pytest-playwright
     - bm3d-streak-removal
