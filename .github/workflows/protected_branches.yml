@@ -62,12 +62,10 @@ jobs:
       - name: Build Conda Package
         run: |
           # boa uses mamba to resolve dependencies
-          echo "versioningit reports version=$(versioningit ../)"
-          conda install -y boa
-          conda mambabuild --output-folder . -c conda-forge .
-      - name: Verify Conda Package
-        run: |
-          conda verify noarch/imars3d*.tar.bz2
+          conda install -y anaconda-client boa
+          cd conda.recipe
+          VERSION=$(versioningit ../) conda mambabuild --output-folder . -c conda-forge . || exit 1
+          conda verify noarch/imars3d*.tar.bz2 || exit 1
       - name: Deploy to Anaconda
         shell: bash -l {0}
         if: startsWith(github.ref, 'refs/tags/v')
