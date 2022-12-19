@@ -65,9 +65,7 @@ jobs:
           conda install -y anaconda-client boa
           cd conda.recipe
           VERSION=$(versioningit ../) conda mambabuild --output-folder . -c conda-forge . || exit 1
-      - name: Verify Conda Package
-        run: |
-          conda verify conda.recipe/noarch/imars3d*.tar.bz2 || exit 1
+          conda verify noarch/imars3d*.tar.bz2 || exit 1
       - name: Deploy to Anaconda
         shell: bash -l {0}
         if: startsWith(github.ref, 'refs/tags/v')
@@ -79,7 +77,7 @@ jobs:
           CONDA_LABEL="main"
           if [ "${IS_RC}" = "true" ]; then CONDA_LABEL="rc"; fi
           echo pushing ${{ github.ref }} with label $CONDA_LABEL
-          anaconda upload --label $CONDA_LABEL noarch/imars3d*.tar.bz2
+          anaconda upload --label $CONDA_LABEL conda.recipe/noarch/imars3d*.tar.bz2
 
 
   trigger-deploy:
