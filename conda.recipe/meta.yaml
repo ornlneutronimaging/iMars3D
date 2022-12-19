@@ -16,19 +16,19 @@ source:
 
 build:
   noarch: python
-  string: py{{py}}
   number: {{ version_number }}
+  string: py{{py}}
   script: {{ PYTHON }} -m pip install . --no-deps --ignore-installed -vvv
 
 requirements:
   host:
     - python
     - versioningit
-    - pip
 
   build:
     - build
     - toml
+    - versioningit
 
   run:
     - astropy
