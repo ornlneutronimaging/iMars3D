@@ -62,8 +62,8 @@ jobs:
       - name: Build Conda Package
         run: |
           # boa uses mamba to resolve dependencies
-          echo "versioningit reports version=$(versioningit ../)"
           conda install -y anaconda-client boa
+          cd conda.recipe
           VERSION=$(versioningit ../) conda mambabuild --output-folder . -c conda-forge .
       - name: Verify Conda Package
         run: |
