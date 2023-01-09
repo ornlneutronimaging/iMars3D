@@ -7,7 +7,7 @@ dependencies:
   - tomopy
   - dxchange
   - jsonschema
-  - panel
+  - panel>=0.14.2
   - param
   - pyvista
   - pydocstyle

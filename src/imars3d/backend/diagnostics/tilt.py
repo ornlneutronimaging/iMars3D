@@ -252,7 +252,7 @@ class tilt_correction(param.ParameterizedFunction):
     max_workers:
         Number of cores to use for parallel median filtering, default is 0,
         which means using all available cores.
-    tqdm_class: imars3d.ui.widgets.TqdmType
+    tqdm_class: panel.widgets.Tqdm
         Class to be used for rendering tqdm progress
 
     Returns
@@ -368,7 +368,7 @@ class apply_tilt_correction(param.ParameterizedFunction):
         The rotation axis tilt angle in degrees
     max_workers: int
         Number of cores to use for parallel median filtering, default is 0, which means using all available cores.
-    tqdm_class: imars3d.ui.widgets.TqdmType
+    tqdm_class: panel.widgets.Tqdm
         Class to be used for rendering tqdm progress
 
     Returns

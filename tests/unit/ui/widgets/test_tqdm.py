@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import pytest
 import time
-from imars3d.ui.widgets import Tqdm
+from panel.widgets import Tqdm
 from tqdm.contrib.concurrent import process_map
 
 
