@@ -35,7 +35,7 @@ class find_rotation_center(param.ParameterizedFunction):
         If the number of pairs requested is more than half of what is available, it will take the first n-piars.
     max_workers: int = 0
         number of cores to use for parallel median filtering, default is 0, which means using all available cores.
-    tqdm_class: imars3d.ui.widgets.TqdmType
+    tqdm_class: panel.widgets.Tqdm
         Class to be used for rendering tqdm progress
 
     Returns

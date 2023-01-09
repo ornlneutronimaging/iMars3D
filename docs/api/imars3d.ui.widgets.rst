@@ -6,9 +6,6 @@ imars3d.ui.widgets package
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: imars3d.ui.widgets.Tqdm
-   :members:
-
 
 Submodules
 ----------

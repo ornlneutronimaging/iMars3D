@@ -30,7 +30,7 @@ class intensity_fluctuation_correction(param.ParameterizedFunction):
         detection via canny edge detection from skimage.
     max_workers: int = 0
         The number of cores to use for parallel processing, default is 0, which means using all available cores.
-    tqdm_class: imars3d.ui.widgets.TqdmType
+    tqdm_class: panel.widgets.Tqdm
         Class to be used for rendering tqdm progress
 
     Returns

@@ -11,7 +11,7 @@ from imars3d.backend.diagnostics.tilt import calculate_shift
 from imars3d.backend.diagnostics.tilt import find_180_deg_pairs_idx
 from imars3d.backend.diagnostics.tilt import apply_tilt_correction
 from imars3d.backend.diagnostics.tilt import tilt_correction
-from imars3d.ui.widgets import Tqdm
+from panel.widgets import Tqdm
 
 
 def get_tilted_rot_axis(
