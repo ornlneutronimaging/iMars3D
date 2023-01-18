@@ -18,8 +18,9 @@ jobs:
       - uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: true
-          mamba-version: "0.15"
+          mamba-version: "*"
           environment-file: environment.yml
+          python-version: 3.9
       - name: Verify docstrings
         run: pydocstyle --convention=numpy src/
       - name: Install ui test requirements
