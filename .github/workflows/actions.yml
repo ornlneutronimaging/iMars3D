@@ -18,7 +18,7 @@ jobs:
       - uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: true
-          mamba-version: "*"
+          mamba-version: "0.15"
           environment-file: environment.yml
       - name: Verify docstrings
         run: pydocstyle --convention=numpy src/
