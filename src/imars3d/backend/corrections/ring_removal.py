@@ -217,7 +217,6 @@ class remove_ring_artifact(param.ParameterizedFunction):
         max_workers: int,
         tqdm_class,
     ) -> np.ndarray:
-
         # sanity check
         if arrays.ndim != 3:
             raise ValueError("This correction can only be used for a stack, i.e. a 3D image.")
