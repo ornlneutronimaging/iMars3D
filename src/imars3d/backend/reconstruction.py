@@ -83,7 +83,6 @@ class recon(param.ParameterizedFunction):
     def _recon(
         self, arrays, theta, center, algorithm, filter_name, is_radians, perform_minus_log, ncore, **kwargs
     ) -> np.ndarray:
-
         if not is_radians:
             theta = np.radians(theta)
 
