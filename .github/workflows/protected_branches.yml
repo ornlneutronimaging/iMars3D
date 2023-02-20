@@ -56,7 +56,7 @@ jobs:
       - uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: true
-          miniforge-version: latest
+          mamba-version: "*"
           environment-file: environment.yml
       - name: Build Conda Package
         run: |
