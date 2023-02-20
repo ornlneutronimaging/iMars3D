@@ -20,7 +20,6 @@ jobs:
           auto-update-conda: true
           mamba-version: "*"
           environment-file: environment.yml
-          use-mamba: true
       - name: Verify docstrings
         run: pydocstyle --convention=numpy src/
       - name: Install ui test requirements
