@@ -254,7 +254,10 @@ def _load_images(filelist: List[str], desc: str, max_workers: int, tqdm_class) -
     # figure out the file type and select corresponding reader from dxchange
     file_ext = Path(filelist[0]).suffix.lower()
     if file_ext in (".tif", ".tiff"):
-        reader = dxchange.read_tiff
+        # reader = dxchange.read_tiff
+        # NOTE: switch to tifffile until we figure out what is causing dxchange
+        #       to slow down the loading speed.
+        reader = tifffile.imread
     elif file_ext == ".fits":
         reader = dxchange.read_fits
     else:
