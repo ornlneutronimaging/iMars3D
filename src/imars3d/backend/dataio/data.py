@@ -273,7 +273,9 @@ def _load_images(filelist: List[str], desc: str, max_workers: int, tqdm_class) -
 
     rst = process_map(partial(_forgiving_reader, reader=reader), filelist, **kwargs)
     # return the results
-    return np.array([me for me in rst if me is not None], dtype="float")
+    # NOTE: there is no need to convert to float at this point, and it will save
+    #       a lot of memory and time if the conversion is done after cropping.
+    return np.array([me for me in rst if me is not None])
 
 
 # use _func to avoid sphinx pulling it into docs
