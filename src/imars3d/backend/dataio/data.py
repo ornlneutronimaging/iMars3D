@@ -9,6 +9,7 @@ from imars3d.backend.util.functions import clamp_max_workers, to_time_str
 import numpy as np
 import param
 import tifffile
+from tqdm.auto import tqdm
 from tqdm.contrib.concurrent import process_map
 
 # standard imports
@@ -135,7 +136,7 @@ class load_data(param.ParameterizedFunction):
     dc_fnmatch = param.String(default="*", doc="fnmatch for selecting dc files from dc_dir")
     # NOTE: 0 means use as many as possible
     max_workers = param.Integer(
-        default=0,
+        default=1,  # default to single process
         bounds=(0, None),
         doc="Maximum number of processes allowed during loading",
     )
@@ -254,26 +255,35 @@ def _load_images(filelist: List[str], desc: str, max_workers: int, tqdm_class) -
     # figure out the file type and select corresponding reader from dxchange
     file_ext = Path(filelist[0]).suffix.lower()
     if file_ext in (".tif", ".tiff"):
-        # reader = dxchange.read_tiff
-        # NOTE: switch to tifffile until we figure out what is causing dxchange
-        #       to slow down the loading speed.
-        reader = tifffile.imread
+        # use tifffile directly for a faster loading
+        reader = partial(tifffile.imread, out="memmap")
     elif file_ext == ".fits":
         reader = dxchange.read_fits
     else:
         logger.error(f"Unsupported file type: {file_ext}")
         raise ValueError("Unsupported file type.")
-    # read the data into numpy array via map_process
-    kwargs = {
-        "max_workers": max_workers,
-        "desc": desc,
-    }
-    if tqdm_class:
-        kwargs["tqdm_class"] = tqdm_class
 
-    rst = process_map(partial(_forgiving_reader, reader=reader), filelist, **kwargs)
+    # NOTE: For regular dataset, single thread reading is actually faster
+    #       as the overhead of multiprocessing will overshadow the benefits.
+    if max_workers == 1:
+        progress_bar = tqdm if tqdm_class is None else tqdm_class
+        # single thread reading
+        rst = [_forgiving_reader(f, reader) for f in progress_bar(filelist, desc=desc)]
+    else:
+        # multi-thread reading
+        # NOTE: the benefits of multi-threading is only visible when
+        #       - the file list is really long
+        #       - there are a lot of cores available
+        kwargs = {
+            "max_workers": max_workers,
+            "desc": desc,
+        }
+        rst = process_map(partial(_forgiving_reader, reader=reader), filelist, **kwargs)
+
     # return the results
-    return np.array([me for me in rst if me is not None], dtype="float")
+    # NOTE: there is no need to convert to float at this point, and it will save
+    #       a lot of memory and time if the conversion is done after cropping.
+    return np.array([me for me in rst if me is not None])
 
 
 # use _func to avoid sphinx pulling it into docs
