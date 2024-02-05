@@ -4,6 +4,9 @@ description = "Neutron imaging data analysis at ORNL"
 dynamic = ["version"]
 requires-python = ">=3.10"
 license = { text = "BSD 3-Clause License" }
+dependencies = [
+  "astropy",
+]
 
 [project.urls]
 homepage = "https://github.com/ornlneutronimaging/iMars3D"
