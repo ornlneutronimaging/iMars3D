@@ -2,29 +2,42 @@ name: imars3d
 channels:
   - conda-forge
 dependencies:
+  # -- Runtime
+  # base
+  - python
+  - versioningit
+  - toml
+  # compute
   - astropy
   - tomopy
-  - dxchange
-  - jsonschema
-  - panel>=0.14.2
-  - param
-  - pyvista
-  - pydocstyle
+  - algotom
+  # plot
   - holoviews
   - bokeh
   - datashader
   - hvplot
+  # GUI
+  - panel>=0.14.2
+  - param
+  - pyvista
+  # IO
+  - dxchange
+  - jsonschema
+  # -- Development
+  # utils
+  - pre-commit
+  # packaging
   - build
-  - toml
   - conda-build
   - conda-verify
-  - pytest
-  - pytest-cov
-  - pre-commit
+  # doc
+  - pydocstyle
   - sphinx
   - sphinx_rtd_theme
-  - versioningit
-  - pip
+  # test
+  - pytest
+  - pytest-cov
+  # pip
   - pip:
     - check-wheel-contents
     - pytest-playwright
