@@ -61,7 +61,6 @@ jobs:
       - name: Build Conda Package
         run: |
           # boa uses mamba to resolve dependencies
-          conda install -y anaconda-client boa
           cd conda.recipe
           VERSION=$(versioningit ../) conda mambabuild --output-folder . -c conda-forge . || exit 1
           conda verify noarch/imars3d*.tar.bz2 || exit 1
