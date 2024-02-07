@@ -12,6 +12,7 @@ from algotom.prep.correction import beam_hardening_correction as algotom_beam_ha
 
 logger = logging.getLogger(__name__)
 
+
 class beam_hardening_correction(param.Parameterized):
     """Imaging correction for beam hardening.
 
@@ -35,28 +36,29 @@ class beam_hardening_correction(param.Parameterized):
     np.ndarray
         The corrected image stack.
     """
+
     arrays = param.Array(
-        doc = "The image stack to be corrected for beam hardening, must be normalized to 0-1.",
-        default = None,
+        doc="The image stack to be corrected for beam hardening, must be normalized to 0-1.",
+        default=None,
     )
     q = param.Number(
-        doc = "The beam hardening correction parameter.",
-        default = 0.005,
-        bounds = (0, None),
+        doc="The beam hardening correction parameter.",
+        default=0.005,
+        bounds=(0, None),
     )
     n = param.Number(
-        doc = "The beam hardening correction parameter.",
-        default = 20.0,
-        bounds = (1, None),
+        doc="The beam hardening correction parameter.",
+        default=20.0,
+        bounds=(1, None),
     )
     opt = param.Boolean(
-        doc = "If True, correction biased towards 1.0, else correction biased towards 0.0.",
-        default = True,
+        doc="If True, correction biased towards 1.0, else correction biased towards 0.0.",
+        default=True,
     )
     max_workers = param.Integer(
-        doc = "The maximum number of workers to use for parallel processing, default is 0, which means using all available cores.",
-        default = 0,
-        bounds = (0, None),
+        doc="The maximum number of workers to use for parallel processing, default is 0, which means using all available cores.",
+        default=0,
+        bounds=(0, None),
     )
     tqdm_class = param.ClassSelector(class_=object, doc="Progress bar to render with")
 
@@ -72,9 +74,7 @@ class beam_hardening_correction(param.Parameterized):
         logger.debug(f"max_worker={self.max_workers}")
 
         if params.arrays.ndim == 2:
-            return algotom_beam_hardening_correction(
-                params.arrays, params.q, params.n, params.opt
-            )
+            return algotom_beam_hardening_correction(params.arrays, params.q, params.n, params.opt)
         elif params.arrays.ndim == 3:
             with SharedMemoryManager() as smm:
                 shm = smm.SharedMemory(params.arrays.nbytes)
@@ -95,4 +95,3 @@ class beam_hardening_correction(param.Parameterized):
                 return np.array(rst)
         else:
             raise ValueError("The input array must be either 2D or 3D.")
-                
