@@ -284,7 +284,7 @@ def test_apply_tilt_correction():
 
 def test_tilt_correction():
     # error_0: incorrect dimension
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         tilt_correction(arrays=np.arange(10), tilt=1.0)
     # make synthetic data
     size = 100
