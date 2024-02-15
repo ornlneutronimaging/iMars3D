@@ -13,7 +13,7 @@ from algotom.prep.correction import beam_hardening_correction as algotom_beam_ha
 logger = logging.getLogger(__name__)
 
 
-class beam_hardening_correction(param.Parameterized):
+class beam_hardening_correction(param.ParameterizedFunction):
     """Imaging correction for beam hardening.
 
     Parameters
