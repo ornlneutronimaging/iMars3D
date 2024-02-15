@@ -17,8 +17,8 @@ dependencies:
   - datashader
   - hvplot
   # GUI
-  - panel>=0.14.2
-  - param
+  - panel>=0.14.2<1.3
+  - param<2
   - pyvista
   # IO
   - dxchange
