@@ -39,6 +39,22 @@ def fake_beam_hardening_image() -> np.ndarray:
 
 def test_beam_hardening_correction(fake_beam_hardening_image):
     """Test beam hardening correction"""
+    # test with incorrect array dim
+    with pytest.raises(ValueError):
+        beam_hardening_correction(
+            arrays=np.array([0, 1, 2, 3]),
+            q=0.005,
+            n=20.0,
+            opt=True,
+        )
+    # test with single image
+    corrected_image = beam_hardening_correction(
+        arrays=fake_beam_hardening_image[0],
+        q=0.005,
+        n=20.0,
+        opt=True,
+    )
+    assert corrected_image.shape == (255, 255)
     # test the correction
     corrected_image = beam_hardening_correction(
         arrays=fake_beam_hardening_image,
