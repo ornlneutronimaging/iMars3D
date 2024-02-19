@@ -296,7 +296,7 @@ def test_tilt_correction():
     # verify
     np.testing.assert_allclose(projs_corrected, projs_ref)
     # case 1a: null with the progress bar
-    projs_corrected = tilt_correction(arrays=projs_ref, rot_angles=omegas, tqdm_class=Tqdm())
+    projs_corrected = tilt_correction(arrays=projs_ref, rot_angles=omegas)
     np.testing.assert_allclose(projs_corrected, projs_ref)
     # case 2: small angle tilt
     tilt_inplane = np.radians(0.5)

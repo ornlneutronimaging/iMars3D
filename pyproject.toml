@@ -1,13 +1,31 @@
-[build-system]
-requires = ["setuptools >= 40.6.0", "wheel", "toml", "versioningit"]
-build-backend = "setuptools.build_meta"
+[project]
+name = "imars3d"
+description = "Neutron imaging data analysis at ORNL"
+dynamic = ["version"]
+requires-python = ">=3.10"
+license = { text = "BSD 3-Clause License" }
+dependencies = [
+  "astropy",
+]
 
-[tool.black]
-line-length = 119
+[project.urls]
+homepage = "https://github.com/ornlneutronimaging/iMars3D"
+
+[project.scripts]
+imars3dcli = "imars3d.backend.__main__:main"
+
+[build-system]
+requires = [
+  "setuptools >= 40.6.0",
+  "wheel",
+  "toml",
+  "versioningit"
+]
+build-backend = "setuptools.build_meta"
 
 [tool.versioningit.vcs]
 method = "git"
-default-tag = "5.0.0"
+default-tag = "1.0.0"
 
 [tool.versioningit.next-version]
 method = "minor"
@@ -20,13 +38,49 @@ distance-dirty = "{next_version}.dev{distance}+d{build_date:%Y%m%d%H%M}"
 [tool.versioningit.write]
 file = "src/imars3d/_version.py"
 
+[tool.setuptools.packages.find]
+where = ["src"]
+exclude = ["tests*", "scripts*", "docs*", "notebooks*"]
+
+[tool.setuptools.package-data]
+"*" = ["*.yml", "*.yaml", "*.ini", "schema.json"]
+
 [tool.pytest.ini_options]
-pythonpath = [
-  ".", "src", "scripts"
-]
+pythonpath = [".", "src", "scripts"]
 testpaths = ["tests"]
 python_files = ["test*.py"]
-norecursedirs = [".git", "tmp*", "_tmp*", "__pycache__", "*dataset*", "*data_set*"]
-markers = [
-  "datarepo: mark a test as using imars3d-data repository"
+norecursedirs = [
+  ".git", "tmp*", "_tmp*", "__pycache__",
+  "*dataset*", "*data_set*",
+  "*ui*"
+  ]
+markers = ["datarepo: mark a test as using imars3d-data repository"]
+
+[tool.pylint]
+max-line-length = 120
+disable = ["too-many-locals",
+           "too-many-statements",
+           "too-many-instance-attributes",
+           "too-many-arguments",
+           "duplicate-code"
+]
+
+[tool.coverage.run]
+source = [
+  "src/imars3d/backend"
+]
+omit = [
+  "*/tests/*",
+  "src/imars3d/__init__.py",
+  "src/imars3d/ui/*"
+]
+
+[tool.coverage.report]
+fail_under = 60
+exclude_lines = [
+  "pragma: no cover",
+  "def __repr__",
+  "def __str__",
+  "if TYPE_CHECKING:",
+  "if __name__ == .__main__.:"
 ]

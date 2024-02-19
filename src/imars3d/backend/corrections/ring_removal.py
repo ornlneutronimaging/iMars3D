@@ -250,7 +250,7 @@ class remove_ring_artifact(param.ParameterizedFunction):
                     correction_range=correction_range,
                 ),
                 [shm_arrays[:, sino_idx, :] for sino_idx in range(shm_arrays.shape[1])],
-                **kwargs
+                **kwargs,
             )
         rst = np.array(rst)
         for i in range(arrays.shape[1]):
