@@ -14,6 +14,7 @@ import pytest
 
 class load_data(ParameterizedFunction):
     r"""mock loading a set of radiographs into a numpy array"""
+
     ct_files = Parameter(default=None)
     ct_dir = StringParam(default=None)
 
@@ -25,6 +26,7 @@ class load_data(ParameterizedFunction):
 
 class save_data(ParameterizedFunction):
     r"""mock saving a set or radiographs to some directory"""
+
     ct = Parameter(default=None)
     workingdir = Parameter()
 
@@ -41,6 +43,7 @@ class find_rot_center(ParameterizedFunction):
 
 class reconstruction(ParameterizedFunction):
     r"""mock the reconstruction of the radiographs"""
+
     ct = Parameter(default=None)
     rot_center = Parameter(default=None)
 
@@ -52,6 +55,7 @@ class reconstruction(ParameterizedFunction):
 
 class reconstruction_with_default(ParameterizedFunction):
     r"""mock the reconstruction of the radiographs"""
+
     ct = Parameter(default=None)
     rot_center = Parameter(default=0.0)
 
