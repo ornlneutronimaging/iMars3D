@@ -1,4 +1,4 @@
-name: imars3d
+name: imars3d_jean
 channels:
   - conda-forge
 dependencies:

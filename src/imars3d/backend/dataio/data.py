@@ -104,14 +104,14 @@ class load_data(param.ParameterizedFunction):
 
     Notes
     -----
-        There are two main signatures to load the data:
+        There are three main signatures to load the data:
         1. load_data(ct_files=ctfs, ob_files=obfs, dc_files=dcfs)
         2. load_data(ct_dir=ctdir, ob_dir=obdir, dc_dir=dcdir)
+        3. load_data(ct_dir=ctdir, ob_files=obfs, dc_files=dcfs)
 
-        The two signatures are mutually exclusive, and dc_files and dc_dir are optional
-        in both cases as some experiments do not have dark current measurements.
-
-        The fnmatch selectors are applicable in both signature, which help to down-select
+        In all signatures dc_files and dc_dir are optional
+        
+        The fnmatch selectors are applicable in all signature, which help to down-select
         files if needed. Default is set to "*", which selects everything.
         Also, if ob_fnmatch and dc_fnmatch are set to "None" in the second signature call, the
         data loader will attempt to read the metadata embedded in the first ct file to find obs
@@ -157,9 +157,43 @@ class load_data(param.ParameterizedFunction):
         #    use set to simplify call signature checking
         sigs = set([k.split("_")[-1] for k in params.keys() if "fnmatch" not in k])
         ref = {"files", "dir"}
-        if sigs.intersection(ref) == {"files", "dir"}:
+        
+        if ("ct_dir" in params.keys()) and ("ob_files" in params.keys()):
+            logger.debug("Load ct by directory, ob and dc (if any) by files")
+            ct_dir=params.get("ct_dir")
+            if not Path(ct_dir).exists():
+                logger.error(f"ct_dir {ct_dir} does not exist.")
+                raise ValueError("ct_dir does not exist.")
+            else:
+                ct_dir = Path(ct_dir)
+
+            # gather the ct_files
+            ct_fnmatch=params.get("ct_fnmatch", "*")
+            ct_files = ct_dir.glob(ct_fnmatch)
+            ct_files = list(map(str, ct_files))
+            ct_files.sort()
+        
+            ob_files=params.get("ob_files"),
+            dc_files=params.get("dc_files", []),  # it is okay to skip dc
+
+            ob_files = ob_files[0]
+            dc_files = dc_files[0]
+
+            ct, ob, dc = _load_by_file_list(
+                ct_files=ct_files,
+                ob_files=ob_files,
+                dc_files=dc_files,  # it is okay to skip dc
+                ct_fnmatch=params.get("ct_fnmatch", "*"),  # incase None got leaked here
+                ob_fnmatch=params.get("ob_fnmatch", "*"),
+                dc_fnmatch=params.get("dc_fnmatch", "*"),
+                max_workers=self.max_workers,
+                tqdm_class=params.tqdm_class
+            )
+
+        elif sigs.intersection(ref) == {"files", "dir"}:
             logger.error("Files and dir cannot be used at the same time")
             raise ValueError("Mix usage of allowed signature.")
+
         elif sigs.intersection(ref) == {"files"}:
             logger.debug("Load by file list")
             ct, ob, dc = _load_by_file_list(
