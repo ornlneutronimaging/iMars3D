@@ -110,7 +110,7 @@ class load_data(param.ParameterizedFunction):
         3. load_data(ct_dir=ctdir, ob_files=obfs, dc_files=dcfs)
 
         In all signatures dc_files and dc_dir are optional
-        
+
         The fnmatch selectors are applicable in all signature, which help to down-select
         files if needed. Default is set to "*", which selects everything.
         Also, if ob_fnmatch and dc_fnmatch are set to "None" in the second signature call, the
@@ -157,10 +157,10 @@ class load_data(param.ParameterizedFunction):
         #    use set to simplify call signature checking
         sigs = set([k.split("_")[-1] for k in params.keys() if "fnmatch" not in k])
         ref = {"files", "dir"}
-        
+
         if ("ct_dir" in params.keys()) and ("ob_files" in params.keys()):
             logger.debug("Load ct by directory, ob and dc (if any) by files")
-            ct_dir=params.get("ct_dir")
+            ct_dir = params.get("ct_dir")
             if not Path(ct_dir).exists():
                 logger.error(f"ct_dir {ct_dir} does not exist.")
                 raise ValueError("ct_dir does not exist.")
@@ -168,13 +168,13 @@ class load_data(param.ParameterizedFunction):
                 ct_dir = Path(ct_dir)
 
             # gather the ct_files
-            ct_fnmatch=params.get("ct_fnmatch", "*")
+            ct_fnmatch = params.get("ct_fnmatch", "*")
             ct_files = ct_dir.glob(ct_fnmatch)
             ct_files = list(map(str, ct_files))
             ct_files.sort()
-        
-            ob_files=params.get("ob_files"),
-            dc_files=params.get("dc_files", []),  # it is okay to skip dc
+
+            ob_files = (params.get("ob_files"),)
+            dc_files = (params.get("dc_files", []),)  # it is okay to skip dc
 
             ob_files = ob_files[0]
             dc_files = dc_files[0]
@@ -187,7 +187,7 @@ class load_data(param.ParameterizedFunction):
                 ob_fnmatch=params.get("ob_fnmatch", "*"),
                 dc_fnmatch=params.get("dc_fnmatch", "*"),
                 max_workers=self.max_workers,
-                tqdm_class=params.tqdm_class
+                tqdm_class=params.tqdm_class,
             )
 
         elif sigs.intersection(ref) == {"files", "dir"}:
