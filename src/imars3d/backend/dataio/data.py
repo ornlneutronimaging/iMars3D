@@ -227,8 +227,8 @@ def _forgiving_reader(
     """
     try:
         return reader(filename)
-    except Exception:
-        logger.error(f"Cannot read {filename}, skipping.")
+    except Exception as e:
+        logger.error(f"While reading {filename}, the following error occurred: {e}")
         return None
 
 
