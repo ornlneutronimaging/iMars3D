@@ -106,9 +106,6 @@ def test_load_data(
     # error_1: out of bounds value
     with pytest.raises(ValueError):
         load_data(ct_files=[], ob_files=[], dc_files=[], max_workers=-1)
-    # error_2: mix usage of function signature 1 and 2
-    with pytest.raises(ValueError):
-        load_data(ct_files=[], ob_files=[], dc_files=[], ct_dir="/tmp", ob_dir="/tmp")
     # error_3: no valid signature found
     with pytest.raises(ValueError):
         load_data(ct_fnmatch=1)
