@@ -190,7 +190,7 @@ class load_data(param.ParameterizedFunction):
                 tqdm_class=params.tqdm_class,
             )
 
-        elif ("ct_files" in params.keys()) and ("ob_dir" in params.keys()): 
+        elif ("ct_files" in params.keys()) and ("ob_dir" in params.keys()):
             logger.error("ct_files and ob_dir mixed not allowed!")
             raise ValueError("Mix signatures (ct_files, ob_dir) not allowed!")
 
