@@ -97,8 +97,7 @@ def test_load_data(
     # error_0: incorrect input argument types
     with pytest.raises(ValueError):
         load_data(ct_files=1, ob_files=[], dc_files=[])
-        load_data(ct_dir=1, ob_files=[], dc_files=[])
-        load_data(ct_dir="does_not_exist", ob_files=[], dc_files=[])
+        load_data(ct_dir=1, ob_files=[])
         load_data(ct_files=[], ob_files=[], dc_files=[], ct_fnmatch=1)
         load_data(ct_files=[], ob_files=[], dc_files=[], ob_fnmatch=1)
         load_data(ct_files=[], ob_files=[], dc_files=[], dc_fnmatch=1)
@@ -111,14 +110,14 @@ def test_load_data(
     # error_3: no valid signature found
     with pytest.raises(ValueError):
         load_data(ct_fnmatch=1)
-    # case_0: load data from file list
+    # case_0: load ct from directory, ob and dc from files
+    rst = load_data(ct_dir="/tmp", ob_files=["3", "4"], dc_files=["5", "6"])
+    np.testing.assert_almost_equal(np.array(rst).flatten(), np.arange(1, 5, dtype=float))
+    # case_1: load data from file list
     rst = load_data(ct_files=["1", "2"], ob_files=["3", "4"], dc_files=["5", "6"])
     np.testing.assert_almost_equal(np.array(rst).flatten(), np.arange(1, 5, dtype=float))
-    # case_1: load data from given directory
+    # case_2: load data from given directory
     rst = load_data(ct_dir="/tmp", ob_dir="/tmp", dc_dir="/tmp")
-    np.testing.assert_almost_equal(np.array(rst).flatten(), np.arange(1, 5, dtype=float))
-    # case_2: load ct from directory, ob and dc from files
-    rst = load_data(ct_dir="/tmp", ob_files=["3", "4"], dc_files=["5", "6"])
     np.testing.assert_almost_equal(np.array(rst).flatten(), np.arange(1, 5, dtype=float))
 
 

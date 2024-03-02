@@ -191,8 +191,8 @@ class load_data(param.ParameterizedFunction):
             )
 
         elif sigs.intersection(ref) == {"files", "dir"}:
-            logger.error("Files and dir cannot be used at the same time")
-            raise ValueError("Mix usage of allowed signature.")
+            logger.error("Other cases of files and dir cannot be used at the same time")
+            raise ValueError("Mix signatures not allowed")
 
         elif sigs.intersection(ref) == {"files"}:
             logger.debug("Load by file list")
