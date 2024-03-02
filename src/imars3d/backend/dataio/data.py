@@ -190,9 +190,9 @@ class load_data(param.ParameterizedFunction):
                 tqdm_class=params.tqdm_class,
             )
 
-        elif sigs.intersection(ref) == {"files", "dir"}:
-            logger.error("Other cases of files and dir cannot be used at the same time")
-            raise ValueError("Mix signatures not allowed")
+        elif ("ct_files" in params.keys()) and ("ob_dir" in params.keys()): 
+            logger.error("ct_files and ob_dir mixed not allowed!")
+            raise ValueError("Mix signatures (ct_files, ob_dir) not allowed!")
 
         elif sigs.intersection(ref) == {"files"}:
             logger.debug("Load by file list")
