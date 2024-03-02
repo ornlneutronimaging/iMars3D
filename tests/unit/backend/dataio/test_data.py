@@ -97,6 +97,7 @@ def test_load_data(
     # error_0: incorrect input argument types
     with pytest.raises(ValueError):
         load_data(ct_files=1, ob_files=[], dc_files=[])
+        load_data(ct_dir=1, ob_files=[], dc_files=[])
         load_data(ct_files=[], ob_files=[], dc_files=[], ct_fnmatch=1)
         load_data(ct_files=[], ob_files=[], dc_files=[], ob_fnmatch=1)
         load_data(ct_files=[], ob_files=[], dc_files=[], dc_fnmatch=1)
