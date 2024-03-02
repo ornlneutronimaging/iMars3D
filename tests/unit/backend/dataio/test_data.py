@@ -115,6 +115,9 @@ def test_load_data(
     # case_1: load data from given directory
     rst = load_data(ct_dir="/tmp", ob_dir="/tmp", dc_dir="/tmp")
     np.testing.assert_almost_equal(np.array(rst).flatten(), np.arange(1, 5, dtype=float))
+    # case_2: load ct from directory, ob and dc from files
+    rst = load_data(ct_dir="/tmp", ob_files=["3", "4"], dc_files=["5", "6"])
+    np.testing.assert_almost_equal(np.array(rst).flatten(), np.arange(1, 5, dtype=float))
 
 
 def test_forgiving_reader():
