@@ -248,7 +248,7 @@ class WorkflowEngineAuto(WorkflowEngine):
             log_file_handler = logging.FileHandler(log_file_path)
             log_file_handler.setLevel(logging.INFO)
             # set formatter
-            formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+            formatter = logging.Formatter("[%(levelname)s] - %(asctime)s - %(name)s - %(message)s")
             log_file_handler.setFormatter(formatter)
             # add handler to root logger
             root_logger = logging.getLogger()
