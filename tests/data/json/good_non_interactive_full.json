@@ -5,6 +5,7 @@
     "name": "name for reconstructed ct scans",
     "workingdir": "/path/to/working/dir",
     "outputdir": "/tmp/imars3d/",
+    "log_file_name": "/tmp/test_run.log",
     "tasks": [{
             "name": "task1",
             "function": "imars3d.backend.dataio.data.load_data",
