@@ -11,6 +11,8 @@ from collections import namedtuple
 from enum import Enum
 import importlib
 from typing import Any, Optional
+from pathlib import Path
+import logging
 
 
 class WorkflowEngineExitCodes(Enum):
@@ -238,6 +240,20 @@ class WorkflowEngineAuto(WorkflowEngine):
 
     def run(self) -> None:
         r"""Sequential execution of the tasks specified in the JSON configuration file."""
+        # set the logger file if it is specified in the configuration
+        log_file_name = self.config.get("log_file_name", "")
+        if log_file_name:
+            # create log file to capture the root logger, in order to also capture messages from the backend
+            log_file_path = Path(log_file_name)
+            log_file_handler = logging.FileHandler(log_file_path)
+            log_file_handler.setLevel(logging.INFO)
+            # set formatter
+            formatter = logging.Formatter("[%(levelname)s] - %(asctime)s - %(name)s - %(message)s")
+            log_file_handler.setFormatter(formatter)
+            # add handler to root logger
+            root_logger = logging.getLogger()
+            root_logger.addHandler(log_file_handler)
+        # verify the inputs are sensible
         self._dryrun()
         # initialize the registry of global parameters with the metadata
         self._registry = {k: v for k, v in self.config.items() if k not in ("name", "tasks")}
