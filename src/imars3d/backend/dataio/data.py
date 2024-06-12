@@ -75,7 +75,6 @@ class Foldernames(param.Foldername):
             return super()._resolve(paths)
 
 
-
 class load_data(param.ParameterizedFunction):
     """
     Load data with given input.
