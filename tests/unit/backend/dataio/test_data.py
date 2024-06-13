@@ -69,7 +69,8 @@ def test_Foldernames(tmpdir):
     # test wrong input
     with pytest.raises(ValueError) as e:
         TestFoldernames(f=open(tmpdir / "temp.txt", "w"))
-    assert str(e.value) == "f must be a string or a list of strings"
+
+    assert str(e.value) == "Foldernames parameter 'TestFoldernames.f' only take str or pathlib.Path types"
     # test single directory
     tf = TestFoldernames(f=str(tmpdir))
     assert tf.f == str(tmpdir)
