@@ -12,3 +12,7 @@ sphinx:
 
 conda:
   environment: environment.yml
+
+commands:
+  pre_build:
+    - mkdir ~/tmp
