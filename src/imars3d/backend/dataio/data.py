@@ -59,14 +59,20 @@ class Foldernames(param.Foldername):
     * any of the paths searched by resolve_dir_path() (if search_paths is None).
     """
 
+    def _validate(self, val):
+
+        if isinstance(val, (list, tuple)):
+            for v in val:
+                super()._validate(v)
+        else:
+            super()._validate(val)
+
     def _resolve(self, paths):
-        if isinstance(paths, (str, Path)):
-            return super()._resolve(paths)
-        elif isinstance(paths, (list, tuple)):
+
+        if isinstance(paths, (list, tuple)):
             return [self._resolve(path) for path in paths]
         else:
-            name = next(x for x in [self.name, self.label, "Foldernames parameter"] if x)
-            raise ValueError(f"{name} must be a string or a list of strings")
+            return super()._resolve(paths)
 
 
 class load_data(param.ParameterizedFunction):
