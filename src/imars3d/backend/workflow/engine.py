@@ -104,7 +104,7 @@ class WorkflowEngine:
         # depending on the value of other parameters. Methods `dryrun()` assume that
         # parameters are independent of each other
         independent = False if function_name in ["load_data"] else True
-        outputs = dict(function=f, paramdict=f.params(), params_independent=independent)
+        outputs = dict(function=f, paramdict=f.param.params(), params_independent=independent)
         return namedtuple("TaskFuncionInstrospection", outputs.keys())(**outputs)
 
     def _resolve_inputs(self, task_inputs: dict, paramdict: dict) -> dict:

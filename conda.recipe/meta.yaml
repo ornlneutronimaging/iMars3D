@@ -40,8 +40,8 @@ requirements:
     - dxchange
     - olefile
     - pooch
-    - panel<1.3
-    - param<2
+    - panel
+    - param
     - pyvista
     - holoviews
     - bokeh
