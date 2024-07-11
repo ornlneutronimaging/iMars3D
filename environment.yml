@@ -11,6 +11,7 @@ dependencies:
   - astropy
   - tomopy
   - algotom
+  - numpy < 2.0
   # plot
   - holoviews
   - bokeh
