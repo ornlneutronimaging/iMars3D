@@ -7,8 +7,6 @@ build:
   jobs:
     pre_build:
       - mkdir ~/tmp
-    post_install:
-      - conda install -c conda-forge glibc=2.32
 
 sphinx:
   builder: html
