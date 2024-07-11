@@ -100,7 +100,7 @@ class load_data(param.ParameterizedFunction):
     dc_fnmatch: Optional[str]
         Unix shells-style wild card (``*.tiff``) for selecting dark current
     max_workers: Optional[int]
-        maximum number of processes allowed during loading, default to use as many as possible.
+        maximum number of processes allowed during loading, default to use a single core.
     tqdm_class: panel.widgets.Tqdm
         Class to be used for rendering tqdm progress
 
