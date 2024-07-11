@@ -17,6 +17,7 @@ dependencies:
   - bokeh
   - datashader
   - hvplot
+  - dask
   # GUI
   - panel
   - param
