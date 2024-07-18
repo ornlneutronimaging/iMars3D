@@ -47,7 +47,7 @@ requirements:
     - bokeh
     - datashader
     - hvplot
-    - numpy < 2
+    - numpy<2
 
 test:
   imports:
