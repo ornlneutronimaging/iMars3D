@@ -296,7 +296,17 @@ def _load_images(filelist: List[str], desc: str, max_workers: int, tqdm_class) -
     file_ext = Path(filelist[0]).suffix.lower()
     if file_ext in (".tif", ".tiff"):
         # use tifffile directly for a faster loading
-        reader = partial(tifffile.imread, out="memmap")
+        # NOTE: Test conducted on 09-05-2024 on bl10-analysis1 shows that using
+        #       memmap is faster, which contradicts the observation from the instrument
+        #       team.
+        #                       | Method | Time (s) |
+        #                       |--------|----------|
+        #                       | `imread(out="memmap")` | 2.62 s ± 24.6 ms |
+        #                       | `imread()` | 3.59 s ± 13.6 ms |
+        #       The `memmap` option is removed until we have a better understanding of the
+        #       discrepancy.
+        # reader = partial(tifffile.imread, out="memmap")
+        reader = tifffile.imread
     elif file_ext == ".fits":
         reader = dxchange.read_fits
     else:
