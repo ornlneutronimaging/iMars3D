@@ -568,21 +568,21 @@ def _extract_rotation_angles(
     # Note
     # ----
     #   For the following file
-    #       20191030_ironman_small_0070_300_440_0520.tiff
+    #       20191030_ironman_small_0070_300_440_0520.tif(f)
     #   the rotation angle is 300.44 degrees
     # If all given filenames follows the pattern, we will use the angles from
     # filenames. Otherwise, we will use the angles from metadata.
-    regex = r"\d{8}_\S*_\d{4}_(?P<deg>\d{3})_(?P<dec>\d{3})_\d*\.tiff"
+    regex = r"\d{8}_\S*_\d{4}_(?P<deg>\d{3})_(?P<dec>\d{3})_\d*\.tif{1,2}"
     matches = [re.match(regex, Path(f).name) for f in filelist]
     if all(matches):
         logger.info("Using rotation angles from filenames.")
         rotation_angles = np.array([float(".".join(m.groups())) for m in matches])
     else:
         # extract rotation angles from metadata
-        file_ext = set([Path(f).suffix for f in filelist])
-        if file_ext != {".tiff"}:
-            logger.error("Only tiff files are supported.")
-            raise ValueError("Rotation angle from metadata is only supported for Tiff.")
+        file_exts = set(Path(f).suffix.lower() for f in filelist)
+        if not file_exts.issubset({".tiff", ".tif"}):
+            logger.error("Only .tiff and .tif files are supported.")
+            raise ValueError("Rotation angle from metadata is only supported for .tiff and .tif files.")
         # -- read metadata
         # img = tifffile.TiffFile("test_with_metadata_0.tiff")
         # img.pages[0].tags[65039].value
