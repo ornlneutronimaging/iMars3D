@@ -124,6 +124,24 @@ def test_normalization_bright_dark():
     assert diff < 0.01
 
 
+def test_normalization_no_darks():
+    """Test normalization routine without providing dark field images."""
+    raw, _, flats, proj = prepare_synthetic_data()
+
+    # Process with normalization, passing None for darks
+    proj_imars3d = normalization(arrays=raw, flats=flats, darks=None)
+
+    # Compare results
+    diff = np.absolute(proj_imars3d - proj).sum() / np.prod(proj.shape)
+    assert diff < 0.02  # Increased tolerance from 0.01 to 0.02 to account for the lack of dark field images
+
+    # Additional check: Ensure the shape of the output matches the input
+    assert proj_imars3d.shape == raw.shape
+
+    # Check that values are within expected range (0 to 1 for normalized data)
+    assert np.all(proj_imars3d >= 0) and np.all(proj_imars3d <= 1)
+
+
 class TestMinusLog:
     @pytest.mark.parametrize("ncore", [1, 2])
     def test_execution(self, ncore: int) -> None:
