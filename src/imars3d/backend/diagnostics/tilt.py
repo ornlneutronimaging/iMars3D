@@ -4,7 +4,7 @@
 import logging
 import param
 import multiprocessing
-from imars3d.backend.util.functions import clamp_max_workers
+from imars3d.backend.util.functions import clamp_max_workers, calculate_chunksize
 import numpy as np
 from typing import Tuple, Union, Optional
 from functools import partial
@@ -336,6 +336,7 @@ class tilt_correction(param.ParameterizedFunction):
 
             kwargs = {
                 "max_workers": self.max_workers,
+                "chunksize": calculate_chunksize(len(idx_lowrange), self.max_workers),
                 "desc": "Calculating tilt correction",
             }
             if params.tqdm_class:
@@ -442,6 +443,7 @@ class apply_tilt_correction(param.ParameterizedFunction):
                 np.copyto(shm_arrays, params.arrays)
                 kwargs = {
                     "max_workers": self.max_workers,
+                    "chunksize": calculate_chunksize(params.arrays.shape[0], self.max_workers),
                     "desc": "Applying tilt corr",
                 }
                 if params.tqdm_class:

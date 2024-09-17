@@ -16,6 +16,15 @@ def clamp_max_workers(max_workers: Union[int, None]) -> int:
     """Calculate the number of max workers.
 
     If it isn't specified, return something appropriate for the system.
+
+    Parameters
+    ----------
+    max_workers:
+        The maximum number of workers to use
+
+    Returns
+    -------
+        The number of maximum
     """
     if max_workers is None:
         max_workers = 0
@@ -32,13 +41,18 @@ def clamp_max_workers(max_workers: Union[int, None]) -> int:
 def calculate_chunksize(num_elements: int, max_workers: Union[int, None] = None, scale_factor: int = 4) -> int:
     """Calculate an optimal chunk size for multiprocessing.
 
-    Parameters:
-    - num_elements: The total number of elements to process.
-    - max_workers: The number of workers (processes) to use. Defaults to clamped max.
-    - scale_factor: A factor to fine-tune chunk size (default 4).
+    Parameters
+    ----------
+    num_elements:
+        The number of elements to process
+    max_workers:
+        The maximum number of workers to use
+    scale_factor:
+        The factor to scale the chunk size by
 
-    Returns:
-    - int: Suggested chunk size.
+    Returns
+    -------
+        The optimal chunk size
     """
     # Calculate the number of workers
     workers = clamp_max_workers(max_workers)

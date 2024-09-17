@@ -3,7 +3,7 @@
 
 # package imports
 from imars3d.backend.dataio.metadata import MetaData
-from imars3d.backend.util.functions import clamp_max_workers, to_time_str
+from imars3d.backend.util.functions import clamp_max_workers, to_time_str, calculate_chunksize
 
 # third party imports
 import numpy as np
@@ -329,6 +329,7 @@ def _load_images(filelist: List[str], desc: str, max_workers: int, tqdm_class) -
         #       - there are a lot of cores available
         kwargs = {
             "max_workers": max_workers,
+            "chunksize": calculate_chunksize(len(filelist), max_workers),
             "desc": desc,
         }
         rst = process_map(partial(_forgiving_reader, reader=reader), filelist, **kwargs)
