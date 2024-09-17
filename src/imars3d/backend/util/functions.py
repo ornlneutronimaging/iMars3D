@@ -29,6 +29,26 @@ def clamp_max_workers(max_workers: Union[int, None]) -> int:
     return result
 
 
+def calculate_chunksize(num_elements: int, max_workers: Union[int, None] = None, scale_factor: int = 4) -> int:
+    """Calculate an optimal chunk size for multiprocessing.
+
+    Parameters:
+    - num_elements: The total number of elements to process.
+    - max_workers: The number of workers (processes) to use. Defaults to clamped max.
+    - scale_factor: A factor to fine-tune chunk size (default 4).
+
+    Returns:
+    - int: Suggested chunk size.
+    """
+    # Calculate the number of workers
+    workers = clamp_max_workers(max_workers)
+
+    # Calculate chunk size based on number of elements and workers
+    chunksize = max(1, num_elements // (workers * scale_factor))
+
+    return chunksize
+
+
 def to_time_str(value: datetime = datetime.now()) -> str:
     """
     Convert the supplied datetime to a formatted string.
