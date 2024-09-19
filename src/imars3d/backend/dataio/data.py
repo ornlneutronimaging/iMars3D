@@ -592,7 +592,7 @@ def _extract_rotation_angles(
         else:
             # if the file type is not supported, raise value error
             logger.error(f"Unsupported file type: {file_ext}")
-            raise ValueError("Unsupported file type.")
+            raise ValueError(f"Unsupported file type: {file_ext}")
 
         rotation_angles.append(angle)
 
