@@ -4,7 +4,7 @@
 import logging
 import param
 import numpy as np
-from imars3d.backend.util.functions import clamp_max_workers
+from imars3d.backend.util.functions import clamp_max_workers, calculate_chunksize
 from multiprocessing.managers import SharedMemoryManager
 from functools import partial
 from tqdm.contrib.concurrent import process_map
@@ -83,6 +83,7 @@ class beam_hardening_correction(param.ParameterizedFunction):
                 # mp
                 kwargs = {
                     "max_workers": self.max_workers,
+                    "chunksize": calculate_chunksize(params.arrays.shape[0], self.max_workers),
                     "desc": "denoise_by_bilateral",
                 }
                 if self.tqdm_class:

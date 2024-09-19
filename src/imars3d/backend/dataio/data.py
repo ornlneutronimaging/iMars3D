@@ -3,7 +3,7 @@
 
 # package imports
 from imars3d.backend.dataio.metadata import MetaData
-from imars3d.backend.util.functions import clamp_max_workers, to_time_str
+from imars3d.backend.util.functions import clamp_max_workers, to_time_str, calculate_chunksize
 
 # third party imports
 import numpy as np
@@ -125,6 +125,9 @@ class load_data(param.ParameterizedFunction):
 
         Currently, we are using a forgiving reader to load the image where a corrupted file
         will not block reading other data.
+
+        The rotation angles are extracted from the filenames if possible, otherwise from the
+        metadata embedded in the tiff files. If both failed, the angle will be set to None.
     """
 
     #
@@ -296,7 +299,17 @@ def _load_images(filelist: List[str], desc: str, max_workers: int, tqdm_class) -
     file_ext = Path(filelist[0]).suffix.lower()
     if file_ext in (".tif", ".tiff"):
         # use tifffile directly for a faster loading
-        reader = partial(tifffile.imread, out="memmap")
+        # NOTE: Test conducted on 09-05-2024 on bl10-analysis1 shows that using
+        #       memmap is faster, which contradicts the observation from the instrument
+        #       team.
+        #                       | Method | Time (s) |
+        #                       |--------|----------|
+        #                       | `imread(out="memmap")` | 2.62 s ± 24.6 ms |
+        #                       | `imread()` | 3.59 s ± 13.6 ms |
+        #       The `memmap` option is removed until we have a better understanding of the
+        #       discrepancy.
+        # reader = partial(tifffile.imread, out="memmap")
+        reader = tifffile.imread
     elif file_ext == ".fits":
         reader = dxchange.read_fits
     else:
@@ -316,6 +329,7 @@ def _load_images(filelist: List[str], desc: str, max_workers: int, tqdm_class) -
         #       - there are a lot of cores available
         kwargs = {
             "max_workers": max_workers,
+            "chunksize": calculate_chunksize(len(filelist), max_workers),
             "desc": desc,
         }
         rst = process_map(partial(_forgiving_reader, reader=reader), filelist, **kwargs)
@@ -534,7 +548,7 @@ def _get_filelist_by_dir(
 def _extract_rotation_angles(
     filelist: List[str],
     metadata_idx: int = 65039,
-) -> np.ndarray:
+) -> Optional[np.ndarray]:
     """
     Extract rotation angles in degrees from filename or metadata.
 
@@ -548,40 +562,106 @@ def _extract_rotation_angles(
     Returns
     -------
         rotation_angles
+            Array of rotation angles if successfully extracted, None otherwise.
     """
     # sanity check
-    if filelist == []:
+    if not filelist:
         logger.error("filelist is [].")
         raise ValueError("filelist cannot be empty list.")
 
-    # extract rotation angles from file names
+    # process one file at a time
+    rotation_angles = []
+    for filename in filelist:
+        file_ext = Path(filename).suffix.lower()
+        angle = None
+        if file_ext == ".tiff":
+            # first, let's try to extract the angle from the filename
+            angle = extract_rotation_angle_from_filename(filename)
+            if angle is None:
+                # if failed, try to extract from metadata
+                angle = extract_rotation_angle_from_tiff_metadata(filename, metadata_idx)
+            if angle is None:
+                # if failed, log a warning and move on
+                logger.warning(f"Failed to extract rotation angle from {filename}.")
+        elif file_ext in (".tif", ".fits"):
+            # for tif and fits, we can only extract from filename as the metadata is not reliable
+            angle = extract_rotation_angle_from_filename(filename)
+            if angle is None:
+                # if failed, log a warning and move on
+                logger.warning(f"Failed to extract rotation angle from {filename}.")
+        else:
+            # if the file type is not supported, raise value error
+            logger.error(f"Unsupported file type: {file_ext}")
+            raise ValueError(f"Unsupported file type: {file_ext}")
+
+        rotation_angles.append(angle)
+
+    # this means we have a list of None
+    if all(angle is None for angle in rotation_angles):
+        logger.warning("Failed to extract any rotation angles.")
+        return None
+
+    # warn users if some angles are missing
+    if any(angle is None for angle in rotation_angles):
+        logger.warning("Some rotation angles are missing. You will see nan in the rotation angles array.")
+
+    return np.array(rotation_angles, dtype=float)
+
+
+def extract_rotation_angle_from_filename(filename: str) -> Optional[float]:
+    """
+    Extract rotation angle in degrees from filename.
+
+    Parameters
+    ----------
+    filename:
+        Filename to extract rotation angle from.
+
+    Returns
+    -------
+        rotation_angle
+            Rotation angle in degrees if successfully extracted, None otherwise.
+    """
+    # extract rotation angle from file names
     # Note
     # ----
     #   For the following file
-    #       20191030_ironman_small_0070_300_440_0520.tiff
+    #       20191030_ironman_small_0070_300_440_0520.tif(f)
+    #       20191030_ironman_small_0070_300_440_0520.fits
     #   the rotation angle is 300.44 degrees
-    # If all given filenames follows the pattern, we will use the angles from
-    # filenames. Otherwise, we will use the angles from metadata.
-    regex = r"\d{8}_\S*_\d{4}_(?P<deg>\d{3})_(?P<dec>\d{3})_\d*\.tiff"
-    matches = [re.match(regex, Path(f).name) for f in filelist]
-    if all(matches):
-        logger.info("Using rotation angles from filenames.")
-        rotation_angles = np.array([float(".".join(m.groups())) for m in matches])
+    regex = r"\d{8}_\S*_\d{4}_(?P<deg>\d{3})_(?P<dec>\d{3})_\d*\.(?:tiff?|fits)"
+    match = re.match(regex, Path(filename).name)
+    if match:
+        rotation_angle = float(".".join(match.groups()))
     else:
-        # extract rotation angles from metadata
-        file_ext = set([Path(f).suffix for f in filelist])
-        if file_ext != {".tiff"}:
-            logger.error("Only tiff files are supported.")
-            raise ValueError("Rotation angle from metadata is only supported for Tiff.")
+        rotation_angle = None
+    return rotation_angle
+
+
+def extract_rotation_angle_from_tiff_metadata(filename: str, metadata_idx: int = 65039) -> Optional[float]:
+    """
+    Extract rotation angle in degrees from metadata of a tiff file.
+
+    Parameters
+    ----------
+    filename:
+        Filename to extract rotation angle from.
+    metadata_idx:
+        Index of metadata to extract rotation angle from, default is 65039.
+
+    Returns
+    -------
+        rotation_angle
+            Rotation angle in degrees if successfully extracted, None otherwise.
+    """
+    try:
         # -- read metadata
         # img = tifffile.TiffFile("test_with_metadata_0.tiff")
         # img.pages[0].tags[65039].value
         # >> 'RotationActual:0.579840'
-        rotation_angles = np.array(
-            [float(tifffile.TiffFile(f).pages[0].tags[metadata_idx].value.split(":")[-1]) for f in filelist],
-            dtype="float",
-        )
-    return rotation_angles
+        return float(tifffile.TiffFile(filename).pages[0].tags[metadata_idx].value.split(":")[-1])
+    except Exception:
+        return None
 
 
 def _save_data(filename: Path, data: np.ndarray, rot_angles: np.ndarray = None) -> None:

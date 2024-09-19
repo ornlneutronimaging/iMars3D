@@ -5,7 +5,7 @@ import logging
 import numpy as np
 
 import param
-from imars3d.backend.util.functions import clamp_max_workers
+from imars3d.backend.util.functions import clamp_max_workers, calculate_chunksize
 from multiprocessing.managers import SharedMemoryManager
 from tqdm.contrib.concurrent import process_map
 from tomopy.recon.rotation import find_center_pc
@@ -139,6 +139,7 @@ class find_rotation_center(param.ParameterizedFunction):
             # map the multiprocessing calls
             kwargs = {
                 "max_workers": max_workers,
+                "chunksize": calculate_chunksize(len(idx_low), max_workers),
                 "desc": "Finding rotation center",
             }
             if tqdm_class:

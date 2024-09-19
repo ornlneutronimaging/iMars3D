@@ -3,7 +3,7 @@
 """Image noise reduction (denoise) module."""
 import logging
 import param
-from imars3d.backend.util.functions import clamp_max_workers
+from imars3d.backend.util.functions import clamp_max_workers, calculate_chunksize
 import numpy as np
 import tomopy
 from multiprocessing.managers import SharedMemoryManager
@@ -153,6 +153,7 @@ def denoise_by_bilateral(
             # mp
             kwargs = {
                 "max_workers": max_workers,
+                "chunksize": calculate_chunksize(arrays.shape[0], max_workers),
                 "desc": "denoise_by_bilateral",
             }
             if tqdm_class:
