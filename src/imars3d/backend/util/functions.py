@@ -38,7 +38,7 @@ def clamp_max_workers(max_workers: Union[int, None]) -> int:
     return result
 
 
-def calculate_chunksize(num_elements: int, max_workers: Union[int, None] = None, scale_factor: int = 4) -> int:
+def calculate_chunksize(num_elements: int, max_workers: Optional[int] = None, scale_factor: int = 4) -> int:
     """Calculate an optimal chunk size for multiprocessing.
 
     Parameters
