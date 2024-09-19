@@ -41,7 +41,7 @@ class normalization(param.ParameterizedFunction):
     flats = param.Array(
         doc="3D array of flat field images (aka flat field, open beam), axis=0 is the image number axis.", default=None
     )
-    darks = param.Array(doc="3D array of dark field images, axis=0 is the image number axis.", default=None)
+    darks = param.Array(doc="3D array of optional dark field images, axis=0 is the image number axis.", default=None)
     max_workers = param.Integer(
         default=0,
         bounds=(0, None),
@@ -59,10 +59,15 @@ class normalization(param.ParameterizedFunction):
         self.max_workers = clamp_max_workers(params.max_workers)
         logger.debug(f"max_worker={self.max_workers}")
 
-        # use median filter to remove outliers from flats and darks
-        # NOTE: this will remove the random noises coming from the environment.
+        # process flats (formerly known as open beam, white field)
         self.flats = np.median(params.flats, axis=0)
-        self.darks = np.median(params.darks, axis=0)
+
+        # process darks (formerly known as black field)
+        if params.darks is None:
+            self.darks = np.zeros_like(self.flats)
+        else:
+            self.darks = np.median(params.darks, axis=0)
+
         # apply normalization
         _bg = self.flats - self.darks
         _bg[_bg <= 0] = 1e-6

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """iMars3D's intensity fluctuation correction module."""
 import logging
-from imars3d.backend.util.functions import clamp_max_workers
+from imars3d.backend.util.functions import clamp_max_workers, calculate_chunksize
 import numpy as np
 import param
 import tomopy
@@ -93,6 +93,7 @@ class intensity_fluctuation_correction(param.ParameterizedFunction):
                 # map the multiprocessing calls
                 kwargs = {
                     "max_workers": max_workers,
+                    "chunksize": calculate_chunksize(ct.shape[0], max_workers),
                     "desc": "intensity_fluctuation_correction",
                 }
                 if tqdm_class:

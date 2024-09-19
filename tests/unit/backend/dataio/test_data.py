@@ -15,6 +15,8 @@ from imars3d.backend.dataio.data import (
     load_data,
     save_checkpoint,
     save_data,
+    extract_rotation_angle_from_filename,
+    extract_rotation_angle_from_tiff_metadata,
 )
 
 
@@ -181,6 +183,31 @@ def test_extract_rotation_angles(data_fixture):
     rst = _extract_rotation_angles([metadata_tiff] * 3)
     ref = np.array([0.1, 0.1, 0.1])
     np.testing.assert_array_almost_equal(rst, ref)
+    # case_2: mixed file types
+    rst = _extract_rotation_angles([good_tiff, metadata_tiff, generic_tiff, generic_fits])
+    ref = np.array([10.02, 0.1, np.nan, np.nan])
+    np.testing.assert_array_equal(rst, ref)
+    # case_3: all files without extractable angles
+    rst = _extract_rotation_angles([generic_tiff, generic_fits])
+    assert rst is None
+
+
+def test_extract_rotation_angle_from_filename():
+    # Test cases for extract_rotation_angle_from_filename
+    assert extract_rotation_angle_from_filename("20191030_sample_0070_300_440_0520.tiff") == 300.44
+    assert extract_rotation_angle_from_filename("20191030_sample_0071_301_441_0521.tif") == 301.441
+    assert extract_rotation_angle_from_filename("20191030_sample_0072_302_442_0522.fits") == 302.442
+    assert extract_rotation_angle_from_filename("generic_file.tiff") is None
+
+
+def test_extract_rotation_angle_from_tiff_metadata(tmpdir):
+    # Create a TIFF file with rotation angle in metadata
+    data = np.ones((3, 3))
+    filename = str(tmpdir / "metadata.tiff")
+    tifffile.imwrite(filename, data, extratags=[(65039, "s", 0, "RotationActual:0.5", True)])
+
+    assert extract_rotation_angle_from_tiff_metadata(filename) == 0.5
+    assert extract_rotation_angle_from_tiff_metadata("non_existent_file.tiff") is None
 
 
 @pytest.fixture(scope="module")
