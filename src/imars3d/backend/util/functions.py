@@ -6,7 +6,7 @@ from datetime import datetime
 import logging
 import multiprocessing
 import resource
-from typing import Union
+from typing import Optional, Union
 
 
 logger = logging.getLogger(__name__)
