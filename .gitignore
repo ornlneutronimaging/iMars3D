@@ -12,7 +12,6 @@
 /build
 /dist
 /python/imars3d.egg-info
-conda.recipe/
 
 # temp files and dirs
 _tmp

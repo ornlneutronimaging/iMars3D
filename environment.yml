@@ -11,11 +11,13 @@ dependencies:
   - astropy
   - tomopy
   - algotom
+  - numpy < 2
   # plot
   - holoviews
   - bokeh
   - datashader
   - hvplot
+  - dask
   # GUI
   - panel
   - param
