@@ -25,6 +25,8 @@ dependencies:
   # IO
   - dxchange
   - jsonschema
+  # // to avoid deprecated call, imsave, which is still used by dxchange
+  - tifffile < 2025.1.10
   # -- Development
   # utils
   - pre-commit
