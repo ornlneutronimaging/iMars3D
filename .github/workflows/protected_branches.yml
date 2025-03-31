@@ -23,7 +23,7 @@ jobs:
           state: "pending"
           sha: "${{ github.sha }}"
           target_url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
           lfs: true
@@ -52,7 +52,7 @@ jobs:
       run:
         shell: bash -l {0}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: true
