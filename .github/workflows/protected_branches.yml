@@ -103,7 +103,7 @@ jobs:
             CONDA_ENV="${{ steps.conda_env_name.outputs.name }}"
 
       - name: Annotate commit
-        uses: peter-evans/commit-comment@v2
+        uses: peter-evans/commit-comment@v3
         with:
           body: |
             GitLab pipeline for ${{ steps.conda_env_name.outputs.name }} has been submitted for this commit: ${{ steps.trigger.outputs.web_url }}
