@@ -27,7 +27,7 @@ jobs:
         with:
           submodules: true
           lfs: true
-      - uses: conda-incubator/setup-miniconda@v2
+      - uses: conda-incubator/setup-miniconda@v3
         with:
           auto-update-conda: true
           miniforge-version: latest
@@ -53,7 +53,7 @@ jobs:
         shell: bash -l {0}
     steps:
       - uses: actions/checkout@v4
-      - uses: conda-incubator/setup-miniconda@v2
+      - uses: conda-incubator/setup-miniconda@v3
         with:
           auto-update-conda: true
           mamba-version: "*"
