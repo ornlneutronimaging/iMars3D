@@ -129,7 +129,10 @@ def test_forgiving_reader():
     def goodReader(x):
         return x
 
-    assert _forgiving_reader(filename="test", reader=goodReader) == "test"
+    def good_reader(x):
+        return x
+
+    assert _forgiving_reader(filename="test", reader=good_reader) == "test"
 
     # incorrect usage, but bypass the exception
     def badReader(x):
