@@ -2,29 +2,6 @@
 """
 Unit tests for backend data loading.
 """
-import param
-
-# package imports
-from imars3d.backend.dataio.data import (
-    _extract_rotation_angles,
-    _forgiving_reader,
-    _get_filelist_by_dir,
-    _load_by_file_list,
-    _load_images,
-    Foldernames,
-    load_data,
-    save_checkpoint,
-    save_data,
-    extract_rotation_angle_from_filename,
-    extract_rotation_angle_from_tiff_metadata,
-)
-
-
-# third party imports
-import astropy.io.fits as fits
-import numpy as np
-import pytest
-import tifffile
 
 # standard imports
 from copy import deepcopy
@@ -32,6 +9,28 @@ from functools import partial
 from pathlib import Path
 from unittest import mock
 from unittest.mock import MagicMock
+
+# third party imports
+import astropy.io.fits as fits
+import numpy as np
+import param
+import pytest
+import tifffile
+
+# package imports
+from imars3d.backend.dataio.data import (
+    Foldernames,
+    _extract_rotation_angles,
+    _forgiving_reader,
+    _get_filelist_by_dir,
+    _load_by_file_list,
+    _load_images,
+    extract_rotation_angle_from_filename,
+    extract_rotation_angle_from_tiff_metadata,
+    load_data,
+    save_checkpoint,
+    save_data,
+)
 
 
 @pytest.fixture(scope="function")
@@ -127,10 +126,15 @@ def test_load_data(
 
 def test_forgiving_reader():
     # correct usage
-    goodReader = lambda x: x
+    def goodReader(x):
+        return x
+
     assert _forgiving_reader(filename="test", reader=goodReader) == "test"
+
     # incorrect usage, but bypass the exception
-    badReader = lambda x: x / 0
+    def badReader(x):
+        return x / 0
+
     assert _forgiving_reader(filename="test", reader=badReader) is None
 
 

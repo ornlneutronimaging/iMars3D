@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """iMars3D's intensity fluctuation correction module."""
+
 import logging
-from imars3d.backend.util.functions import clamp_max_workers, calculate_chunksize
+from functools import partial
+from multiprocessing.managers import SharedMemoryManager
+
 import numpy as np
 import param
 import tomopy
 from skimage import feature
-from multiprocessing.managers import SharedMemoryManager
 from tqdm.contrib.concurrent import process_map
-from functools import partial
+
+from imars3d.backend.util.functions import calculate_chunksize, clamp_max_workers
 
 logger = logging.getLogger(__name__)
 
@@ -41,11 +44,13 @@ class intensity_fluctuation_correction(param.ParameterizedFunction):
     ct = param.Array(doc="The image/radiograph stack to correct for beam intensity fluctuation.", default=None)
     air_pixels = param.Integer(
         default=5,
-        doc="Number of pixels at each boundary to calculate the scaling factor. When a negative number is given, the auto air region detection will be used instead of tomopy.",
+        doc="Number of pixels at each boundary to calculate the scaling factor. When a negative number is given, "
+        "the auto air region detection will be used instead of tomopy.",
     )
     sigma = param.Integer(
         default=3,
-        doc="The standard deviation of the Gaussian filter, only valid when using the auto air region detection via canny edge detection from skimage.",
+        doc="The standard deviation of the Gaussian filter, only valid when using the auto air region detection "
+        "via canny edge detection from skimage.",
     )
     max_workers = param.Integer(
         default=0,

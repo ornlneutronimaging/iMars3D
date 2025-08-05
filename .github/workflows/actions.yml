@@ -15,20 +15,17 @@ jobs:
         shell: bash -l {0}
     steps:
       - uses: actions/checkout@v4
-      - uses: conda-incubator/setup-miniconda@v3
+      - uses: prefix-dev/setup-pixi@v0.8.2
         with:
-          auto-update-conda: true
-          mamba-version: "*"
-          environment-file: environment.yml
+          pixi-version: v0.38.0
+          cache: true
       - name: Verify docstrings
-        run: pydocstyle --convention=numpy src/
+        run: pixi run pydocstyle --convention=numpy src/
       - name: Install ui test requirements
-        run: playwright install
-      - name: Install iMars3d in editable mode
-        run: pip install -e .
+        run: pixi run playwright install
       - name: Tests without data repository
         run: |
-          python -m pytest --cov --cov-report=xml --cov-report=term -m "not datarepo"
+          pixi run test
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
 
@@ -39,12 +36,11 @@ jobs:
         shell: bash -l {0}
     steps:
       - uses: actions/checkout@v4
-      - uses: conda-incubator/setup-miniconda@v3
+      - uses: prefix-dev/setup-pixi@v0.8.2
         with:
-          auto-update-conda: true
-          mamba-version: "*"
-          environment-file: environment.yml
+          pixi-version: v0.38.0
+          cache: true
       - name: Build Wheel
-        run: python -m build --no-isolation --wheel
+        run: pixi run pypi-build
       - name: Check Wheel Contents
-        run: check-wheel-contents .
+        run: pixi run check-wheel-contents .

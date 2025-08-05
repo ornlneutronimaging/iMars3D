@@ -2,14 +2,15 @@
 """
 Unit tests for backend metadata auxiliary class.
 """
+
 # package imports
-from imars3d.backend.dataio.metadata import _extract_metadata_from_tiff
-from imars3d.backend.dataio.metadata import MetaData
+import numpy as np
 
 # third party imports
 import pytest
-import numpy as np
 import tifffile
+
+from imars3d.backend.dataio.metadata import MetaData, _extract_metadata_from_tiff
 
 
 @pytest.fixture(scope="function")

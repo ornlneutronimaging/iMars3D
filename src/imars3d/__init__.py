@@ -1,7 +1,8 @@
 """iMars3D: a Python package for neutron imaging and tomography reconstruction."""
 
 import logging
-from .backend import corrections, diagnostics, dataio, morph, preparation, reconstruction  # noqa: F401
+
+from .backend import corrections, dataio, diagnostics, morph, preparation, reconstruction  # noqa: F401
 
 logging.getLogger("imars3d").setLevel(logging.INFO)
 try:

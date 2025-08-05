@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """iMars3D: rotation center finding module."""
-import logging
-import numpy as np
 
-import param
-from imars3d.backend.util.functions import clamp_max_workers, calculate_chunksize
+import logging
 from multiprocessing.managers import SharedMemoryManager
-from tqdm.contrib.concurrent import process_map
+
+import numpy as np
+import param
 from tomopy.recon.rotation import find_center_pc
+from tqdm.contrib.concurrent import process_map
+
 from imars3d.backend.diagnostics.tilt import find_180_deg_pairs_idx
+from imars3d.backend.util.functions import calculate_chunksize, clamp_max_workers
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +60,8 @@ class find_rotation_center(param.ParameterizedFunction):
     max_workers = param.Integer(
         default=0,
         bounds=(0, None),
-        doc="Maximum number of processes to use for parallel median filtering, default is 0, which means using all available cores.",
+        doc="Maximum number of processes to use for parallel median filtering, default is 0, which means using all "
+        "available cores.",
     )
     tqdm_class = param.ClassSelector(class_=object, doc="Progress bar to render with")
 

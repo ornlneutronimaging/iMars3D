@@ -1,11 +1,14 @@
 #!/usr/bin/enb python3
 """iMars3D's config validation module."""
+
 # standard imports
-from collections.abc import Iterable
 import json
-import jsonschema
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Dict, Union
+
+import jsonschema
+
 from ._util import function_exists
 
 FilePath = Union[Path, str]
@@ -90,7 +93,10 @@ def _validate_tasks_exist(json_obj: Dict) -> None:
 
 
 def todict(obj: JsonInputTypes) -> Dict:
-    """Convert the supplied object into a dict. Raise a TypeError if the object is not a type that has a conversion menthod."""
+    """Convert the supplied object into a dict.
+
+    Raise a TypeError if the object is not a type that has a conversion method.
+    """
     if isinstance(obj, dict):
         return obj
     elif isinstance(obj, Path):

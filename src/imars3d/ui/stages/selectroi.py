@@ -1,14 +1,16 @@
 #!/usr/env/bin python3
 """Select region of interest stage for iMars3D."""
-import param
-import panel as pn
+
+from pathlib import Path
+
 import holoviews as hv
 import numpy as np
-from holoviews import opts
-from holoviews import streams
-from pathlib import Path
-from imars3d.backend.morph.crop import crop
+import panel as pn
+import param
+from holoviews import opts, streams
+
 from imars3d.backend.dataio.data import save_checkpoint as imars_save_checkpoint
+from imars3d.backend.morph.crop import crop
 
 
 class SelectROI(param.Parameterized):

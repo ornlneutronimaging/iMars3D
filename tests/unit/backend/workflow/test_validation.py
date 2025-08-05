@@ -1,8 +1,10 @@
 import json
 from json import JSONDecodeError
-import pytest
 from pathlib import Path
-from imars3d.backend.workflow.validate import JSONValid, JSONValidationError, SCHEMA
+
+import pytest
+
+from imars3d.backend.workflow.validate import SCHEMA, JSONValid, JSONValidationError
 
 
 # fixtures here re-use the JSON_DIR fixture defined in conftest.py

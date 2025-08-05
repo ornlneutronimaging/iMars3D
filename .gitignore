@@ -277,3 +277,9 @@ $RECYCLE.BIN/
 # End of https://www.toptal.com/developers/gitignore/api/python,macos,linux,windows,visualstudiocode
 .vscode/settings.json
 _version.py
+
+# Pixi
+.pixi/
+pixi.lock
+*.conda
+pyproject.toml.bak

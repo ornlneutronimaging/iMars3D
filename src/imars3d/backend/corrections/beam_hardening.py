@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Imaging correction for beam hardening."""
+
 import logging
-import param
-import numpy as np
-from imars3d.backend.util.functions import clamp_max_workers, calculate_chunksize
-from multiprocessing.managers import SharedMemoryManager
 from functools import partial
-from tqdm.contrib.concurrent import process_map
+from multiprocessing.managers import SharedMemoryManager
+
+import numpy as np
+import param
 from algotom.prep.correction import beam_hardening_correction as algotom_beam_hardening_correction
+from tqdm.contrib.concurrent import process_map
+
+from imars3d.backend.util.functions import calculate_chunksize, clamp_max_workers
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +59,8 @@ class beam_hardening_correction(param.ParameterizedFunction):
         default=True,
     )
     max_workers = param.Integer(
-        doc="The maximum number of workers to use for parallel processing, default is 0, which means using all available cores.",
+        doc="The maximum number of workers to use for parallel processing, default is 0, which means using all "
+        "available cores.",
         default=0,
         bounds=(0, None),
     )

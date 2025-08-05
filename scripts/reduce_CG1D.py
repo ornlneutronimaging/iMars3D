@@ -1,21 +1,18 @@
 #!/usr/bin/env python
 
 # package imports
-from imars3d.backend.dataio.config import save_config
-from imars3d.backend import auto_reduction_ready
-from imars3d.backend import load_template_config
-from imars3d.backend import extract_info_from_path
-from imars3d.backend import substitute_template
-from imars3d.backend.autoredux import logger as logger_autoredux
-from imars3d.backend.workflow.engine import WorkflowEngineAuto, WorkflowEngineError, WorkflowEngineExitCodes
-from imars3d.backend.util.functions import to_time_str
-
 # standard imports
 import logging
-from pathlib import Path
 import shutil
-from typing import Union
 import sys
+from pathlib import Path
+from typing import Union
+
+from imars3d.backend import auto_reduction_ready, extract_info_from_path, load_template_config, substitute_template
+from imars3d.backend.autoredux import logger as logger_autoredux
+from imars3d.backend.dataio.config import save_config
+from imars3d.backend.util.functions import to_time_str
+from imars3d.backend.workflow.engine import WorkflowEngineAuto, WorkflowEngineError, WorkflowEngineExitCodes
 
 # declare the conda environment for this to run in
 CONDA_ENV = "imars3d-dev"

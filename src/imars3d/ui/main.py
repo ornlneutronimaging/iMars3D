@@ -16,14 +16,17 @@ pn.extension(
 main_window = MainWindow()
 main_window  # or pn.panel(main_window) or main_window.show() or main_window.servable()
 """
+
 import logging
+
 import panel as pn
 import param
-from imars3d.ui.base_window import BaseWindow
-from imars3d.ui.welcome_window import WelcomeWindow
-from imars3d.ui.interactive_window import InteractiveWindow
+
 from imars3d.ui.assisted_window import AssistedWindow
+from imars3d.ui.base_window import BaseWindow
+from imars3d.ui.interactive_window import InteractiveWindow
 from imars3d.ui.viewer_window import ViewerWindow
+from imars3d.ui.welcome_window import WelcomeWindow
 
 logger = logging.getLogger(__name__)
 

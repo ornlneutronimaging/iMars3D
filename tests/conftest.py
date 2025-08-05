@@ -1,8 +1,9 @@
 # standard imports
 from pathlib import Path
-import pytest
 from shutil import rmtree
 from tempfile import mkdtemp
+
+import pytest
 
 
 @pytest.fixture(scope="session")

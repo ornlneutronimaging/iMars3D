@@ -1,7 +1,9 @@
-from imars3d.backend.__main__ import main as main_backend
-from reduce_CG1D import main as main_CG1D
-import pytest
 from json.decoder import JSONDecodeError
+
+import pytest
+from reduce_CG1D import main as main_CG1D
+
+from imars3d.backend.__main__ import main as main_backend
 
 
 @pytest.fixture(scope="module")

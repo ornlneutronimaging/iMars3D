@@ -1,16 +1,13 @@
 #!/usr/bin/env python3
 
 # package imports
-from imars3d.backend import auto_reduction_ready
-from imars3d.backend import load_template_config
-from imars3d.backend import extract_info_from_path
-from imars3d.backend import substitute_template
+# standard imports
+from pathlib import Path
 
 # third party imports
 import pytest
 
-# standard imports
-from pathlib import Path
+from imars3d.backend import auto_reduction_ready, extract_info_from_path, load_template_config, substitute_template
 
 
 @pytest.mark.parametrize(
