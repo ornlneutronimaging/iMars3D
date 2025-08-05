@@ -604,7 +604,7 @@ def _extract_rotation_angles(
     if any(angle is None for angle in rotation_angles):
         logger.warning("Some rotation angles are missing. You will see nan in the rotation angles array.")
 
-    return np.array(rotation_angles, dtype=float)
+    return np.array(rotation_angles, dtype=np.float64)
 
 
 def extract_rotation_angle_from_filename(filename: str) -> Optional[float]:
