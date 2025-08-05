@@ -28,19 +28,3 @@ jobs:
           pixi run test
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
-
-  build-wheel:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash -l {0}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: prefix-dev/setup-pixi@v0.8.2
-        with:
-          pixi-version: v0.50.2
-          manifest: pyproject.toml
-      - name: Build Wheel
-        run: pixi run pypi-build
-      - name: Check Wheel Contents
-        run: pixi run check-wheel-contents .

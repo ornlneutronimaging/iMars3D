@@ -72,34 +72,3 @@ jobs:
           if [ "${IS_RC}" = "true" ]; then CONDA_LABEL="rc"; fi
           echo pushing ${{ github.ref }} with label $CONDA_LABEL
           pixi run anaconda upload --label $CONDA_LABEL *.conda
-
-
-  trigger-deploy:
-    runs-on: ubuntu-22.04
-    needs: [build-conda]
-    # only trigger deploys from protected branches
-    if: ${{ github.ref_protected || github.ref_type == 'tag' }}
-    steps:
-      - name: Determine Environment
-        uses: neutrons/branch-mapper@v2
-        id: conda_env_name
-        with:
-          prefix: imars3d
-
-      - name: Trigger deploy
-        id: trigger
-        uses: eic/trigger-gitlab-ci@v3
-        with:
-          url: https://code.ornl.gov
-          token: ${{ secrets.GITLAB_TRIGGER_TOKEN }}
-          project_id: 11848
-          ref_name: main
-          variables: |
-            PLAY="update"
-            CONDA_ENV="${{ steps.conda_env_name.outputs.name }}"
-
-      - name: Annotate commit
-        uses: peter-evans/commit-comment@v3
-        with:
-          body: |
-            GitLab pipeline for ${{ steps.conda_env_name.outputs.name }} has been submitted for this commit: ${{ steps.trigger.outputs.web_url }}
