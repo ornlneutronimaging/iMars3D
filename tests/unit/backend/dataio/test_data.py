@@ -138,7 +138,10 @@ def test_forgiving_reader():
     def badReader(x):
         return x / 0
 
-    assert _forgiving_reader(filename="test", reader=badReader) is None
+    def bad_reader(x):
+        return x / 0
+
+    assert _forgiving_reader(filename="test", reader=bad_reader) is None
 
 
 def test_load_images(data_fixture):
