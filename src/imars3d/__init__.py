@@ -7,7 +7,7 @@ from .backend.util.tomopy_compat import apply_tomopy_numpy2_compat
 
 apply_tomopy_numpy2_compat()
 
-from .backend import corrections, dataio, diagnostics, morph, preparation, reconstruction  # noqa: F401
+from .backend import corrections, dataio, diagnostics, morph, preparation, reconstruction  # noqa: F401, E402
 
 logging.getLogger("imars3d").setLevel(logging.INFO)
 try:
