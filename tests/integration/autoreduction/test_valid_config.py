@@ -1,21 +1,21 @@
 # package imports
-from imars3d.backend.autoredux import extract_info_from_path, substitute_template
-from imars3d.backend.dataio.data import _load_images as load_images
-from imars3d.backend.util.functions import clamp_max_workers
-from reduce_CG1D import main as main_CG1D
-from reduce_CG1D import WORKFLOW_SUCCESS
+# standard imports
+import os
+import re
+from pathlib import Path
+from unittest import mock
+from unittest.mock import MagicMock
 
 # third-party imports
 import numpy as np
 import pytest
-
-# standard imports
-import os
-from pathlib import Path
 from psutil import virtual_memory
-import re
-from unittest import mock
-from unittest.mock import MagicMock
+from reduce_CG1D import WORKFLOW_SUCCESS
+from reduce_CG1D import main as main_CG1D
+
+from imars3d.backend.autoredux import extract_info_from_path, substitute_template
+from imars3d.backend.dataio.data import _load_images as load_images
+from imars3d.backend.util.functions import clamp_max_workers
 
 
 @pytest.fixture(scope="module")

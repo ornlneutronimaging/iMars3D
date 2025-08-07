@@ -1,9 +1,9 @@
 # package imports
-from reduce_CG1D import main as main_CG1D
-from imars3d.backend.workflow.engine import WorkflowEngineExitCodes
-
 # third-party imports
 import pytest
+from reduce_CG1D import main as main_CG1D
+
+from imars3d.backend.workflow.engine import WorkflowEngineExitCodes
 
 
 @pytest.mark.datarepo

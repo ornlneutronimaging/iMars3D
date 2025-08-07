@@ -4,8 +4,9 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 import os
 import sys
-import versioningit
+
 import param
+import versioningit
 
 param.parameterized.docstring_signature = False
 param.parameterized.docstring_describe_params = False

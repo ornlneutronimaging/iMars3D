@@ -10,9 +10,10 @@ This can be invoked using
 The built-in help will give the options when supplied a ``--help`` flag.
 """
 
-from imars3d.backend.workflow.engine import WorkflowEngineAuto
 import logging
 from pathlib import Path
+
+from imars3d.backend.workflow.engine import WorkflowEngineAuto
 
 
 def main(args=None):

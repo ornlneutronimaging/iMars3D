@@ -1,13 +1,12 @@
 # package imports
-from reduce_CG1D import main as main_CG1D
-
-# third-party imports
-import pytest
-
 # standard imports
 from pathlib import Path
 from unittest import mock
 from unittest.mock import MagicMock
+
+# third-party imports
+import pytest
+from reduce_CG1D import main as main_CG1D
 
 
 @pytest.mark.datarepo

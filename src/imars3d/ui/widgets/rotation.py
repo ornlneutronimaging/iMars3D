@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Widgets for rotation."""
-import param
+
 import panel as pn
+import param
+
 from imars3d.backend.diagnostics.rotation import find_rotation_center
 
 

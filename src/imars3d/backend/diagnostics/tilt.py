@@ -1,19 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """iMars3D's tilt correction module."""
+
 import logging
-import param
 import multiprocessing
-from imars3d.backend.util.functions import clamp_max_workers, calculate_chunksize
-import numpy as np
-from typing import Tuple, Union, Optional
 from functools import partial
-from scipy.optimize import minimize_scalar
-from scipy.optimize import OptimizeResult
-from skimage.transform import rotate
-from skimage.registration import phase_cross_correlation
 from multiprocessing.managers import SharedMemoryManager
+from typing import Optional, Tuple, Union
+
+import numpy as np
+import param
+from scipy.optimize import OptimizeResult, minimize_scalar
+from skimage.registration import phase_cross_correlation
+from skimage.transform import rotate
 from tqdm.contrib.concurrent import process_map
+
+from imars3d.backend.util.functions import calculate_chunksize, clamp_max_workers
 
 logger = logging.getLogger(__name__)
 
@@ -286,11 +288,13 @@ class tilt_correction(param.ParameterizedFunction):
     )
     cut_off_angle_deg = param.Number(
         default=2.0,
-        doc="The angle in degrees to cut off the rotation axis tilt correction, i.e. skip applying tilt correction for tilt angles that are too small.",
+        doc="The angle in degrees to cut off the rotation axis tilt correction, i.e. skip applying tilt "
+        "correction for tilt angles that are too small.",
     )
     center = param.Parameter(
         default=None,
-        doc="The center of the rotation axis, default is None, which means the center of the image. This will be passed to the rotation function from skimage.",
+        doc="The center of the rotation axis, default is None, which means the center of the image. This will be "
+        "passed to the rotation function from skimage.",
     )
     # NOTE:
     # The front and backend are sharing the same computing unit, therefore we can
@@ -299,7 +303,8 @@ class tilt_correction(param.ParameterizedFunction):
     max_workers = param.Integer(
         default=0,
         bounds=(0, None),
-        doc="Number of cores to use for parallel median filtering, default is 0, which means using all available cores.",
+        doc="Number of cores to use for parallel median filtering, default is 0, which means using all available "
+        "cores.",
     )
     tqdm_class = param.ClassSelector(class_=object, doc="Progress bar to render with")
 
@@ -403,7 +408,8 @@ class apply_tilt_correction(param.ParameterizedFunction):
     tilt = param.Number(doc="The rotation axis tilt angle in degrees", default=None)
     center = param.Parameter(
         default=None,
-        doc="The center of the rotation axis, default is None, which means the center of the image. This will be passed to the rotation function from skimage.",
+        doc="The center of the rotation axis, default is None, which means the center of the image. This will be "
+        "passed to the rotation function from skimage.",
     )
     # NOTE:
     # The front and backend are sharing the same computing unit, therefore we can
@@ -412,7 +418,8 @@ class apply_tilt_correction(param.ParameterizedFunction):
     max_workers = param.Integer(
         default=0,
         bounds=(0, None),
-        doc="Number of cores to use for parallel median filtering, default is 0, which means using all available cores.",
+        doc="Number of cores to use for parallel median filtering, default is 0, which means using all available "
+        "cores.",
     )
     tqdm_class = param.ClassSelector(class_=object, doc="Progress bar to render with")
 

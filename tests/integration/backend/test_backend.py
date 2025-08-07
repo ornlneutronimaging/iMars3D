@@ -1,22 +1,22 @@
 # backend module integration tests
 
 # package imports
-from imars3d.backend.workflow.engine import WorkflowEngineAuto
-from imars3d.backend.workflow.engine import WorkflowEngineError
-from imars3d.backend.dataio.data import _load_images as load_images
-from imars3d.backend.workflow.validate import JSONValidationError
+import json
+import re
 
-from imars3d.backend.util.functions import clamp_max_workers
+# standard library imports
+from copy import deepcopy
+from pathlib import Path
+
+import numpy as np
 
 # third party imports
 import pytest
 
-# standard library imports
-from copy import deepcopy
-import json
-import numpy as np
-from pathlib import Path
-import re
+from imars3d.backend.dataio.data import _load_images as load_images
+from imars3d.backend.util.functions import clamp_max_workers
+from imars3d.backend.workflow.engine import WorkflowEngineAuto, WorkflowEngineError
+from imars3d.backend.workflow.validate import JSONValidationError
 
 
 @pytest.fixture(scope="module")

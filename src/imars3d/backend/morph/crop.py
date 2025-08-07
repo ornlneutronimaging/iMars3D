@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """iMars3D: crop module."""
+
 import logging
+
 import numpy as np
 import param
 from scipy.ndimage import median_filter
@@ -70,25 +72,35 @@ class crop(param.ParameterizedFunction):
     )
     crop_limit = param.List(
         default=[-1, -1, -1, -1],
-        doc="The four limits for cropping. Default is (-1, -1, -1, -1), which will trigger the automatic bounds detection.",
+        doc="The four limits for cropping. Default is (-1, -1, -1, -1), which will trigger the automatic "
+        "bounds detection.",
         precedence=1,  # mandatory
     )
     border_pix = param.Integer(
         default=10,
         precedence=0.5,  # advanced option
-        doc="the width of border region to estimate the background intensity, which helps to determine which case we are in.",
+        doc="the width of border region to estimate the background intensity, which helps to determine which "
+        "case we are in.",
     )
     expand_ratio = param.Number(
-        default=0.1, precedence=0.4, doc="The ratio to expand the cropped region."  # advanced option
+        default=0.1,
+        precedence=0.4,
+        doc="The ratio to expand the cropped region.",  # advanced option
     )
     rel_intensity_threshold_air_or_slit = param.Number(
-        default=0.05, precedence=0.3, doc="Passing through keyword arguments to detect_bounds."  # advanced option
+        default=0.05,
+        precedence=0.3,
+        doc="Passing through keyword arguments to detect_bounds.",  # advanced option
     )
     rel_intensity_threshold_fov = param.Number(
-        default=0.1, precedence=0.2, doc="Passing through keyword arguments to detect_bounds."  # advanced option
+        default=0.1,
+        precedence=0.2,
+        doc="Passing through keyword arguments to detect_bounds.",  # advanced option
     )
     rel_intensity_threshold_sample = param.Number(
-        default=0.95, precedence=0.1, doc="Passing through keyword arguments to detect_bounds."  # advanced option
+        default=0.95,
+        precedence=0.1,
+        doc="Passing through keyword arguments to detect_bounds.",  # advanced option
     )
 
     def __call__(self, **params):
@@ -187,7 +199,7 @@ def detect_bounds(
         raise ValueError("Only 2D and 3D arrays are supported.")
 
     # denoise
-    img = median_filter(img, 9).astype(float)
+    img = median_filter(img, 9).astype(np.float64)
     # rescale
     img = (img - img.min()) / (img.max() - img.min())
     # estimate background from four stripes near the border

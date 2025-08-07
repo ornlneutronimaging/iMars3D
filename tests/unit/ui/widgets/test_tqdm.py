@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-import pytest
 import time
+
+import pytest
 from panel.widgets import Tqdm
 from tqdm.contrib.concurrent import process_map
 

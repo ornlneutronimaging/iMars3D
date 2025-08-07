@@ -2,9 +2,12 @@
 import numpy as np
 import pytest
 import tomopy
-from imars3d.backend.corrections.ring_removal import remove_ring_artifact
-from imars3d.backend.corrections.ring_removal import remove_ring_artifact_Ketcham
-from imars3d.backend.corrections.ring_removal import bm3d_ring_removal
+
+from imars3d.backend.corrections.ring_removal import (
+    bm3d_ring_removal,
+    remove_ring_artifact,
+    remove_ring_artifact_Ketcham,
+)
 
 try:
     import bm3d_streak_removal as bm3dsr

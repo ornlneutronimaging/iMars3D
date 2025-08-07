@@ -1,19 +1,23 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """iMars3D's ring artifact correction module."""
+
 import logging
-import param
-from imars3d.backend.util.functions import clamp_max_workers, calculate_chunksize
-import scipy
+
 import numpy as np
+import param
+import scipy
+
+from imars3d.backend.util.functions import calculate_chunksize, clamp_max_workers
 
 try:
     import bm3d_streak_removal as bm3dsr
 except ImportError:
     bm3dsr = None
-from multiprocessing.managers import SharedMemoryManager
-from tqdm.contrib.concurrent import process_map
 from functools import partial
+from multiprocessing.managers import SharedMemoryManager
+
+from tqdm.contrib.concurrent import process_map
 
 logger = logging.getLogger(__name__)
 
@@ -41,15 +45,18 @@ class bm3d_ring_removal(param.ParameterizedFunction):
     max_bin_iter_horizontal: int
         The number of total horizontal scales (counting the full scale).
     bin_vertical: int
-        The factor of vertical binning, e.g. bin_vertical=32 would perform denoising in 1/32th of the original vertical size.
+        The factor of vertical binning, e.g. bin_vertical=32 would perform denoising in 1/32th of the original
+        vertical size.
     filter_strength: float
         Strength of BM4D denoising (>0), where 1 is the standard application, >1 is stronger, and <1 is weaker.
     use_slices: bool
         If True, the sinograms will be split horizontally across each binning iteration into overlapping.
     slice_sizes: list
-        A list of horizontal sizes for use of the slicing if use_slices=True. By default, slice size is either 39 pixels or 1/5th of the total width of the current iteration, whichever is larger.
+        A list of horizontal sizes for use of the slicing if use_slices=True. By default, slice size is either
+        39 pixels or 1/5th of the total width of the current iteration, whichever is larger.
     slice_step_sizes: list
-        List of number of pixels between slices obtained with use_slices=True, one for each binning iteration. By default 1/4th of the corresponding slice size.
+        List of number of pixels between slices obtained with use_slices=True, one for each binning iteration.
+        By default 1/4th of the corresponding slice size.
     denoise_indices: list
         Indices of sinograms to denoise; by default, denoises the full stack provided.
 
@@ -88,7 +95,8 @@ class bm3d_ring_removal(param.ParameterizedFunction):
     )
     bin_vertical = param.Integer(
         default=0,
-        doc="The factor of vertical binning, e.g. bin_vertical=32 would perform denoising in 1/32th of the original vertical size.",
+        doc="The factor of vertical binning, e.g. bin_vertical=32 would perform denoising in 1/32th of the "
+        "original vertical size.",
         bounds=(0, None),
     )
     filter_strength = param.Number(
@@ -102,11 +110,13 @@ class bm3d_ring_removal(param.ParameterizedFunction):
     )
     slice_sizes = param.List(
         default=None,
-        doc="A list of horizontal sizes for use of the slicing if use_slices=True. By default, slice size is either 39 pixels or 1/5th of the total width of the current iteration, whichever is larger.",
+        doc="A list of horizontal sizes for use of the slicing if use_slices=True. By default, slice size is "
+        "either 39 pixels or 1/5th of the total width of the current iteration, whichever is larger.",
     )
     slice_step_sizes = param.List(
         default=None,
-        doc="List of number of pixels between slices obtained with use_slices=True, one for each binning iteration. By default 1/4th of the corresponding slice size.",
+        doc="List of number of pixels between slices obtained with use_slices=True, one for each binning "
+        "iteration. By default 1/4th of the corresponding slice size.",
     )
     denoise_indices = param.List(
         default=None,
@@ -282,7 +292,8 @@ class remove_ring_artifact_Ketcham(param.ParameterizedFunction):
 
     NOTE
     ----
-        0. The ring artifact refers to the halo type artifacts present in the final reconstruction results, which is often caused by local detector/pixel gain error during measurement.
+        0. The ring artifact refers to the halo type artifacts present in the final reconstruction results,
+           which is often caused by local detector/pixel gain error during measurement.
         1. This method can only be used on a single sinogram.
         2. This method is assuming the ring artifact is of multiplicative nature, i.e. measured = signal * error.
     """
@@ -320,7 +331,7 @@ def _remove_ring_artifact_Ketcham(
     if sinogram.ndim != 2:
         raise ValueError("This correction can only be used for a sinogram, i.e. a 2D image.")
     # sub-divide the sinogram into smaller sections
-    edges = np.linspace(0, sinogram.shape[0], sub_division + 1).astype(int)
+    edges = np.linspace(0, sinogram.shape[0], sub_division + 1).astype(np.int64)
     #
     corr_ratios = []
     for bottom, top in zip(edges[:-1], edges[1:]):

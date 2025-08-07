@@ -4,6 +4,7 @@
 [![Documentation Status](https://readthedocs.org/projects/imars3d/badge/?version=latest)](https://imars3d.readthedocs.io/en/latest/?badge=latest)
 [![codecov](https://codecov.io/gh/ornlneutronimaging/iMars3D/branch/next/graph/badge.svg)](https://codecov.io/gh/ornlneutronimaging/iMars3D/tree/next)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/6650/badge)](https://bestpractices.coreinfrastructure.org/projects/6650)
+[![Anaconda-Server Badge](https://anaconda.org/neutronimaging/imars3d/badges/version.svg)](https://anaconda.org/neutronimaging/imars3d)
 
 <!-- End Badges -->
 

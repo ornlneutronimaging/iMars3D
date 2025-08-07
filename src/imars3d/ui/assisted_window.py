@@ -14,12 +14,15 @@ pn.extension(
 assisted_window = AssistedWindow()
 assisted_window  # or pn.panel(assisted_window) or assisted_window.show() or assisted_window.servable()
 """
+
+import json
 import logging
+
 import panel as pn
 import param
-import json
-from imars3d.ui.base_window import BaseWindow
+
 from imars3d.backend.workflow.engine import WorkflowEngineAuto
+from imars3d.ui.base_window import BaseWindow
 
 logger = logging.getLogger(__name__)
 

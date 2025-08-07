@@ -3,16 +3,15 @@
 """iMars3D normalization module."""
 
 # package imports
-from imars3d.backend.util.functions import clamp_max_workers
+# standard imports
+import logging
 
 # third party imports
 import numpy as np
 import param
 from tomopy.prep.normalize import minus_log as tm_minus_log
 
-# standard imports
-import logging
-
+from imars3d.backend.util.functions import clamp_max_workers
 
 logger = logging.getLogger(__name__)
 
