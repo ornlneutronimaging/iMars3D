@@ -1,8 +1,8 @@
 # standard imports
+import gc
 from pathlib import Path
 from shutil import rmtree
 from tempfile import mkdtemp
-import gc
 from unittest.mock import patch
 
 import pytest
@@ -40,10 +40,11 @@ def sequential_process_map(fn, *iterables, **kwargs):
     tqdm_class = kwargs.pop("tqdm_class", None)
     desc = kwargs.pop("desc", None)
     total = kwargs.pop("total", len(iterables[0]) if iterables else 0)
-    
+
     # Use tqdm if provided
     if tqdm_class:
         from tqdm import tqdm
+
         results = []
         for items in tqdm(zip(*iterables), total=total, desc=desc):
             results.append(fn(*items))
@@ -58,23 +59,26 @@ def patch_process_map():
     """Replace process_map with sequential version in tests to avoid hanging."""
     # Patch at multiple locations where it's imported
     patches = [
-        patch('tqdm.contrib.concurrent.process_map', side_effect=sequential_process_map),
-        patch('imars3d.backend.diagnostics.rotation.process_map', side_effect=sequential_process_map),
-        patch('imars3d.backend.diagnostics.tilt.process_map', side_effect=sequential_process_map),
-        patch('imars3d.backend.corrections.intensity_fluctuation_correction.process_map', side_effect=sequential_process_map),
-        patch('imars3d.backend.corrections.beam_hardening.process_map', side_effect=sequential_process_map),
-        patch('imars3d.backend.corrections.denoise.process_map', side_effect=sequential_process_map),
-        patch('imars3d.backend.corrections.ring_removal.process_map', side_effect=sequential_process_map),
-        patch('imars3d.backend.dataio.data.process_map', side_effect=sequential_process_map),
+        patch("tqdm.contrib.concurrent.process_map", side_effect=sequential_process_map),
+        patch("imars3d.backend.diagnostics.rotation.process_map", side_effect=sequential_process_map),
+        patch("imars3d.backend.diagnostics.tilt.process_map", side_effect=sequential_process_map),
+        patch(
+            "imars3d.backend.corrections.intensity_fluctuation_correction.process_map",
+            side_effect=sequential_process_map,
+        ),
+        patch("imars3d.backend.corrections.beam_hardening.process_map", side_effect=sequential_process_map),
+        patch("imars3d.backend.corrections.denoise.process_map", side_effect=sequential_process_map),
+        patch("imars3d.backend.corrections.ring_removal.process_map", side_effect=sequential_process_map),
+        patch("imars3d.backend.dataio.data.process_map", side_effect=sequential_process_map),
     ]
-    
+
     for p in patches:
         p.start()
-    
+
     yield
-    
+
     for p in patches:
         p.stop()
-    
+
     # Force garbage collection after test
     gc.collect()

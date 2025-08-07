@@ -4,6 +4,7 @@ import logging
 
 # Apply NumPy 2.0 compatibility patches for tomopy before importing backend modules
 from .backend.util.tomopy_compat import apply_tomopy_numpy2_compat
+
 apply_tomopy_numpy2_compat()
 
 from .backend import corrections, dataio, diagnostics, morph, preparation, reconstruction  # noqa: F401
