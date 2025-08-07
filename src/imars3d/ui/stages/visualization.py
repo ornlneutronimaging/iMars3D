@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Visualization stage for iMars3D."""
-import numpy as np
-import param
-import panel as pn
+
 import holoviews as hv
-from holoviews import opts
-from holoviews import streams
+import numpy as np
+import panel as pn
+import param
+from holoviews import opts, streams
 
 
 class Visualization(param.Parameterized):

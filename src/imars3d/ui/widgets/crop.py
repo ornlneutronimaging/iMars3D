@@ -33,17 +33,19 @@ To test this widget in isolation within Jupyter, do the following:
 
     }
 """
+
 import logging
-import param
+
+import holoviews as hv
 import numpy as np
 import panel as pn
-import holoviews as hv
-from holoviews import opts
-from holoviews import streams
-from imars3d.ui.base_window import BaseWindow
-from imars3d.ui.widgets.viewer2d import Viewer2D
+import param
+from holoviews import opts, streams
+
 from imars3d.backend.morph.crop import crop
+from imars3d.ui.base_window import BaseWindow
 from imars3d.ui.util import run_task
+from imars3d.ui.widgets.viewer2d import Viewer2D
 
 logger = logging.getLogger(__name__)
 

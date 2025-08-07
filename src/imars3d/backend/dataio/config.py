@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Configuration file handler for the imars3d."""
+
 import json
 import logging
 from pathlib import Path

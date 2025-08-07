@@ -4,9 +4,9 @@
 # standard imports
 import json
 import logging
-from pathlib import Path
 import os
 import re
+from pathlib import Path
 from string import Template
 from typing import Union
 

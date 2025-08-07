@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Widgets for ring removal."""
-import param
+
 import panel as pn
+import param
+
 from imars3d.backend.corrections.ring_removal import remove_ring_artifact
 
 

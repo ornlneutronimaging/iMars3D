@@ -3,6 +3,7 @@
 #!/usr/bin/env python
 import numpy as np
 import pytest
+
 from imars3d.backend.corrections.beam_hardening import beam_hardening_correction
 
 

@@ -11,7 +11,7 @@ dependencies:
   - astropy
   - tomopy
   - algotom
-  - numpy < 2
+  - numpy >= 2.0
   # plot
   - holoviews
   - bokeh
@@ -25,6 +25,8 @@ dependencies:
   # IO
   - dxchange
   - jsonschema
+  # // to avoid deprecated call, imsave, which is still used by dxchange
+  - tifffile
   # -- Development
   # utils
   - pre-commit
@@ -43,6 +45,6 @@ dependencies:
   - pytest-cov
   # pip
   - pip:
-    - check-wheel-contents
-    - pytest-playwright
-    - bm3d-streak-removal
+      - check-wheel-contents
+      - pytest-playwright
+      - bm3d-streak-removal

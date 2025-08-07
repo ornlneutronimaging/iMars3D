@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Widgets for intensity fluctuation correction."""
-import param
+
 import panel as pn
+import param
+
 from imars3d.backend.corrections.intensity_fluctuation_correction import intensity_fluctuation_correction
 
 

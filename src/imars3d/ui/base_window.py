@@ -14,6 +14,7 @@ pn.extension(
 base_window = BaseWindow()
 base_window  # or pn.panel(base_window) or base_window.show() or base_window.servable()
 """
+
 import panel as pn
 import param
 

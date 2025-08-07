@@ -1,15 +1,19 @@
 #!/usr/bin/env python3
+from unittest import mock
+
 import numpy as np
 import pytest
 import skimage
-from unittest import mock
 from skimage.util import random_noise
-from imars3d.backend.corrections.denoise import measure_noiseness
-from imars3d.backend.corrections.denoise import measure_sharpness
-from imars3d.backend.corrections.denoise import denoise
-from imars3d.backend.corrections.denoise import denoise_by_median
-from imars3d.backend.corrections.denoise import denoise_by_bilateral
-from imars3d.backend.corrections.denoise import denoise_by_bilateral_2d
+
+from imars3d.backend.corrections.denoise import (
+    denoise,
+    denoise_by_bilateral,
+    denoise_by_bilateral_2d,
+    denoise_by_median,
+    measure_noiseness,
+    measure_sharpness,
+)
 
 
 @pytest.fixture(scope="module")

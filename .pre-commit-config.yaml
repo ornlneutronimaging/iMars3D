@@ -3,7 +3,7 @@
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
       - id: trailing-whitespace
       - id: check-docstring-first
@@ -25,20 +25,21 @@ repos:
       - id: end-of-file-fixer
       - id: sort-simple-yaml
   - repo: https://github.com/psf/black
-    rev: 24.8.0
+    rev: 25.1.0
     hooks:
       - id: black
         args: ['--line-length=119']
   - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.35.1
+    rev: v1.37.1
     hooks:
-    - id: yamllint
-    name: yamllint
-    description: This hook runs yamllint.
-    entry: yamllint
-    language: python
-    types: [file, yaml]
+      - id: yamllint
   - repo: https://github.com/kynan/nbstripout
-    rev: 0.7.1
+    rev: 0.8.1
     hooks:
-    - id: nbstripout
+      - id: nbstripout
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.2
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format

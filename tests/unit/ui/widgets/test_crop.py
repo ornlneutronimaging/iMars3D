@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-import pytest
 import time
-import panel as pn
+
 import holoviews as hv
+import panel as pn
+import pytest
 from panel.io.server import serve
 from playwright.sync_api import Page
+
 from imars3d.ui.widgets.crop import CropWidget
 
 pn.extension("jsoneditor")

@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Image noise reduction (denoise) module."""
-import logging
-import param
-from imars3d.backend.util.functions import clamp_max_workers, calculate_chunksize
-import numpy as np
-import tomopy
-from multiprocessing.managers import SharedMemoryManager
-from tqdm.contrib.concurrent import process_map
-from functools import partial
-from scipy.signal import convolve2d
-from scipy.ndimage import median_filter
-from skimage.restoration import denoise_bilateral
 
+import logging
+from functools import partial
+from multiprocessing.managers import SharedMemoryManager
+
+import numpy as np
+import param
+import tomopy
+from scipy.ndimage import median_filter
+from scipy.signal import convolve2d
+from skimage.restoration import denoise_bilateral
+from tqdm.contrib.concurrent import process_map
+
+from imars3d.backend.util.functions import calculate_chunksize, clamp_max_workers
 
 logger = logging.getLogger(__name__)
 

@@ -1,15 +1,16 @@
 # package imports
-from imars3d.backend.workflow.engine import WorkflowEngineAuto, WorkflowValidationError
-
-# third party imports
-import numpy as np
-from param import Parameter, ParameterizedFunction
-from param.parameterized import String as StringParam
+import json
 
 # standard library imports
 from copy import deepcopy
-import json
+
+# third party imports
+import numpy as np
 import pytest
+from param import Parameter, ParameterizedFunction
+from param.parameterized import String as StringParam
+
+from imars3d.backend.workflow.engine import WorkflowEngineAuto, WorkflowValidationError
 
 
 class load_data(ParameterizedFunction):

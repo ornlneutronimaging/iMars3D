@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """iMars3D: gamma filter module."""
+
 import logging
-import param
-from imars3d.backend.util.functions import clamp_max_workers
+
 import numpy as np
+import param
 import tomopy
 
+from imars3d.backend.util.functions import clamp_max_workers
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +18,8 @@ class gamma_filter(param.ParameterizedFunction):
 
     Replace near saturated pixels (due to gamma radiation) with median values.
     The median filtering is carried out by tomopy.remove_outlier.
-    If selective median filtering is enabled (default), only the pixels greater than the specified threshold are replaced.
+    If selective median filtering is enabled (default), only the pixels greater than the specified threshold are
+    replaced.
 
     Parameters
     ----------
@@ -33,7 +36,8 @@ class gamma_filter(param.ParameterizedFunction):
     selective_median_filter: bool = True
         whether to use selective median filtering, default is True.
     diff_tomopy: float = -1
-        threshold passed to tomopy for median filter based outlier detection. Negative values will use the internal default value (see source code).
+        threshold passed to tomopy for median filter based outlier detection. Negative values will use the internal
+        default value (see source code).
 
     Returns
     -------
@@ -44,7 +48,8 @@ class gamma_filter(param.ParameterizedFunction):
     arrays = param.Array(doc="3D array of images, the first dimension is the rotation angle omega", default=None)
     threshold = param.Integer(
         default=-1,
-        doc="threshold for saturation, default is -1, which means using the internally defined threshold (see source code)",
+        doc="threshold for saturation, default is -1, which means using the internally defined threshold "
+        "(see source code)",
     )
     median_kernel = param.Integer(
         default=5,
@@ -67,7 +72,8 @@ class gamma_filter(param.ParameterizedFunction):
     )
     diff_tomopy = param.Number(
         default=-1,
-        doc="threshold passed to tomopy for median filter based outlier detection. Negative values will use the internal default value (see source code).",
+        doc="threshold passed to tomopy for median filter based outlier detection. Negative values will use the "
+        "internal default value (see source code).",
     )
 
     def __call__(self, **params):

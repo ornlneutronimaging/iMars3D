@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Widgets for tilt correction."""
-import param
-import panel as pn
+
 import numpy as np
+import panel as pn
+import param
+
 from imars3d.backend.diagnostics.tilt import tilt_correction
 
 

@@ -18,11 +18,13 @@ now you can use either
 - viewer or pn.Row(viewer) or viewer.servable() to check the widget in cell
 - viewer.show() to check the widget in a separate window (on a bokeh server)
 """
+
 import logging
+
+import holoviews as hv
 import numpy as np
 import panel as pn
 import param
-import holoviews as hv
 from holoviews import opts
 
 logger = logging.getLogger(__name__)

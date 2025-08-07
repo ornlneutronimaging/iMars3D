@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Widgets for normalization."""
-import param
+
 import panel as pn
+import param
+
 from imars3d.backend.preparation.normalization import normalization
 
 

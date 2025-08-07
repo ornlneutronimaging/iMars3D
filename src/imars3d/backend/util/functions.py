@@ -2,12 +2,11 @@
 """Util for imars3d."""
 
 # standard imports
-from datetime import datetime
 import logging
 import multiprocessing
 import resource
+from datetime import datetime
 from typing import Optional, Union
-
 
 logger = logging.getLogger(__name__)
 
