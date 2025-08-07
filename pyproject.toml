@@ -4,24 +4,47 @@ description = "Neutron imaging data analysis at ORNL"
 dynamic = ["version"]
 requires-python = ">=3.10"
 license = { text = "BSD 3-Clause License" }
+readme = "README.md"
+keywords = ["neutrons", "imaging", "tomography", "reconstruction", "ornl"]
+
 dependencies = [
+  # Core dependencies available from both PyPI and conda
+  "numpy>=2.0,<3",
   "astropy",
+  "tomopy",
+  "algotom",
+  # Plotting
+  "holoviews",
+  "bokeh",
+  "datashader",
+  "hvplot",
+  "dask",
+  # GUI
+  "panel",
+  "param",
+  "pyvista",
+  # IO
+  "dxchange",
+  "jsonschema",
+  "tifffile",
+  # PyPI-only dependencies
+  "bm3d-streak-removal",
 ]
+
+[project.optional-dependencies]
+docs = ["sphinx", "sphinx_rtd_theme", "versioningit"]
 
 [project.urls]
 homepage = "https://github.com/ornlneutronimaging/iMars3D"
+repository = "https://github.com/ornlneutronimaging/iMars3D"
+issues = "https://github.com/ornlneutronimaging/iMars3D/issues"
 
 [project.scripts]
 imars3dcli = "imars3d.backend.__main__:main"
 
 [build-system]
-requires = [
-  "setuptools >= 40.6.0",
-  "wheel",
-  "toml",
-  "versioningit"
-]
-build-backend = "setuptools.build_meta"
+build-backend = "hatchling.build"
+requires = ["hatchling", "versioningit"]
 
 [tool.versioningit.vcs]
 method = "git"
@@ -32,48 +55,61 @@ method = "minor"
 
 [tool.versioningit.format]
 distance = "{next_version}.dev{distance}"
-dirty = "{version}+d{build_date:%Y%m%d}"
-distance-dirty = "{next_version}.dev{distance}+d{build_date:%Y%m%d%H%M}"
+# Ignore uncommitted changes for pixi builds
+dirty = "{version}"
+distance-dirty = "{next_version}.dev{distance}"
 
 [tool.versioningit.write]
 file = "src/imars3d/_version.py"
 
-[tool.setuptools.packages.find]
-where = ["src"]
-exclude = ["tests*", "scripts*", "docs*", "notebooks*"]
+[tool.hatch.version]
+source = "versioningit"
 
-[tool.setuptools.package-data]
-"*" = ["*.yml", "*.yaml", "*.ini", "schema.json"]
+[tool.hatch.build.hooks.versioningit-onbuild]
+source-file = "src/imars3d/_version.py"
+build-file = "imars3d/_version.py"
+
+[tool.hatch.build]
+artifacts = [
+  "src/imars3d/_version.py",
+  "src/imars3d/**/*.yml",
+  "src/imars3d/**/*.yaml",
+  "src/imars3d/**/*.ini",
+  "src/imars3d/**/*.json",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/imars3d"]
 
 [tool.pytest.ini_options]
+addopts = "-v --cov=imars3d --cov-report=term-missing"
 pythonpath = [".", "src", "scripts"]
 testpaths = ["tests"]
 python_files = ["test*.py"]
 norecursedirs = [
-  ".git", "tmp*", "_tmp*", "__pycache__",
-  "*dataset*", "*data_set*",
-  "*ui*"
-  ]
+  ".git",
+  "tmp*",
+  "_tmp*",
+  "__pycache__",
+  "*dataset*",
+  "*data_set*",
+  "*ui*",
+]
 markers = ["datarepo: mark a test as using imars3d-data repository"]
 
 [tool.pylint]
 max-line-length = 120
-disable = ["too-many-locals",
-           "too-many-statements",
-           "too-many-instance-attributes",
-           "too-many-arguments",
-           "duplicate-code"
+disable = [
+  "too-many-locals",
+  "too-many-statements",
+  "too-many-instance-attributes",
+  "too-many-arguments",
+  "duplicate-code",
 ]
 
 [tool.coverage.run]
-source = [
-  "src/imars3d/backend"
-]
-omit = [
-  "*/tests/*",
-  "src/imars3d/__init__.py",
-  "src/imars3d/ui/*"
-]
+source = ["src/imars3d/backend"]
+omit = ["*/tests/*", "src/imars3d/__init__.py", "src/imars3d/ui/*"]
 
 [tool.coverage.report]
 fail_under = 60
@@ -82,5 +118,182 @@ exclude_lines = [
   "def __repr__",
   "def __str__",
   "if TYPE_CHECKING:",
-  "if __name__ == .__main__.:"
+  "if __name__ == .__main__.:",
 ]
+
+###################
+### Pixi config ###
+###################
+
+[tool.pixi.workspace]
+preview = ["pixi-build"] # Required until the build feature becomes stable
+channels = [
+  "conda-forge",
+  "https://prefix.dev/pixi-build-backends", # Required for pixi build
+]
+platforms = ["linux-64", "osx-arm64"] # add additional platforms as needed
+conda-pypi-map = { "conda-forge" = "pixi-mapping.json" }
+
+## Dependency tables - https://pixi.sh/latest/reference/pixi_manifest/#the-dependencies-tables
+## These tables override the dependencies listed in the [project] section
+
+[tool.pixi.dependencies]
+# Conda package dependencies
+python = ">=3.10"
+numpy = ">=2.0,<3"
+astropy = "*"
+tomopy = "*"
+algotom = "*"
+# Plotting
+holoviews = "*"
+bokeh = "*"
+datashader = "*"
+hvplot = "*"
+dask = "*"
+# GUI
+panel = "*"
+param = "*"
+pyvista = "*"
+# IO
+dxchange = "*"
+jsonschema = "*"
+tifffile = "*"
+
+[tool.pixi.pypi-dependencies]
+# PyPI dependencies, including this package to allow local editable installs
+imars3d = { path = ".", editable = true }
+
+# Pixi Build configuration - https://pixi.sh/latest/reference/pixi_manifest/#pixi-build
+
+[tool.pixi.package.host-dependencies]
+hatchling = "*"
+versioningit = "*"
+
+[tool.pixi.package.run-dependencies]
+python = ">=3.10"
+numpy = ">=2.0,<3"
+astropy = "*"
+tomopy = "*"
+algotom = "*"
+holoviews = "*"
+bokeh = "*"
+datashader = "*"
+hvplot = "*"
+dask = "*"
+panel = "*"
+param = "*"
+pyvista = "*"
+dxchange = "*"
+jsonschema = "*"
+tifffile = "*"
+
+[tool.pixi.package]
+name = "imars3d"
+version = "0.0.0" # placeholder, overwritten by sync-version
+
+[tool.pixi.package.build]
+backend = { name = "pixi-build-python", version = "0.1.*" }
+
+# Environments and Features
+
+[tool.pixi.environments]
+default = { features = [
+  "test",
+  "developer",
+  "package",
+  "docs",
+], solve-group = "default" }
+jupyter = { features = ["developer", "jupyter"], solve-group = "jupyter" }
+
+[tool.pixi.feature.test.dependencies]
+pytest = "*"
+pytest-cov = "*"
+pytest-playwright = "*"
+
+[tool.pixi.feature.package.dependencies]
+anaconda-client = ">=1.13.0,<2"
+boa = "*"
+conda-build = "<4"
+conda-verify = "*"
+python-build = "*"
+versioningit = "*"
+hatch = "*"
+
+[tool.pixi.feature.package.pypi-dependencies]
+toml-cli = "*"
+check-wheel-contents = "*"
+
+[tool.pixi.feature.developer.dependencies]
+pip = "*"
+pre-commit = "*"
+versioningit = "*"
+
+[tool.pixi.feature.docs.dependencies]
+pydocstyle = "*"
+sphinx = "*"
+sphinx_rtd_theme = "*"
+
+[tool.pixi.feature.jupyter.dependencies]
+jupyterlab = "*"
+ipympl = "*"
+ipywidgets = "*"
+
+[tool.pixi.tasks]
+# Documentation
+build-docs = { cmd = 'sphinx-build -b html docs docs/_build', description = "Build documentation" }
+test-docs = { cmd = "sphinx-build -M doctest docs docs/_build", description = "Test building the documentation" }
+# Testing
+test = { description = "Run the test suite", cmd = "pytest -m 'not datarepo'" }
+test-with-data = { description = "Run all tests including data repo tests", cmd = "pytest" }
+# Packaging
+pypi-build = { cmd = "hatch build", description = "Build the package for PyPI" }
+pypi-publish = { cmd = "twine upload dist/*", description = "Publish the package to PyPI", depends-on = [
+  "pypi-build",
+] }
+conda-build-command = { cmd = "pixi build", description = "Build the conda package command" }
+conda-build = { description = "Build the conda package", depends-on = [
+  "backup-toml",
+  "sync-version",
+  "conda-build-command",
+  "reset-toml",
+] }
+conda-publish = { cmd = "anaconda upload *.conda", description = "Publish the .conda package to anaconda.org", depends-on = [
+  "conda-build",
+] }
+# UI and Interactive tools
+ui = { cmd = "python scripts/imars3dui.py", description = "Launch the imars3d UI" }
+# Misc
+clean = { cmd = 'rm -rf .pytest_cache .ruff_cache **/*.egg-info **/dist **/__pycache__', description = "Clean up various caches and build artifacts" }
+clean-conda = { cmd = "rm -f *.conda", description = "Clean the local .conda build artifacts" }
+clean-docs = { cmd = "rm -rf docs/_build", description = "Clean up documentation build artifacts" }
+clean-pypi = { cmd = "rm -rf dist", description = "Clean the PyPI build artifacts" }
+clean-all = { description = "Clean all artifacts", depends-on = [
+  "clean",
+  "clean-conda",
+  "clean-docs",
+  "clean-pypi",
+] }
+sync-version = { cmd = 'version=$(python -m versioningit); toml set tool.pixi.package.version "$version" --toml-path pyproject.toml', description = "Sync pyproject.toml version with Git version" }
+backup-toml = { cmd = "cp pyproject.toml pyproject.toml.bak", description = "Backup the pyproject.toml file" }
+reset-toml = { cmd = "cp pyproject.toml.bak pyproject.toml; rm pyproject.toml.bak", description = "Reset the pyproject.toml file to the original state" }
+
+############
+### Ruff ###
+############
+
+[tool.ruff]
+target-version = "py310"
+line-length = 119
+exclude = ["notebooks/**", "**/*.ipynb"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = []
+
+[tool.ruff.lint.isort]
+known-first-party = ["imars3d"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"

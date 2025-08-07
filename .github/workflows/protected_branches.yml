@@ -27,13 +27,12 @@ jobs:
         with:
           submodules: true
           lfs: true
-      - uses: conda-incubator/setup-miniconda@v3
+      - uses: prefix-dev/setup-pixi@v0.8.2
         with:
-          auto-update-conda: true
-          miniforge-version: latest
-          environment-file: environment.yml
+          pixi-version: v0.50.2
+          manifest: pyproject.toml
       - name: Tests with data repository
-        run: python -m pytest -m datarepo
+        run: pixi run pytest -m datarepo
       - name: Update job status
         uses: Sibz/github-status-action@v1
         if: ${{ always() && github.event_name == 'workflow_dispatch' }}
@@ -53,17 +52,14 @@ jobs:
         shell: bash -l {0}
     steps:
       - uses: actions/checkout@v4
-      - uses: conda-incubator/setup-miniconda@v3
+      - uses: prefix-dev/setup-pixi@v0.8.2
         with:
-          auto-update-conda: true
-          mamba-version: "*"
-          environment-file: environment.yml
+          pixi-version: v0.50.2
+          manifest: pyproject.toml
       - name: Build Conda Package
         run: |
-          # boa uses mamba to resolve dependencies
-          cd conda.recipe
-          VERSION=$(versioningit ../) conda mambabuild --output-folder . -c conda-forge . || exit 1
-          conda verify noarch/imars3d*.tar.bz2 || exit 1
+          # Build conda package using pixi
+          pixi run conda-build
       - name: Deploy to Anaconda
         shell: bash -l {0}
         if: startsWith(github.ref, 'refs/tags/v')
@@ -75,35 +71,4 @@ jobs:
           CONDA_LABEL="main"
           if [ "${IS_RC}" = "true" ]; then CONDA_LABEL="rc"; fi
           echo pushing ${{ github.ref }} with label $CONDA_LABEL
-          anaconda upload --label $CONDA_LABEL conda.recipe/noarch/imars3d*.tar.bz2
-
-
-  trigger-deploy:
-    runs-on: ubuntu-22.04
-    needs: [build-conda]
-    # only trigger deploys from protected branches
-    if: ${{ github.ref_protected || github.ref_type == 'tag' }}
-    steps:
-      - name: Determine Environment
-        uses: neutrons/branch-mapper@v2
-        id: conda_env_name
-        with:
-          prefix: imars3d
-
-      - name: Trigger deploy
-        id: trigger
-        uses: eic/trigger-gitlab-ci@v3
-        with:
-          url: https://code.ornl.gov
-          token: ${{ secrets.GITLAB_TRIGGER_TOKEN }}
-          project_id: 11848
-          ref_name: main
-          variables: |
-            PLAY="update"
-            CONDA_ENV="${{ steps.conda_env_name.outputs.name }}"
-
-      - name: Annotate commit
-        uses: peter-evans/commit-comment@v3
-        with:
-          body: |
-            GitLab pipeline for ${{ steps.conda_env_name.outputs.name }} has been submitted for this commit: ${{ steps.trigger.outputs.web_url }}
+          pixi run anaconda upload --label $CONDA_LABEL *.conda

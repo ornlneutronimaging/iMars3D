@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
-import pytest
-import os
 import json
+import os
+
+import pytest
+
 from imars3d.backend.dataio.config import save_config
 
 

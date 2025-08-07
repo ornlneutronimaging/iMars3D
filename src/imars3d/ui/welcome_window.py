@@ -15,10 +15,13 @@ pn.extension(
 welcome_window = WelcomeWindow()
 welcome_window  # or pn.panel(welcome_window) or welcome_window.show() or welcome_window.servable()
 """
+
 import logging
+from pathlib import Path
+
 import panel as pn
 import param
-from pathlib import Path
+
 from imars3d.ui.base_window import BaseWindow
 
 logger = logging.getLogger(__name__)
@@ -125,7 +128,8 @@ class WelcomeWindow(BaseWindow):
         | Results directory | {self.output_dir} |
 
         - configuration file will be saved to the working directory during interactive session.
-        - the configuration file used to perform reconstruction will be cached in results dir, along with the reconstruction results.
+        - the configuration file used to perform reconstruction will be cached in results dir, along with the
+          reconstruction results.
 
         > If the information is correct, press the green button below to enter iMars3D.
         """,

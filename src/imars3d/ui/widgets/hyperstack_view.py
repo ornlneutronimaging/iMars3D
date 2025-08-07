@@ -16,13 +16,15 @@ now you can use either
 - viewer or pn.Row(viewer) or viewer.servable() to check the widget in cell
 - viewer.show() to check the widget in a separate window (on a bokeh server)
 """
+
 import logging
+
+import holoviews as hv
 import numpy as np
 import panel as pn
 import param
-import holoviews as hv
-from holoviews import opts
-from holoviews import streams
+from holoviews import opts, streams
+
 from imars3d.ui.widgets.viewer2d import Viewer2D
 
 logger = logging.getLogger(__name__)

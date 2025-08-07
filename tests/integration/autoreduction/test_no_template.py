@@ -1,13 +1,12 @@
 # package imports
-from reduce_CG1D import main as main_CG1D
-from reduce_CG1D import ERROR_GENERAL
-
-# third-party imports
-import pytest
-
 # standard imports
 import os
 from pathlib import Path
+
+# third-party imports
+import pytest
+from reduce_CG1D import ERROR_GENERAL
+from reduce_CG1D import main as main_CG1D
 
 
 @pytest.fixture(autouse=True)

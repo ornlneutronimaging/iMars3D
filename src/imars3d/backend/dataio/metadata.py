@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Metadata class for IMars3D."""
+
 import logging
+from pathlib import Path
+
 import numpy as np
 import param
 import tifffile
-from pathlib import Path
-
 
 # setup module level logger
 logger = logging.getLogger(__name__)

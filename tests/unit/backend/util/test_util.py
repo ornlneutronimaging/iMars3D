@@ -1,12 +1,12 @@
 # package imports
-from imars3d.backend.util.functions import clamp_max_workers, to_time_str, calculate_chunksize
+# standard imports
+from datetime import datetime
+from unittest.mock import patch
 
 # third party imports
 import pytest
-from unittest.mock import patch
 
-# standard imports
-from datetime import datetime
+from imars3d.backend.util.functions import calculate_chunksize, clamp_max_workers, to_time_str
 
 
 def test_clamp_max_workers():

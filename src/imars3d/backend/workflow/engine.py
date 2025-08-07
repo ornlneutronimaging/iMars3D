@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
 """Workflow engine for imars3d."""
-# package imports
-from imars3d.backend.workflow import validate
 
-# third-party imports
-import param as libparam
+# package imports
+import importlib
+import logging
 
 # standard imports
 from collections import namedtuple
 from enum import Enum
-import importlib
-from typing import Any, Optional
 from pathlib import Path
-import logging
+from typing import Any, Optional
+
+# third-party imports
+import param as libparam
+
+from imars3d.backend.workflow import validate
 
 
 class WorkflowEngineExitCodes(Enum):

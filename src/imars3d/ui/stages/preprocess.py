@@ -1,20 +1,22 @@
 #!/usr/bin/env python3
 """Preprocessing stage for iMars3D."""
-import param
-import panel as pn
+
+from pathlib import Path
+
 import holoviews as hv
 import numpy as np
-from holoviews import streams
-from holoviews import opts
+import panel as pn
+import param
+from holoviews import opts, streams
 from holoviews.operation.datashader import rasterize
-from pathlib import Path
+
 from imars3d.backend.dataio.data import save_checkpoint as imars_save_checkpoint
-from imars3d.ui.widgets.gamma_filter import GammaFilter
-from imars3d.ui.widgets.normalization import Normalization
 from imars3d.ui.widgets.denoise import Denoise
+from imars3d.ui.widgets.gamma_filter import GammaFilter
 from imars3d.ui.widgets.ifc import IntensityFluctuationCorrection
-from imars3d.ui.widgets.tilt import TiltCorrection
+from imars3d.ui.widgets.normalization import Normalization
 from imars3d.ui.widgets.ring_removal import RemoveRingArtifact
+from imars3d.ui.widgets.tilt import TiltCorrection
 
 
 class Preprocess(param.Parameterized):

@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 
-import panel as pn
 import holoviews as hv
-from imars3d.ui.stages.metadata import MetaData
+import panel as pn
+
 from imars3d.ui.stages.dataloading import DataLoader
-from imars3d.ui.stages.selectroi import SelectROI
+from imars3d.ui.stages.metadata import MetaData
 from imars3d.ui.stages.preprocess import Preprocess
 from imars3d.ui.stages.reconstruction import Reconstruction
+from imars3d.ui.stages.selectroi import SelectROI
 from imars3d.ui.stages.visualization import Visualization
-
 
 pn.extension(
     "katex",

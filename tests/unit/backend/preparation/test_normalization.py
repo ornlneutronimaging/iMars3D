@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 # package imports
-from imars3d.backend.preparation.normalization import minus_log, normalization
-from imars3d.backend.workflow.engine import WorkflowEngineAuto
+# standard library
+import json
+from pathlib import Path
 
 # third party imports
 import numpy as np
 import pytest
-from scipy.ndimage import gaussian_filter
 import skimage
+from scipy.ndimage import gaussian_filter
 
-# standard library
-import json
-from pathlib import Path
+from imars3d.backend.preparation.normalization import minus_log, normalization
+from imars3d.backend.workflow.engine import WorkflowEngineAuto
 
 
 def generate_fake_darkfield(
