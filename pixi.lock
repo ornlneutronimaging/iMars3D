@@ -6145,24 +6145,9 @@ packages:
   timestamp: 1656939625410
 - pypi: ./
   name: imars3d
-  version: 1.3.0.dev50
-  sha256: b7d6100a84855cce08ecff9f2cb108a8baff1b1dca36ffe0b6e8f77a6f8d8557
+  version: 1.3.0.dev51
+  sha256: dba1fcc4fc1ff0769289bbc321e5fc99e5a7320c4da3ffdf6a6778d30302c23e
   requires_dist:
-  - algotom
-  - astropy
-  - bokeh
-  - dask
-  - datashader
-  - dxchange
-  - holoviews
-  - hvplot
-  - jsonschema
-  - numpy>=2.0,<3
-  - panel
-  - param
-  - pyvista
-  - tifffile
-  - tomopy
   - sphinx ; extra == 'docs'
   - sphinx-rtd-theme ; extra == 'docs'
   - versioningit ; extra == 'docs'

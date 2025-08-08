@@ -9,24 +9,24 @@ keywords = ["neutrons", "imaging", "tomography", "reconstruction", "ornl"]
 
 dependencies = [
   # Core dependencies available from both PyPI and conda
-  "numpy>=2.0,<3",
-  "astropy",
-  "tomopy",
-  "algotom",
+  # "numpy>=2.0,<3",
+  # "astropy",
+  # "tomopy",
+  # "algotom",
   # Plotting
-  "holoviews",
-  "bokeh",
-  "datashader",
-  "hvplot",
-  "dask",
+  # "holoviews",
+  # "bokeh",
+  # "datashader",
+  # "hvplot",
+  # "dask",
   # GUI
-  "panel",
-  "param",
-  "pyvista",
+  # "panel",
+  # "param",
+  # "pyvista",
   # IO
-  "dxchange",
-  "jsonschema",
-  "tifffile",
+  # "dxchange",
+  # "jsonschema",
+  # "tifffile",
   # PyPI-only dependencies
   # "bm3d-streak-removal",
 ]
