@@ -29,7 +29,7 @@ jobs:
           git checkout -B dev
 
           # Remove submodule-related stuff
-          git rm -rf .gitmodules tests/mr_reduction-data || true
+          git rm -rf .gitmodules tests/data/imars3d-data || true
           git commit -am "Sync from next without submodules" || echo "No changes"
 
           git push origin dev --force
