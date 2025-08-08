@@ -1,0 +1,35 @@
+name: Branch dev in sync to branch next
+
+description: |
+  The `dev` branch is just `next` without the `.gitmodules` file, to allow for deploying
+  this package from source without attempting to also clone the test data repository.
+
+on:
+  push:
+    branches:
+      - next
+
+jobs:
+  sync_deploy_dev:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Needed to switch branches
+          ref: next       # Explicitly specify the branch to check out
+
+      - name: Configure git
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+      - name: Create dev branch
+        run: |
+          git checkout -B dev
+
+          # Remove submodule-related stuff
+          git rm -rf .gitmodules tests/mr_reduction-data || true
+          git commit -am "Sync from next without submodules" || echo "No changes"
+
+          git push origin dev --force
