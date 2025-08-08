@@ -28,7 +28,7 @@ dependencies = [
   "jsonschema",
   "tifffile",
   # PyPI-only dependencies
-  "bm3d-streak-removal",
+  # "bm3d-streak-removal",
 ]
 
 [project.optional-dependencies]
