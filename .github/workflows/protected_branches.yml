@@ -23,7 +23,7 @@ jobs:
           state: "pending"
           sha: "${{ github.sha }}"
           target_url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           submodules: true
           lfs: true
