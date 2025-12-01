@@ -23,7 +23,7 @@ jobs:
           state: "pending"
           sha: "${{ github.sha }}"
           target_url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           submodules: true
           lfs: true
@@ -51,7 +51,7 @@ jobs:
       run:
         shell: bash -l {0}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: prefix-dev/setup-pixi@v0.9.3
         with:
           pixi-version: v0.50.2
