@@ -152,15 +152,13 @@ class TestMinusLog:
 
     def test_dryrun(self, JSON_DIR: Path) -> None:
         r"""Validate a JSON file containing a minus_log task"""
-        task = json.loads(
-            """
+        task = json.loads("""
         {
             "name": "minus_log",
             "function": "imars3d.backend.preparation.normalization.minus_log",
             "inputs": {"arrays": "ct", "max_workers": 2},
             "outputs": ["ct"]
-        }"""
-        )
+        }""")
         config = json.load(open(JSON_DIR / "good_non_interactive_full.json"))
         config["tasks"].insert(6, task)  # insert minus_log task after normalization
         workflow = WorkflowEngineAuto(config)
