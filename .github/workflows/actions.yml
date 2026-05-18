@@ -26,6 +26,6 @@ jobs:
         uses: coactions/setup-xvfb@v1
         with:
           run: |
-            pixi run pytest -m 'not datarepo' --tb=short -v
+            pixi run test -- --tb=short -v
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v6
